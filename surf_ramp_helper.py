@@ -4,7 +4,7 @@
 bl_info = {
     "name": "Surf Ramp Helper",
     "author": "bonjorno7",
-    "version": (0, 3),
+    "version": (0, 4),
     "blender": (2, 80, 0),
     "location": "3D View > Sidebar",
     "description": "Adds modifiers to a surf ramp profile",
