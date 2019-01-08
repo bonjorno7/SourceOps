@@ -16,7 +16,8 @@ bl_info = {
 
 # <importing libraries>
 import bpy
-from bpy.types import Operator, Menu, Panel, PropertyGroup
+from bpy.props import BoolProperty
+from bpy.types import Operator, Menu, Panel
 # </importing libraries>
 
 # </SETTING UP>
@@ -26,9 +27,11 @@ from bpy.types import Operator, Menu, Panel, PropertyGroup
 # <THE ACTUAL CODE>
 
 # <functions>
-def add_modifiers_ramp_textured(self, context):
+def add_modifiers_ramp_reference(self, context):
     for o in bpy.context.selected_objects:
+        if o.type != 'MESH': continue
         bpy.context.view_layer.objects.active = o
+        o.modifiers.clear()
         bpy.ops.object.modifier_add(type='TRIANGULATE')
         bpy.context.object.modifiers["Triangulate"].show_in_editmode = False
         bpy.context.object.modifiers["Triangulate"].quad_method = 'FIXED'
@@ -44,19 +47,37 @@ def add_modifiers_ramp_textured(self, context):
         bpy.context.object.modifiers["Curve"].deform_axis = 'POS_Z'
         o.data.use_auto_smooth = True
         for f in o.data.polygons: f.use_smooth = True
+        if context.scene.srh_change_names: o.name = "Ramp Reference"
 
-def add_modifiers_ramp_cap(self, context):
+def add_modifiers_ramp_cap_start(self, context):
     for o in bpy.context.selected_objects:
+        if o.type != 'MESH': continue
         bpy.context.view_layer.objects.active = o
+        o.modifiers.clear()
         bpy.ops.object.modifier_add(type='TRIANGULATE')
         bpy.context.object.modifiers["Triangulate"].show_in_editmode = False
         bpy.context.object.modifiers["Triangulate"].quad_method = 'FIXED'
         o.data.use_auto_smooth = True
         for f in o.data.polygons: f.use_smooth = True
+        if context.scene.srh_change_names: o.name = "Ramp Cap Start"
 
-def add_modifiers_ramp_hull(self, context):
+def add_modifiers_ramp_cap_end(self, context):
     for o in bpy.context.selected_objects:
+        if o.type != 'MESH': continue
         bpy.context.view_layer.objects.active = o
+        o.modifiers.clear()
+        bpy.ops.object.modifier_add(type='TRIANGULATE')
+        bpy.context.object.modifiers["Triangulate"].show_in_editmode = False
+        bpy.context.object.modifiers["Triangulate"].quad_method = 'FIXED'
+        o.data.use_auto_smooth = True
+        for f in o.data.polygons: f.use_smooth = True
+        if context.scene.srh_change_names: o.name = "Ramp Cap End"
+
+def add_modifiers_ramp_collision(self, context):
+    for o in bpy.context.selected_objects:
+        if o.type != 'MESH': continue
+        bpy.context.view_layer.objects.active = o
+        o.modifiers.clear()
         bpy.ops.object.modifier_add(type='TRIANGULATE')
         bpy.context.object.modifiers["Triangulate"].show_in_editmode = False
         bpy.context.object.modifiers["Triangulate"].quad_method = 'FIXED'
@@ -72,6 +93,7 @@ def add_modifiers_ramp_hull(self, context):
         bpy.context.object.modifiers["Curve"].deform_axis = 'POS_Z'
         o.data.use_auto_smooth = False
         for f in o.data.polygons: f.use_smooth = True
+        if context.scene.srh_change_names: o.name = "Ramp Collision"
 
 def clear_modifiers(self, context):
     for o in bpy.context.selected_objects:
@@ -80,6 +102,22 @@ def clear_modifiers(self, context):
         o.modifiers.clear()
         o.data.use_auto_smooth = False
         for f in o.data.polygons: f.use_smooth = False
+
+def apply_source_settings(self, context):
+    if context.scene.srh_source_settings == True:
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.spaces[0].overlay.grid_subdivisions = 8
+                area.spaces[0].clip_start = 1.0
+                area.spaces[0].clip_end = 100000.0
+                break
+    else:
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.spaces[0].overlay.grid_subdivisions = 10
+                area.spaces[0].clip_start = 0.1
+                area.spaces[0].clip_end = 1000.0
+                break
 # </functions>
 
 # <classes>
@@ -103,38 +141,60 @@ class SRH_panel_manual(Panel):
     bl_label = "Manual"
 
     def draw(self, context):
-        self.layout.operator("surf_ramp_helper.ramp_textured", icon = "MESH_CUBE",)
-        self.layout.operator("surf_ramp_helper.ramp_cap", icon = "MESH_PLANE")
-        self.layout.operator("surf_ramp_helper.ramp_hull", icon = "MESH_ICOSPHERE")
+        self.layout.operator("surf_ramp_helper.ramp_reference", icon = "MESH_CUBE",)
+        self.layout.operator("surf_ramp_helper.ramp_cap_start", icon = "MESH_PLANE")
+        self.layout.operator("surf_ramp_helper.ramp_cap_end", icon = "MESH_PLANE")
+        self.layout.operator("surf_ramp_helper.ramp_collision", icon = "MESH_ICOSPHERE")
         self.layout.operator("surf_ramp_helper.clear_modifiers", icon = "X")
 
-class SRH_ramp_textured(Operator):
-    bl_idname = "surf_ramp_helper.ramp_textured"
-    bl_label = "Textured"
+class SRH_panel_options(Panel):
+    bl_idname = "surf_ramp_helper.panel_options"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "Surf Ramp Helper"
+    bl_label = "Options"
+
+    def draw(self, context):
+        self.layout.prop(context.scene, "srh_change_names")
+        self.layout.prop(context.scene, "srh_source_settings")
+
+class SRH_ramp_reference(Operator):
+    bl_idname = "surf_ramp_helper.ramp_reference"
+    bl_label = "Reference"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        add_modifiers_ramp_textured(self, context)
+        add_modifiers_ramp_reference(self, context)
         return {'FINISHED'}
 
-class SRH_ramp_cap(Operator):
-    bl_idname = "surf_ramp_helper.ramp_cap"
-    bl_label = "Cap"
+class SRH_ramp_cap_start(Operator):
+    bl_idname = "surf_ramp_helper.ramp_cap_start"
+    bl_label = "Cap Start"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        add_modifiers_ramp_cap(self, context)
+        add_modifiers_ramp_cap_start(self, context)
         return {'FINISHED'}
 
-class SRH_ramp_hull(Operator):
-    bl_idname = "surf_ramp_helper.ramp_hull"
-    bl_label = "Hull"
+class SRH_ramp_cap_end(Operator):
+    bl_idname = "surf_ramp_helper.ramp_cap_end"
+    bl_label = "Cap End"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        add_modifiers_ramp_hull(self, context)
+        add_modifiers_ramp_cap_end(self, context)
         return {'FINISHED'}
-    
+
+class SRH_ramp_collision(Operator):
+    bl_idname = "surf_ramp_helper.ramp_collision"
+    bl_label = "Collision"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        add_modifiers_ramp_collision(self, context)
+        return {'FINISHED'}
+
 class SRH_clear_modifiers(Operator):
     bl_idname = "surf_ramp_helper.clear_modifiers"
     bl_label = "Clear"
@@ -153,22 +213,41 @@ class SRH_clear_modifiers(Operator):
 
 # <registering>
 def register():
-    #bpy.utils.register_class(SRH_panel_automatic)
+    bpy.utils.register_class(SRH_panel_automatic)
     bpy.utils.register_class(SRH_panel_manual)
-    bpy.utils.register_class(SRH_ramp_textured)
-    bpy.utils.register_class(SRH_ramp_cap)
-    bpy.utils.register_class(SRH_ramp_hull)
+    bpy.utils.register_class(SRH_panel_options)
+    bpy.utils.register_class(SRH_ramp_reference)
+    bpy.utils.register_class(SRH_ramp_cap_start)
+    bpy.utils.register_class(SRH_ramp_cap_end)
+    bpy.utils.register_class(SRH_ramp_collision)
     bpy.utils.register_class(SRH_clear_modifiers)
+
+    bpy.types.Scene.srh_change_names = BoolProperty(
+        name = "Change Names",
+        description = "Change names of objects when applying modifiers to them. Clear does not change these names back.",
+        default = False,
+    )
+
+    bpy.types.Scene.srh_source_settings = BoolProperty(
+        name = "Source Settings",
+        description = "Change Grid Subdivisions from 10 to 8, Clip Start from 0.1 to 1, and Clip End from 1000 to 100000",
+        default = False,
+        update = apply_source_settings,
+    )
 # </registering>
 
 # <unregistering>
 def unregister():
-    #bpy.utils.unregister_class(SRH_panel_automatic)
+    bpy.utils.unregister_class(SRH_panel_automatic)
     bpy.utils.unregister_class(SRH_panel_manual)
-    bpy.utils.unregister_class(SRH_ramp_textured)
-    bpy.utils.unregister_class(SRH_ramp_cap)
-    bpy.utils.unregister_class(SRH_ramp_hull)
+    bpy.utils.unregister_class(SRH_panel_options)
+    bpy.utils.unregister_class(SRH_ramp_reference)
+    bpy.utils.unregister_class(SRH_ramp_cap_start)
+    bpy.utils.unregister_class(SRH_ramp_cap_end)
+    bpy.utils.unregister_class(SRH_ramp_collision)
     bpy.utils.unregister_class(SRH_clear_modifiers)
+    del bpy.types.Scene.srh_change_names
+    del bpy.types.Scene.srh_source_settings
 # </unregistering>
 
 # <main>
