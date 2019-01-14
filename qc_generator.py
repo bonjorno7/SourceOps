@@ -1,5 +1,7 @@
 # <libraries>
+import os
 import bpy
+import bpy_extras
 from . import common
 # </libraries>
 
@@ -17,12 +19,10 @@ class BSE_QC_GENERATOR_Panel(bpy.types.Panel):
         common.add_prop(self, "Model Name", scope, "model_name")
         common.add_prop(self, "Reference", scope, "reference")
         common.add_prop(self, "Collision", scope, "collision")
-        common.add_prop(self, "Animation", scope, "animation")
         common.add_prop(self, "Model Path", scope, "model_path")
         common.add_prop(self, "Material Path", scope, "material_path")
         common.add_prop(self, "Surface Property", scope, "surface_property")
         self.layout.operator("bse.qc_generator_generate_qc")
-        self.layout.operator("bse.qc_generator_delete_qc")
 
 class BSE_QC_GENERATOR_PropertyGroup(bpy.types.PropertyGroup):
     model_name = bpy.props.StringProperty(
@@ -33,34 +33,28 @@ class BSE_QC_GENERATOR_PropertyGroup(bpy.types.PropertyGroup):
 
     reference = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Reference mesh here.",
+        description = "Select your Reference mesh here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     collision = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Reference mesh here.",
+        description = "Select your Reference mesh here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
-    animation = bpy.props.PointerProperty(
-        name = "",
-        description = "Choose your animation mesh here, leave empty for static prop",
-        type = bpy.types.Object,
-    )
-
     model_path = bpy.props.StringProperty(
         name = "",
-        description = "The folder where your compiled model goes, eg props\\example",
-        default = "props\\example",
+        description = "The folder where your compiled model goes, eg props/example",
+        default = "props/example",
     )
 
     material_path = bpy.props.StringProperty(
         name = "",
-        description = "The folder with your model's materials, eg models\\props\\example",
-        default = "models\\props\\example",
+        description = "The folder with your model's materials, eg models/props/example",
+        default = "models/props/example",
     )
 
     surface_property = bpy.props.EnumProperty(
@@ -69,34 +63,43 @@ class BSE_QC_GENERATOR_PropertyGroup(bpy.types.PropertyGroup):
         items = common.surface_properties,
     )
 
-class BSE_QC_GENERATOR_GenerateQC(bpy.types.Operator):
+class BSE_QC_GENERATOR_GenerateQC(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     """Generate a QC file based on your settings"""
     bl_idname = "bse.qc_generator_generate_qc"
     bl_label = "Generate QC"
     bl_options = {'REGISTER', 'UNDO'}
+    filename_ext = ".qc"
 
-    def execute(self, context):
+    filter_glob = bpy.props.StringProperty(
+        default = "*.qc",
+        options = {'HIDDEN'},
+        maxlen = 255,
+    )
+
+    @classmethod
+    def poll(cls, context):
         scope = context.scene.BSE_QC_GENERATOR_properties
-        model_name = scope.model_name # get rid of a file extension if the user adds one, since I'm adding that one automatically later
-        reference = scope.reference
-        collision = scope.collision
-        animation = scope.animation
-        model_path = scope.model_path
-        material_path = scope.material_path
-        surface_property = scope.surface_property
-        # put code to generate the qc and create the file here
-        return {'FINISHED'}
-
-class BSE_QC_GENERATOR_DeleteQC(bpy.types.Operator):
-    """Delete the QC file with your Model's name"""
-    bl_idname = "bse.qc_generator_delete_qc"
-    bl_label = "Delete QC"
-    bl_options = {'REGISTER', 'UNDO'}
+        return scope.model_name and scope.reference and scope.collision and scope.model_path and scope.material_path and scope.surface_property
 
     def execute(self, context):
         scope = context.scene.BSE_QC_GENERATOR_properties
         model_name = scope.model_name
-        # put code to delete the file here
+        reference = scope.reference.name
+        collision = scope.collision.name
+        model_path = common.replace_slashes(scope.model_path)
+        material_path = common.replace_slashes(scope.material_path)
+        surface_property = scope.surface_property
+
+        f = open(self.filepath, 'w', encoding='utf-8')
+        f.write("$modelname \"" + os.path.join(model_path, model_name) + "\"\n")
+        f.write("$body shell \"" + reference + "\"\n")
+        f.write("$collisionmodel \"" + collision + "\" { $concave $maxconvexpieces 1000 }\n")
+        f.write("$sequence idle \"" + reference + "\"\n")
+        f.write("$cdmaterials \"" + material_path + "\"\n")
+        f.write("$surfaceprop \"" + surface_property + "\"\n")
+        f.write("$staticprop")
+        f.close()
+
         return {'FINISHED'}
 # </classes>
 
@@ -105,7 +108,6 @@ classes = (
     BSE_QC_GENERATOR_Panel,
     BSE_QC_GENERATOR_PropertyGroup,
     BSE_QC_GENERATOR_GenerateQC,
-    BSE_QC_GENERATOR_DeleteQC,
 )
 
 def register():

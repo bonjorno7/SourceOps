@@ -4,9 +4,9 @@ bl_info = {
     "name" : "Blender Source Extras",
     "description" : "Simple add-on to augment Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 6),
+    "version" : (0, 7),
     "location" : "3D View > Sidebar",
-    "category" : "",
+    "category" : "Extra",
     "warning" : "",
 }
 # </definition>

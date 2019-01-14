@@ -25,35 +25,35 @@ class BSE_RAMP_TOOL_Panel(bpy.types.Panel):
 class BSE_RAMP_TOOL_PropertyGroup(bpy.types.PropertyGroup):
     reference = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Ramp Reference object here.",
+        description = "Select your Ramp Reference object here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     cap_start = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Ramp Cap Start object here.",
+        description = "Select your Ramp Cap Start object here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     cap_end = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Ramp Cap End object here.",
+        description = "Select your Ramp Cap End object here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     collision = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Ramp Collision object here.",
+        description = "Select your Ramp Collision object here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     curve = bpy.props.PointerProperty(
         name = "",
-        description = "Select your Ramp Curve object here.",
+        description = "Select your Ramp Curve object here",
         type = bpy.types.Object,
         poll = common.is_curve,
     )
