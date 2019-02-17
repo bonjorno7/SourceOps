@@ -4,7 +4,7 @@ bl_info = {
     "name" : "Blender Add-on for Source Engine",
     "description" : "Alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 2, 0),
+    "version" : (0, 2, 1),
     "location" : "3D View > Sidebar",
     "category" : "Import / Export",
     "warning" : "",
@@ -20,20 +20,25 @@ from . import modeling as mo
 
 # <classes>
 class Properties(bpy.types.PropertyGroup):
-    settings = bpy.props.PointerProperty(type = se.Settings)
+    """Global variables for this add-on"""
+    settings: bpy.props.PointerProperty(type = se.Settings)
 
-    models = bpy.props.CollectionProperty(type = me.Model)
-    model_index = bpy.props.IntProperty(name = "", default = 0)
+    models: bpy.props.CollectionProperty(type = me.Model)
+    model_index: bpy.props.IntProperty(name = "", default = 0)
 
-    surf_ramp = bpy.props.PointerProperty(type = mo.SurfRamp)
+    surf_ramp: bpy.props.PointerProperty(type = mo.SurfRamp)
 # </classes>
 
 # <variables>
 classes = (
     se.Game, se.Settings, me.Mesh, me.MatDir, me.Model, mo.SurfRamp,
-    se.GameList, se.GameAdd, se.GameRemove, se.SettingsPanel,
-    me.ModelList, me.ModelAdd, me.ModelRemove, me.MeshList, me.MeshAdd, me.MeshRemove, me.MatDirList, me.MatDirAdd, me.MatDirRemove, me.ModelExport, me.ModelView, me.ModelExportPanel,
-    mo.SurfRampModify, mo.GenerateCollision, mo.ModelingPanel,
+    se.GameList, se.GameAdd, se.GameRemove,
+    me.ModelList, me.ModelAdd, me.ModelRemove,
+    me.MeshList, me.MeshAdd, me.MeshRemove,
+    me.MatDirList, me.MatDirAdd, me.MatDirRemove,
+    me.ModelExport, me.ModelView,
+    mo.SurfRampModify, mo.GenerateCollision,
+    se.SettingsPanel, me.ModelExportPanel, mo.ModelingPanel,
     Properties,
 )
 

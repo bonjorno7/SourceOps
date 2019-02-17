@@ -1,49 +1,51 @@
 # <import>
-import os, math, array, subprocess
+import os, subprocess
 import bpy, bmesh
-from mathutils import Vector
 from . import common
 # </import>
 
 # </types>
 class Mesh(bpy.types.PropertyGroup):
-    mesh = bpy.props.PointerProperty(
+    """Properties for a mesh"""
+    obj: bpy.props.PointerProperty(
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
-    kind = bpy.props.EnumProperty(items = (
+    kind: bpy.props.EnumProperty(items = (
         ('REFERENCE', "REF", "Reference"),
         ('COLLISION', "COL", "Collision"),
     ))
 
 class MatDir(bpy.types.PropertyGroup):
-    name = bpy.props.StringProperty(
+    """Properties for a material folder"""
+    name: bpy.props.StringProperty(
         name = "",
         description = "Material path, eg models\\props\\example",
         default = "models\\props\\example",
     )
 
 class Model(bpy.types.PropertyGroup):
-    meshes = bpy.props.CollectionProperty(type = Mesh)
-    mesh_index = bpy.props.IntProperty(name = "", default = 0)
+    """Properties for a model"""
+    meshes: bpy.props.CollectionProperty(type = Mesh)
+    mesh_index: bpy.props.IntProperty(name = "", default = 0)
 
-    matdirs = bpy.props.CollectionProperty(type = MatDir)
-    matdir_index = bpy.props.IntProperty(name = "", default = 0)
+    matdirs: bpy.props.CollectionProperty(type = MatDir)
+    matdir_index: bpy.props.IntProperty(name = "", default = 0)
 
-    name = bpy.props.StringProperty(
+    name: bpy.props.StringProperty(
         name = "",
         description = "Your model's path, eg props\\example\\model (do not add the file extension)",
         default = "props\\example\\model",
     )
 
-    surface_property = bpy.props.EnumProperty(
+    surface_property: bpy.props.EnumProperty(
         name = "",
         description = "Choose the substance your model is made out of, this affects decals and how it sounds in game",
         items = common.surface_properties,
     )
 
-    weighted_normals = bpy.props.BoolProperty(
+    weighted_normals: bpy.props.BoolProperty(
         name = "",
         description = "Should this model use weighted normals, meaning the larger the face the bigger influence it has on the vertex normal",
         default = True,
@@ -56,13 +58,13 @@ class MeshList(bpy.types.UIList):
     bl_idname = "base.mesh_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         row = layout.row().split(factor = 0.6)
-        row.label(text = item.mesh.name)
+        row.label(text = item.obj.name)
         row.split().row().prop(item, "kind", expand = True)
 
 class MeshAdd(bpy.types.Operator):
     """Add selected objects as meshes to this model"""
     bl_idname = "base.mesh_add"
-    bl_label = ""
+    bl_label = "Add Mesh"
 
     def execute(self, context):
         model = context.scene.BASE.models[context.scene.BASE.model_index]
@@ -70,18 +72,18 @@ class MeshAdd(bpy.types.Operator):
             if o.type == 'MESH':
                 duplicate = False
                 for m in model.meshes:
-                    if m.mesh == o:
+                    if m.obj == o:
                         duplicate = True
                 if not duplicate:
                     model.meshes.add()
                     mesh = model.meshes[len(model.meshes) - 1]
-                    mesh.mesh = o
+                    mesh.obj = o
         return {'FINISHED'}
 
 class MeshRemove(bpy.types.Operator):
     """Remove selected mesh from the list"""
     bl_idname = "base.mesh_remove"
-    bl_label = ""
+    bl_label = "Remove Mesh"
 
     @classmethod
     def poll(cls, context):
@@ -105,7 +107,7 @@ class MatDirList(bpy.types.UIList):
 class MatDirAdd(bpy.types.Operator):
     """Add a new material path to this model"""
     bl_idname = "base.matdir_add"
-    bl_label = ""
+    bl_label = "Add Material Folder"
 
     def execute(self, context):
         model = context.scene.BASE.models[context.scene.BASE.model_index]
@@ -115,7 +117,7 @@ class MatDirAdd(bpy.types.Operator):
 class MatDirRemove(bpy.types.Operator):
     """Remove the selected material path from this model"""
     bl_idname = "base.matdir_remove"
-    bl_label = ""
+    bl_label = "Remove Material Folder"
 
     @classmethod
     def poll(cls, context):
@@ -139,7 +141,7 @@ class ModelList(bpy.types.UIList):
 class ModelAdd(bpy.types.Operator):
     """Create a model"""
     bl_idname = "base.model_add"
-    bl_label = ""
+    bl_label = "Add Model"
 
     def execute(self, context):
         context.scene.BASE.models.add()
@@ -148,7 +150,7 @@ class ModelAdd(bpy.types.Operator):
 class ModelRemove(bpy.types.Operator):
     """Remove the selected model"""
     bl_idname = "base.model_remove"
-    bl_label = ""
+    bl_label = "Remove Model"
 
     @classmethod
     def poll(cls, context):
@@ -178,8 +180,8 @@ class ModelExportPanel(bpy.types.Panel):
         row = box.row()
         row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 3)
         col = row.column(align = True)
-        col.operator("base.model_add", icon = 'ADD')
-        col.operator("base.model_remove", icon = 'REMOVE')
+        col.operator("base.model_add", text = "", icon = 'ADD')
+        col.operator("base.model_remove", text = "", icon = 'REMOVE')
 
         models = context.scene.BASE.models
         model_index = context.scene.BASE.model_index
@@ -194,16 +196,16 @@ class ModelExportPanel(bpy.types.Panel):
             row = box.row()
             row.template_list("base.mesh_list", "", model, "meshes", model, "mesh_index", rows = 3)
             col = row.column(align = True)
-            col.operator("base.mesh_add", icon = 'ADD')
-            col.operator("base.mesh_remove", icon = 'REMOVE')
+            col.operator("base.mesh_add", text = "", icon = 'ADD')
+            col.operator("base.mesh_remove", text = "", icon = 'REMOVE')
 
             box = self.layout.box()
             box.label(text = "Material Folders", icon = 'FILE_FOLDER')
             row = box.row()
             row.template_list("base.matdir_list", "", model, "matdirs", model, "matdir_index", rows = 3)
             col = row.column(align = True)
-            col.operator("base.matdir_add", icon = 'ADD')
-            col.operator("base.matdir_remove", icon = 'REMOVE')
+            col.operator("base.matdir_add", text = "", icon = 'ADD')
+            col.operator("base.matdir_remove", text = "", icon = 'REMOVE')
 
             box = self.layout.box()
             box.label(text = "Export", icon = 'FILE')
@@ -237,14 +239,16 @@ class ModelExport(bpy.types.Operator):
         return False
 
     def refresh_meshes(self, model):
+        """Refresh the list of meshes for this model, remove ones that don't exist anymore"""
         meshes_to_remove = []
         for i, m in enumerate(model.meshes):
-            if not m.mesh.users_scene:
+            if not m.obj.users_scene:
                 meshes_to_remove.append(i)
         for i in reversed(meshes_to_remove):
             model.meshes.remove(i)
 
     def write_smd_header(self, smd):
+        """Write the header for this SMD file, including the required dummy skeleton and animation data"""
         smd.write("version 1\n")
         smd.write("nodes\n")
         smd.write("0 \"blender_implicit\" -1\n")
@@ -257,6 +261,7 @@ class ModelExport(bpy.types.Operator):
         smd.write("end\n")
 
     def export_meshes(self, context, directory):
+        """Export this model's meshes as SMD"""
         settings = context.scene.BASE.settings
         scale = settings.scale
         model = context.scene.BASE.models[context.scene.BASE.model_index]
@@ -268,16 +273,16 @@ class ModelExport(bpy.types.Operator):
 
         for mesh in model.meshes:
             if mesh.kind == 'REFERENCE':
-                references.append(mesh.mesh)
+                references.append(mesh.obj)
             if mesh.kind == 'COLLISION':
-                collisions.append(mesh.mesh)
+                collisions.append(mesh.obj)
 
         ref = open(directory + "reference.smd", "w+")
         self.write_smd_header(ref)
         ref.write("triangles\n")
 
-        for mesh in references:
-            temp = mesh.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
+        for obj in references:
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
             common.triangulate(temp)
             common.split_sharp(temp)
             bm = bmesh.new()
@@ -285,8 +290,8 @@ class ModelExport(bpy.types.Operator):
 
             for face in bm.faces:
                 material_name = "no_material"
-                if face.material_index < len(mesh.material_slots):
-                    material = mesh.material_slots[face.material_index].material
+                if face.material_index < len(obj.material_slots):
+                    material = obj.material_slots[face.material_index].material
                     if material != None: material_name = material.name
                 ref.write(material_name + "\n")
 
@@ -294,7 +299,7 @@ class ModelExport(bpy.types.Operator):
                     ref.write("0" + "    ")
                     ref.write(str(-vert.co[1] * scale) + " " + str(vert.co[0] * scale) + " " + str(vert.co[2] * scale) + "    ")
 
-                    normal = common.calculate_normal(vert, model.weighted_normals)
+                    normal = common.weighted_normal(vert) if model.weighted_normals else vert.normal
                     ref.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
 
                     uv_layers = bm.loops.layers.uv
@@ -314,8 +319,8 @@ class ModelExport(bpy.types.Operator):
         self.write_smd_header(col)
         col.write("triangles\n")
 
-        for mesh in collisions:
-            temp = mesh.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
+        for obj in collisions:
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
             common.triangulate(temp)
             bm = bmesh.new()
             bm.from_mesh(temp)
@@ -342,6 +347,7 @@ class ModelExport(bpy.types.Operator):
         return True
 
     def generate_qc(self, context, directory):
+        """Generate the QC for this model"""
         model = context.scene.BASE.models[context.scene.BASE.model_index]
         modelname = model.name
         if not modelname.lower().endswith(".mdl"):

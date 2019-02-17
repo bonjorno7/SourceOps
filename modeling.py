@@ -3,30 +3,77 @@ import bpy, bmesh, mathutils
 from . import common
 # </libraries>
 
+# <collision generator>
+class GenerateCollision(bpy.types.Operator):
+    """Generate flawless but expensive collision meshes for the selected objects"""
+    bl_idname = "base.surf_ramp_generate_collision"
+    bl_label = "Generate Collision"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def generate_collision(self, bm, matrix, scale):
+        """Turn the bmesh into a collision mesh"""
+        bmesh.ops.triangulate(bm, faces = bm.faces)
+        bmesh.ops.split_edges(bm, edges = bm.edges)
+
+        geom = bmesh.ops.extrude_face_region(bm, geom = bm.faces)
+        faces = [item for item in geom['geom'] if isinstance(item, bmesh.types.BMFace)]
+
+        for face in faces:
+            vec = face.normal * -8 / scale
+            bmesh.ops.translate(bm, vec = vec, space = matrix, verts = face.verts)
+
+            avg = mathutils.Vector()
+            for vert in face.verts: avg += vert.co / 3
+            bmesh.ops.pointmerge(bm, verts = face.verts, merge_co = avg)
+
+        bmesh.ops.recalc_face_normals(bm, faces = bm.faces)
+        for face in bm.faces: face.smooth = True
+
+    def execute(self, context):
+        """Iterate through all selected objects and make collision meshes for them"""
+        scale = context.scene.BASE.settings.scale
+
+        for obj in context.selected_objects:
+            if obj.type != 'MESH': continue
+            bm = bmesh.new()
+            bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = True))
+
+            mesh = bpy.data.meshes.new(name = obj.data.name + ".col")
+            self.generate_collision(bm, obj.matrix_world, scale)
+            bm.to_mesh(mesh)
+
+            collision = bpy.data.objects.new(obj.name + ".col", mesh)
+            collection = common.find_collection(context, obj)
+            collection.objects.link(collision)
+
+        return {'FINISHED'}
+# </collision generator>
+
 # <surf ramp tool>
 class SurfRamp(bpy.types.PropertyGroup):
-    curve = bpy.props.PointerProperty(
+    """Properties for the Surf Ramp Tool"""
+    curve: bpy.props.PointerProperty(
         name = "",
         description = "Select your Ramp Curve object here",
         type = bpy.types.Object,
         poll = common.is_curve,
     )
 
-    segment = bpy.props.PointerProperty(
+    segment: bpy.props.PointerProperty(
         name = "",
         description = "Select your Ramp Reference mesh here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
-    start_cap = bpy.props.PointerProperty(
+    start_cap: bpy.props.PointerProperty(
         name = "",
         description = "Select your Reference Start Cap here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
-    end_cap = bpy.props.PointerProperty(
+    end_cap: bpy.props.PointerProperty(
         name = "",
         description = "Select your Reference End Cap here",
         type = bpy.types.Object,
@@ -39,7 +86,7 @@ class SurfRampModify(bpy.types.Operator):
     bl_label = ""
     bl_options = {"REGISTER", "UNDO"}
 
-    kind = bpy.props.EnumProperty(items = (
+    kind: bpy.props.EnumProperty(items = (
         ('REFERENCE', "Reference", "Visible in game but not tangible"),
         ('COLLISION', "Collision", "Tangible in game but not visible"),
         ('CLEAR', "Clear", "Remove modifiers"),
@@ -73,51 +120,6 @@ class SurfRampModify(bpy.types.Operator):
 
         return {"FINISHED"}
 # </surf ramp tool>
-
-# <collision generator>
-class GenerateCollision(bpy.types.Operator):
-    """Generate flawless but expensive collision meshes for the selected objects"""
-    bl_idname = "base.surf_ramp_generate_collision"
-    bl_label = "Generate Collision"
-    bl_options = {"REGISTER", "UNDO"}
-
-    def generate_collision(self, bm, matrix, scale):
-        bmesh.ops.triangulate(bm, faces = bm.faces)
-        bmesh.ops.split_edges(bm, edges = bm.edges)
-
-        geom = bmesh.ops.extrude_face_region(bm, geom = bm.faces)
-        faces = [item for item in geom['geom'] if isinstance(item, bmesh.types.BMFace)]
-
-        for face in faces:
-            vec = face.normal * -8 / scale
-            bmesh.ops.translate(bm, vec = vec, space = matrix, verts = face.verts)
-
-            avg = mathutils.Vector()
-            for vert in face.verts: avg += vert.co / 3
-            bmesh.ops.pointmerge(bm, verts = face.verts, merge_co = avg)
-
-        bmesh.ops.recalc_face_normals(bm, faces = bm.faces)
-        for face in bm.faces: face.smooth = True
-
-    def execute(self, context):
-        scale = context.scene.BASE.settings.scale
-
-        for obj in context.selected_objects:
-            if obj.type != 'MESH': continue
-            bm = bmesh.new()
-            bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = True))
-
-            mesh = bpy.data.meshes.new(name = obj.data.name + ".col")
-            self.generate_collision(bm, obj.matrix_world, scale)
-            bm.to_mesh(mesh)
-
-            collision = bpy.data.objects.new(obj.name + ".col", mesh)
-            collection = common.find_collection(context, obj)
-            collection.objects.link(collision)
-
-        return {'FINISHED'}
-
-# </collision generator>
 
 # <panel>
 class ModelingPanel(bpy.types.Panel):

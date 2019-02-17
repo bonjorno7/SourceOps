@@ -5,13 +5,14 @@ from . import common
 
 # </types>
 class Game(bpy.types.PropertyGroup):
-    name = bpy.props.StringProperty(
+    """Properties for a game"""
+    name: bpy.props.StringProperty(
         name = "",
         description = "Name of the game you're exporting for",
         default = "Game Name",
     )
 
-    path = bpy.props.StringProperty(
+    path: bpy.props.StringProperty(
         name = "",
         description = "Path to your game's gameinfo.txt",
         default = "",
@@ -19,10 +20,11 @@ class Game(bpy.types.PropertyGroup):
     )
 
 class Settings(bpy.types.PropertyGroup):
-    games = bpy.props.CollectionProperty(type = Game)
-    game_index = bpy.props.IntProperty(name = "", default = 0)
+    """Properties for the Settings panel"""
+    games: bpy.props.CollectionProperty(type = Game)
+    game_index: bpy.props.IntProperty(name = "", default = 0)
 
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name = "",
         description = "Factor to scale your models by for export",
         default = 1.0,
@@ -39,7 +41,7 @@ class GameList(bpy.types.UIList):
 class GameAdd(bpy.types.Operator):
     """Add a game"""
     bl_idname = "base.game_add"
-    bl_label = ""
+    bl_label = "Add Game"
 
     def execute(self, context):
         settings = context.scene.BASE.settings
@@ -49,7 +51,7 @@ class GameAdd(bpy.types.Operator):
 class GameRemove(bpy.types.Operator):
     """Remove the selected game from the list"""
     bl_idname = "base.game_remove"
-    bl_label = ""
+    bl_label = "Remove Game"
 
     @classmethod
     def poll(cls, context):
@@ -86,8 +88,8 @@ class SettingsPanel(bpy.types.Panel):
         row = box.row()
         row.template_list("base.game_list", "", settings, "games", settings, "game_index", rows = 3)
         col = row.column(align = True)
-        col.operator("base.game_add", icon = 'ADD')
-        col.operator("base.game_remove", icon = 'REMOVE')
+        col.operator("base.game_add", text = "", icon = 'ADD')
+        col.operator("base.game_remove", text = "", icon = 'REMOVE')
 
         games = settings.games
         game_index = settings.game_index

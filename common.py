@@ -1,21 +1,24 @@
 # <import>
-import bpy, bmesh
-from mathutils import Vector
+import bpy, bmesh, mathutils
 # </import>
 
 # <functions>
 def is_mesh(self, obj):
+    """Return whether the object is a mesh type"""
     return obj.type == 'MESH'
 
 def is_curve(self, obj):
+    """Return whether the object is a curve type"""
     return obj.type == 'CURVE'
 
 def add_prop(layout, label, scope, prop):
+    """Add a property to a panel with a label before it"""
     row = layout.row().split(factor = 0.5)
     row.label(text = label)
     row.split().row().prop(scope, prop, text = "")
 
 def triangulate(me):
+    """Triangulate the mesh"""
     bm = bmesh.new()
     bm.from_mesh(me)
     bmesh.ops.triangulate(bm, faces = bm.faces)
@@ -23,6 +26,7 @@ def triangulate(me):
     bm.free()
 
 def split_sharp(me):
+    """Split sharp edges, both those marked manually and those determined by autosmooth"""
     me.split_faces()
     bm = bmesh.new()
     bm.from_mesh(me)
@@ -31,23 +35,21 @@ def split_sharp(me):
     bm.to_mesh(me)
     bm.free()
 
-def calculate_normal(vert, weighted):
-    normal = Vector([0, 0, 0])
+def weighted_normal(vert):
+    """Calucate a normal for this vertex based on the faces surrounding it, influence weighted by the area of each faces"""
     link_faces = vert.link_faces
     face_normals = [face.normal for face in link_faces]
+    face_areas = [face.calc_area() for face in link_faces]
 
-    if weighted:
-        face_areas = [face.calc_area() for face in link_faces]
-        for n, a in zip(face_normals, face_areas):
-            normal += n * a
-    else:
-        for n in face_normals:
-            normal += n
+    normal = mathutils.Vector()
+    for n, a in zip(face_normals, face_areas):
+        normal += n * a
 
     normal.normalize()
     return normal
 
 def find_collection(context, item):
+    """Return the first collection this item is in, if none return the scene collection"""
     collections = item.users_collection
     if len(collections) > 0:
         return collections[0]
