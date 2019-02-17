@@ -1,32 +1,58 @@
-# <libraries>
-import os
-import bpy
-# </libraries>
+# <import>
+import bpy, bmesh
+from mathutils import Vector
+# </import>
 
-#<functions>
+# <functions>
 def is_mesh(self, obj):
     return obj.type == 'MESH'
 
 def is_curve(self, obj):
     return obj.type == 'CURVE'
 
-def add_prop(self, label, scope, prop):
-    r = self.layout.row()
-    s = r.split(factor = 0.4)
-    c = s.column()
-    c.label(text = label)
-    s = s.split()
-    c = s.column()
-    c.prop(scope, prop)
+def add_prop(layout, label, scope, prop):
+    row = layout.row().split(factor = 0.5)
+    row.label(text = label)
+    row.split().row().prop(scope, prop, text = "")
 
-def replace_slashes(path):
-    wrong_slash = "\\" if os.sep == "/" else "/"
-    new_path = ""
-    for c in path:
-        if c == wrong_slash: new_path += os.sep
-        else: new_path += c
-    return new_path
-#</functions>
+def triangulate(me):
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.triangulate(bm, faces = bm.faces)
+    bm.to_mesh(me)
+    bm.free()
+
+def split_sharp(me):
+    me.split_faces()
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    edges = [edge for edge in bm.edges if not edge.smooth]
+    bmesh.ops.split_edges(bm, edges = edges)
+    bm.to_mesh(me)
+    bm.free()
+
+def calculate_normal(vert, weighted):
+    normal = Vector([0, 0, 0])
+    link_faces = vert.link_faces
+    face_normals = [face.normal for face in link_faces]
+
+    if weighted:
+        face_areas = [face.calc_area() for face in link_faces]
+        for n, a in zip(face_normals, face_areas):
+            normal += n * a
+    else:
+        for n in face_normals:
+            normal += n
+
+    normal.normalize()
+    return normal
+
+def find_collection(context, item):
+    collections = item.users_collection
+    if len(collections) > 0:
+        return collections[0]
+    return context.scene.collection
+# </functions>
 
 # <variables>
 surface_properties = [

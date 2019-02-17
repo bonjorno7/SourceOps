@@ -1,37 +1,54 @@
 # <definition>
 bl_info = {
     "blender" : (2, 80, 0),
-    "name" : "Blender Source Extras",
-    "description" : "Simple add-on to augment Blender Source Tools",
+    "name" : "Blender Add-on for Source Engine",
+    "description" : "Alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 7),
+    "version" : (0, 1, 9),
     "location" : "3D View > Sidebar",
-    "category" : "Extra",
+    "category" : "Import / Export",
     "warning" : "",
 }
 # </definition>
 
-# <libraries>
-from . import options
-from . import qc_generator
-from . import ramp_tool
-# </libraries>
+# <import>
+import bpy
+from . import settings as se
+from . import model_export as me
+from . import modeling as mo
+# </import>
 
-# <registering>
+# <classes>
+class Properties(bpy.types.PropertyGroup):
+    settings = bpy.props.PointerProperty(type = se.Settings)
+
+    models = bpy.props.CollectionProperty(type = me.Model)
+    model_index = bpy.props.IntProperty(name = "", default = 0)
+
+    surf_ramp = bpy.props.PointerProperty(type = mo.SurfRamp)
+# </classes>
+
+# <variables>
+classes = (
+    se.Game, se.Settings, me.Mesh, me.MatDir, me.Model, mo.SurfRamp,
+    se.GameList, se.GameAdd, se.GameRemove, se.SettingsPanel,
+    me.ModelList, me.ModelAdd, me.ModelRemove, me.MeshList, me.MeshAdd, me.MeshRemove, me.MatDirList, me.MatDirAdd, me.MatDirRemove, me.ModelExport, me.ModelView, me.ModelExportPanel,
+    mo.SurfRampModify, mo.GenerateCollision, mo.ModelingPanel,
+    Properties,
+)
+
+register_classes, unregister_classes = bpy.utils.register_classes_factory(classes)
+# </variables>
+
+# <functions>
 def register():
-    options.register()
-    qc_generator.register()
-    ramp_tool.register()
-# </registering>
+    register_classes()
+    bpy.types.Scene.BASE = bpy.props.PointerProperty(type = Properties)
 
-# <unregistering>
 def unregister():
-    options.unregister()
-    qc_generator.unregister()
-    ramp_tool.unregister()
-# </unregistering>
+    unregister_classes()
+    del bpy.types.Scene.BASE
 
-# <main>
 if __name__ == "__main__":
     register()
-# </main>
+# </functions>
