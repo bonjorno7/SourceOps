@@ -4,7 +4,7 @@ bl_info = {
     "name" : "Blender Add-on for Source Engine",
     "description" : "Alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 1, 9),
+    "version" : (0, 2, 0),
     "location" : "3D View > Sidebar",
     "category" : "Import / Export",
     "warning" : "",
