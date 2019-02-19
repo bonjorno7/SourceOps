@@ -4,13 +4,45 @@ from . import common
 # </libraries>
 
 # <collision generator>
+class CollisionSettings(bpy.types.PropertyGroup):
+    """Properties used by the collision generator"""
+    target: bpy.props.EnumProperty(
+        name = "Target Object",
+        description = "The object to put the collision mesh in",
+        items = (
+            ('NEW', "New", "Create new objects for the collision meshes"),
+            ('SELF', "Self", "Overwrite the objects with collision meshes"),
+        ),
+        default = 'NEW',
+    )
+
+    modifiers: bpy.props.EnumProperty(
+        name = "Modifiers",
+        description = "What to do with the original object's modifiers",
+        items = (
+            ('APPLY', "Apply", "Apply the object's modifiers before generating the collision mesh"),
+            ('IGNORE', "Ignore", "Ignore the object's modifiers, keep them if target is self"),
+        ),
+        default = 'APPLY',
+    )
+
+    thickness: bpy.props.FloatProperty(
+        name = "Thickness",
+        description = "Thickness of the collision bodies in hammer units",
+        default = 8,
+    )
+
 class GenerateCollision(bpy.types.Operator):
     """Generate flawless but expensive collision meshes for the selected objects"""
     bl_idname = "base.surf_ramp_generate_collision"
     bl_label = "Generate Collision"
     bl_options = {"REGISTER", "UNDO"}
 
-    def generate_collision(self, bm, matrix, scale):
+    @classmethod
+    def poll(cls, context):
+        return context.selected_objects
+
+    def generate_collision(self, bm, matrix, distance):
         """Turn the bmesh into a collision mesh"""
         bmesh.ops.triangulate(bm, faces = bm.faces)
         bmesh.ops.split_edges(bm, edges = bm.edges)
@@ -19,7 +51,7 @@ class GenerateCollision(bpy.types.Operator):
         faces = [item for item in geom['geom'] if isinstance(item, bmesh.types.BMFace)]
 
         for face in faces:
-            vec = face.normal * -8 / scale
+            vec = face.normal * -distance
             bmesh.ops.translate(bm, vec = vec, space = matrix, verts = face.verts)
 
             avg = mathutils.Vector()
@@ -32,19 +64,30 @@ class GenerateCollision(bpy.types.Operator):
     def execute(self, context):
         """Iterate through all selected objects and make collision meshes for them"""
         scale = context.scene.BASE.settings.scale
+        colset = context.scene.BASE.collision_settings
+        apply_modifiers = True if colset.modifiers == 'APPLY' else False
 
         for obj in context.selected_objects:
             if obj.type != 'MESH': continue
             bm = bmesh.new()
-            bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = True))
+            bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = apply_modifiers))
+            self.generate_collision(bm, obj.matrix_world, colset.thickness / scale)
 
-            mesh = bpy.data.meshes.new(name = obj.data.name + ".col")
-            self.generate_collision(bm, obj.matrix_world, scale)
-            bm.to_mesh(mesh)
+            if colset.target == 'NEW':
+                mesh = bpy.data.meshes.new(name = obj.data.name + ".col")
+                bm.to_mesh(mesh)
 
-            collision = bpy.data.objects.new(obj.name + ".col", mesh)
-            collection = common.find_collection(context, obj)
-            collection.objects.link(collision)
+                collision = bpy.data.objects.new(obj.name + ".col", mesh)
+                collection = common.find_collection(context, obj)
+                collection.objects.link(collision)
+
+            elif colset.target == 'SELF':
+                mesh = obj.data
+                bm.to_mesh(mesh)
+
+                obj.data.use_auto_smooth = False
+                if colset.modifiers == 'APPLY':
+                    obj.modifiers.clear()
 
         return {'FINISHED'}
 # </collision generator>
@@ -53,28 +96,28 @@ class GenerateCollision(bpy.types.Operator):
 class SurfRamp(bpy.types.PropertyGroup):
     """Properties for the Surf Ramp Tool"""
     curve: bpy.props.PointerProperty(
-        name = "",
+        name = "Curve",
         description = "Select your Ramp Curve object here",
         type = bpy.types.Object,
         poll = common.is_curve,
     )
 
     segment: bpy.props.PointerProperty(
-        name = "",
+        name = "Segment",
         description = "Select your Ramp Reference mesh here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     start_cap: bpy.props.PointerProperty(
-        name = "",
+        name = "Start Cap",
         description = "Select your Reference Start Cap here",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
     end_cap: bpy.props.PointerProperty(
-        name = "",
+        name = "End Cap",
         description = "Select your Reference End Cap here",
         type = bpy.types.Object,
         poll = common.is_mesh,
@@ -86,11 +129,15 @@ class SurfRampModify(bpy.types.Operator):
     bl_label = ""
     bl_options = {"REGISTER", "UNDO"}
 
-    kind: bpy.props.EnumProperty(items = (
-        ('REFERENCE', "Reference", "Visible in game but not tangible"),
-        ('COLLISION', "Collision", "Tangible in game but not visible"),
-        ('CLEAR', "Clear", "Remove modifiers"),
-    ))
+    kind: bpy.props.EnumProperty(
+        name = "Surf Ramp Type",
+        description = "Whether this surf ramp is Reference (visible) or Collision (tangible)",
+        items = (
+            ('REFERENCE', "Reference", "Visible in game but not tangible"),
+            ('COLLISION', "Collision", "Tangible in game but not visible"),
+            ('CLEAR', "Clear", "Remove modifiers"),
+        ),
+    )
 
     def execute(self, context):
         sr = context.scene.BASE.surf_ramp
@@ -133,6 +180,11 @@ class ModelingPanel(bpy.types.Panel):
     def draw(self, context):
         box = self.layout.box()
         box.label(text = "Collision", icon = 'MESH_ICOSPHERE')
+
+        colset = context.scene.BASE.collision_settings
+        common.add_enum(box, "Target", colset, "target")
+        common.add_enum(box, "Modifiers", colset, "modifiers")
+        common.add_prop(box, "Thickness", colset, "thickness")
         box.operator("base.surf_ramp_generate_collision")
 
         box = self.layout.box()

@@ -8,19 +8,25 @@ from . import common
 class Mesh(bpy.types.PropertyGroup):
     """Properties for a mesh"""
     obj: bpy.props.PointerProperty(
+        name = "Mesh Object",
+        description = "Object that holds the data for this mesh",
         type = bpy.types.Object,
         poll = common.is_mesh,
     )
 
-    kind: bpy.props.EnumProperty(items = (
-        ('REFERENCE', "REF", "Reference"),
-        ('COLLISION', "COL", "Collision"),
-    ))
+    kind: bpy.props.EnumProperty(
+        name = "Mesh Type",
+        description = "Whether this mesh should be Reference (visible) or Collision (tangible)",
+        items = (
+            ('REFERENCE', "REF", "Reference"),
+            ('COLLISION', "COL", "Collision"),
+        ),
+    )
 
 class MatDir(bpy.types.PropertyGroup):
     """Properties for a material folder"""
     name: bpy.props.StringProperty(
-        name = "",
+        name = "Material Folder Path",
         description = "Material path, eg models\\props\\example",
         default = "models\\props\\example",
     )
@@ -28,25 +34,25 @@ class MatDir(bpy.types.PropertyGroup):
 class Model(bpy.types.PropertyGroup):
     """Properties for a model"""
     meshes: bpy.props.CollectionProperty(type = Mesh)
-    mesh_index: bpy.props.IntProperty(name = "", default = 0)
+    mesh_index: bpy.props.IntProperty(default = 0)
 
     matdirs: bpy.props.CollectionProperty(type = MatDir)
-    matdir_index: bpy.props.IntProperty(name = "", default = 0)
+    matdir_index: bpy.props.IntProperty(default = 0)
 
     name: bpy.props.StringProperty(
-        name = "",
+        name = "Model Name",
         description = "Your model's path, eg props\\example\\model (do not add the file extension)",
         default = "props\\example\\model",
     )
 
     surface_property: bpy.props.EnumProperty(
-        name = "",
+        name = "Surface Property",
         description = "Choose the substance your model is made out of, this affects decals and how it sounds in game",
         items = common.surface_properties,
     )
 
     weighted_normals: bpy.props.BoolProperty(
-        name = "",
+        name = "Weighted Normals",
         description = "Should this model use weighted normals, meaning the larger the face the bigger influence it has on the vertex normal",
         default = True,
     )
@@ -102,7 +108,7 @@ class MatDirList(bpy.types.UIList):
     """List of material paths for this model"""
     bl_idname = "base.matdir_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, "name", emboss = False, translate = False)
+        layout.prop(item, "name", text = "", emboss = False, translate = False)
 
 class MatDirAdd(bpy.types.Operator):
     """Add a new material path to this model"""
@@ -136,7 +142,7 @@ class ModelList(bpy.types.UIList):
     """List of models"""
     bl_idname = "base.model_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, "name", emboss = False, translate = False)
+        layout.prop(item, "name", text = "", emboss = False, translate = False)
 
 class ModelAdd(bpy.types.Operator):
     """Create a model"""

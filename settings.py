@@ -7,13 +7,13 @@ from . import common
 class Game(bpy.types.PropertyGroup):
     """Properties for a game"""
     name: bpy.props.StringProperty(
-        name = "",
+        name = "Game Name",
         description = "Name of the game you're exporting for",
         default = "Game Name",
     )
 
     path: bpy.props.StringProperty(
-        name = "",
+        name = "Game Path",
         description = "Path to your game's gameinfo.txt",
         default = "",
         subtype = 'FILE_PATH',
@@ -22,10 +22,10 @@ class Game(bpy.types.PropertyGroup):
 class Settings(bpy.types.PropertyGroup):
     """Properties for the Settings panel"""
     games: bpy.props.CollectionProperty(type = Game)
-    game_index: bpy.props.IntProperty(name = "", default = 0)
+    game_index: bpy.props.IntProperty(default = 0)
 
     scale: bpy.props.FloatProperty(
-        name = "",
+        name = "Model Scale",
         description = "Factor to scale your models by for export",
         default = 1.0,
     )
@@ -36,7 +36,7 @@ class GameList(bpy.types.UIList):
     """List of games"""
     bl_idname = "base.game_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, "name", emboss = False, translate = False)
+        layout.prop(item, "name", text = "", emboss = False, translate = False)
 
 class GameAdd(bpy.types.Operator):
     """Add a game"""
