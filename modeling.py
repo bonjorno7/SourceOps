@@ -126,44 +126,34 @@ class SurfRamp(bpy.types.PropertyGroup):
 class SurfRampModify(bpy.types.Operator):
     """Add the appropriate modifiers to the chosen objects"""
     bl_idname = "base.surf_ramp_modify"
-    bl_label = ""
+    bl_label = "Add Modifiers"
     bl_options = {"REGISTER", "UNDO"}
 
-    kind: bpy.props.EnumProperty(
-        name = "Surf Ramp Type",
-        description = "Whether this surf ramp is Reference (visible) or Collision (tangible)",
-        items = (
-            ('REFERENCE', "Reference", "Visible in game but not tangible"),
-            ('COLLISION', "Collision", "Tangible in game but not visible"),
-            ('CLEAR', "Clear", "Remove modifiers"),
-        ),
-    )
+    @classmethod
+    def poll(cls, context):
+        sr = context.scene.BASE.surf_ramp
+        return sr.curve and sr.segment
 
     def execute(self, context):
         sr = context.scene.BASE.surf_ramp
-        if not sr.segment: return {"FINISHED"}
         sr.segment.modifiers.clear()
-        if self.kind == 'CLEAR': return {"FINISHED"}
 
         array = sr.segment.modifiers.new("Array", 'ARRAY')
         array.show_expanded = False
         array.show_in_editmode = False
         array.fit_type = 'FIT_CURVE'
         array.relative_offset_displace = (0, 0, 1)
-        array.use_merge_vertices = True if self.kind == 'REFERENCE' else False
-        array.use_merge_vertices_cap = True if self.kind == 'REFERENCE' else False
-        if sr.start_cap:
-            array.start_cap = sr.start_cap
-        if sr.end_cap:
-            array.end_cap = sr.end_cap
+        array.use_merge_vertices = True
+        array.use_merge_vertices_cap = True
+        if sr.start_cap: array.start_cap = sr.start_cap
+        if sr.end_cap: array.end_cap = sr.end_cap
 
         curve = sr.segment.modifiers.new("Curve", 'CURVE')
         curve.show_expanded = False
         curve.show_in_editmode = False
         curve.deform_axis = 'POS_Z'
-        if sr.curve:
-            array.curve = sr.curve
-            curve.object = sr.curve
+        array.curve = sr.curve
+        curve.object = sr.curve
 
         return {"FINISHED"}
 # </surf ramp tool>
@@ -193,10 +183,8 @@ class ModelingPanel(bpy.types.Panel):
         surf_ramp = context.scene.BASE.surf_ramp
         common.add_prop(box, "Curve", surf_ramp, "curve")
         common.add_prop(box, "Segment", surf_ramp, "segment")
-        common.add_prop(box, "Start Cap", surf_ramp, "start_cap")
-        common.add_prop(box, "End Cap", surf_ramp, "end_cap")
-
-        row = box.row()
-        row.operator("base.surf_ramp_modify", text = "Reference").kind = 'REFERENCE'
-        row.operator("base.surf_ramp_modify", text = "Collision").kind = 'COLLISION'
+        if surf_ramp.segment:
+            common.add_prop(box, "Start Cap", surf_ramp, "start_cap")
+            common.add_prop(box, "End Cap", surf_ramp, "end_cap")
+        box.operator("base.surf_ramp_modify")
 # </panel>
