@@ -51,6 +51,12 @@ class Model(bpy.types.PropertyGroup):
         items = common.surface_properties,
     )
 
+    mostly_opaque: bpy.props.BoolProperty(
+        name = "Mostly Opaque",
+        description = "$mostlyopaque, use this if your model has something transparent like glass in it, and something behind that glass",
+        default = False,
+    )
+
     weighted_normals: bpy.props.BoolProperty(
         name = "Weighted Normals",
         description = "Should this model use weighted normals, meaning the larger the face the bigger influence it has on the vertex normal",
@@ -195,6 +201,7 @@ class ModelExportPanel(bpy.types.Panel):
             model = models[model_index]
 
             common.add_prop(box, "Surface Property", model, "surface_property")
+            common.add_prop(box, "Mostly Opaque", model, "mostly_opaque")
             common.add_prop(box, "Weighted Normals", model, "weighted_normals")
 
             box = self.layout.box()
@@ -367,6 +374,7 @@ class ModelExport(bpy.types.Operator):
         qc.write("$sequence idle \"reference.smd\"\n")
         for matdir in model.matdirs: qc.write("$cdmaterials \"" + matdir.name + "\"\n")
         qc.write("$surfaceprop \"" + model.surface_property + "\"\n")
+        if model.mostly_opaque: qc.write("$mostlyopaque\n")
         qc.write("$staticprop")
         qc.close()
         return True
