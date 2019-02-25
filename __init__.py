@@ -1,12 +1,12 @@
 # <definition>
 bl_info = {
     "blender" : (2, 80, 0),
-    "name" : "Blender Add-on for Source Engine",
-    "description" : "Alternative to Blender Source Tools",
+    "name" : "BASE",
+    "description" : "Blender Add-on for Source Engine, Alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 2, 3),
+    "version" : (0, 2, 4),
     "location" : "3D View > Sidebar",
-    "category" : "Import / Export",
+    "category" : "Import-Export",
     "warning" : "",
 }
 # </definition>
