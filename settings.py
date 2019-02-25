@@ -14,7 +14,7 @@ class Game(bpy.types.PropertyGroup):
 
     path: bpy.props.StringProperty(
         name = "Game Path",
-        description = "Path to your game's gameinfo.txt",
+        description = "Path to your game folder, eg cstrike for CS:S. This must be an absolute path so make sure to untick Relative Path in bottom of the left bar in the file browser",
         default = "",
         subtype = 'FILE_PATH',
     )

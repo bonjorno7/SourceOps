@@ -2,9 +2,9 @@
 bl_info = {
     "blender" : (2, 80, 0),
     "name" : "BASE",
-    "description" : "Blender Add-on for Source Engine, Alternative to Blender Source Tools",
+    "description" : "Blender Add-on for Source Engine, a more convenient but less powerful alternative to Blender Source Tools that's mostly focused on surf mapping",
     "author" : "bonjorno7",
-    "version" : (0, 2, 4),
+    "version" : (0, 2, 5),
     "location" : "3D View > Sidebar",
     "category" : "Import-Export",
     "warning" : "",
@@ -15,7 +15,7 @@ bl_info = {
 import bpy
 from . import settings as se
 from . import model_export as me
-from . import modeling as mo
+from . import surf_tools as st
 # </import>
 
 # <classes>
@@ -26,20 +26,20 @@ class Properties(bpy.types.PropertyGroup):
     models: bpy.props.CollectionProperty(type = me.Model)
     model_index: bpy.props.IntProperty(default = 0)
 
-    collision_settings: bpy.props.PointerProperty(type = mo.CollisionSettings)
-    surf_ramp: bpy.props.PointerProperty(type = mo.SurfRamp)
+    collision_settings: bpy.props.PointerProperty(type = st.CollisionSettings)
+    surf_ramp: bpy.props.PointerProperty(type = st.SurfRamp)
 # </classes>
 
 # <variables>
 classes = (
-    se.Game, se.Settings, me.Mesh, me.MatDir, me.Model, mo.CollisionSettings, mo.SurfRamp,
+    se.Game, se.Settings, me.Mesh, me.MatDir, me.Model, st.CollisionSettings, st.SurfRamp,
     se.GameList, se.GameAdd, se.GameRemove,
     me.ModelList, me.ModelAdd, me.ModelRemove,
     me.MeshList, me.MeshAdd, me.MeshRemove,
     me.MatDirList, me.MatDirAdd, me.MatDirRemove,
     me.ModelExport, me.ModelView,
-    mo.SurfRampModify, mo.GenerateCollision,
-    se.SettingsPanel, me.ModelExportPanel, mo.ModelingPanel,
+    st.SurfToolsAddModifiers, st.GenerateCollision,
+    se.SettingsPanel, me.ModelExportPanel, st.SurfToolsPanel,
     Properties,
 )
 
