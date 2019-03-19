@@ -4,7 +4,7 @@ from . import common
 # </libraries>
 
 # <collision generator>
-class CollisionSettings(bpy.types.PropertyGroup):
+class Collision(bpy.types.PropertyGroup):
     """Properties used by the collision generator"""
     target: bpy.props.EnumProperty(
         name = "Target Object",
@@ -29,7 +29,7 @@ class CollisionSettings(bpy.types.PropertyGroup):
     thickness: bpy.props.FloatProperty(
         name = "Thickness",
         description = "Thickness of the collision bodies in hammer units",
-        default = 8,
+        default = 32,
     )
 
 class GenerateCollision(bpy.types.Operator):
@@ -64,7 +64,7 @@ class GenerateCollision(bpy.types.Operator):
     def execute(self, context):
         """Iterate through all selected objects and make collision meshes for them"""
         scale = context.scene.BASE.settings.scale
-        colset = context.scene.BASE.collision_settings
+        colset = context.scene.BASE.collision
         apply_modifiers = True if colset.modifiers == 'APPLY' else False
 
         for obj in context.selected_objects:
@@ -158,7 +158,7 @@ class SurfToolsAddModifiers(bpy.types.Operator):
         return {"FINISHED"}
 # </surf ramp tool>
 
-# <panel>
+# <panels>
 class SurfToolsPanel(bpy.types.Panel):
     bl_idname = "base.surf_tools_panel"
     bl_space_type = "VIEW_3D"
@@ -167,24 +167,105 @@ class SurfToolsPanel(bpy.types.Panel):
     bl_category = "BASE"
     bl_label = "Surf Tools"
 
+    def draw_header(self, context):
+        self.layout.label(icon = 'MARKER')
+
     def draw(self, context):
-        box = self.layout.box()
-        box.label(text = "Surf Ramp Collision", icon = 'MESH_ICOSPHERE')
+        pass
 
-        colset = context.scene.BASE.collision_settings
-        common.add_enum(box, "Target", colset, "target")
-        common.add_enum(box, "Modifiers", colset, "modifiers")
-        common.add_prop(box, "Thickness", colset, "thickness")
-        box.operator("base.surf_tools_generate_collision")
+class CollisionPanel(bpy.types.Panel):
+    bl_parent_id = "base.surf_tools_panel"
+    bl_idname = "base.collision_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Collision Generator"
 
-        box = self.layout.box()
-        box.label(text = "Curved Ramp Tool", icon = 'MARKER')
+    def draw_header(self, context):
+        self.layout.label(icon = 'MESH_ICOSPHERE')
 
+    def draw(self, context):
+        collision = context.scene.BASE.collision
+        common.add_enum(self.layout, "Target", collision, "target")
+        common.add_enum(self.layout, "Modifiers", collision, "modifiers")
+        common.add_prop(self.layout, "Thickness", collision, "thickness")
+        self.layout.operator("base.surf_tools_generate_collision")
+
+class CurvedRampPanel(bpy.types.Panel):
+    bl_parent_id = "base.surf_tools_panel"
+    bl_idname = "base.curved_ramp_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Curved Ramp Tool"
+
+    def draw_header(self, context):
+        self.layout.label(icon = 'CURVE_DATA')
+
+    def draw(self, context):
         surf_ramp = context.scene.BASE.surf_ramp
-        common.add_prop(box, "Curve", surf_ramp, "curve")
-        common.add_prop(box, "Segment", surf_ramp, "segment")
+        common.add_prop(self.layout, "Curve", surf_ramp, "curve")
+        common.add_prop(self.layout, "Segment", surf_ramp, "segment")
         if surf_ramp.segment:
-            common.add_prop(box, "Start Cap", surf_ramp, "start_cap")
-            common.add_prop(box, "End Cap", surf_ramp, "end_cap")
-        box.operator("base.surf_tools_add_modifiers")
-# </panel>
+            common.add_prop(self.layout, "Start Cap", surf_ramp, "start_cap")
+            common.add_prop(self.layout, "End Cap", surf_ramp, "end_cap")
+        self.layout.operator("base.surf_tools_add_modifiers")
+# </panels>
+
+# <hammer ramp fixer>
+class FixHammerRamp(bpy.types.Operator):
+    """Combine pairs of selected faces, then remove them"""
+    bl_idname = "base.fix_hammer_ramp"
+    bl_label = "Fix Hammer Ramp"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return "whether any faces are selected"
+
+    def execute(self, context):
+        obj = bpy.context.edit_object
+        bm = bmesh.from_edit_mesh(obj.data)
+
+        verts = []
+        closest_verts = []
+        middle_verts = []
+
+        for face in bm.faces:
+            if not face.select: continue
+            for vert in face.verts:
+                closest_vert = None
+                closest_dist = 1000000
+
+                for other_face in bm.faces:
+                    if not other_face.select: continue
+                    if other_face is face: continue
+                    for other_vert in other_face.verts:
+                        v_other_vert = mathutils.Vector(other_vert.co)
+                        v_vert = mathutils.Vector(vert.co)
+                        distance = mathutils.Vector(v_other_vert - v_vert).length
+                        if distance < closest_dist:
+                            closest_vert = other_vert
+                            closest_dist = distance
+
+                v_closest_vert = mathutils.Vector(closest_vert.co)
+                v_vert = mathutils.Vector(vert.co)
+                middle_vert = (v_closest_vert - v_vert) / 2
+
+                verts.append(vert)
+                closest_verts.append(closest_vert)
+                middle_verts.append(middle_vert)
+
+        for vert, closest_vert, middle_vert in zip(verts, closest_verts, middle_verts):
+            vert_list = [vert, closest_vert]
+            bmesh.ops.pointmerge(bm, verts = vert_list, merge_co = middle_vert)
+
+        bmesh.update_edit_mesh(obj.data)
+        return {"FINISHED"}
+
+def surf_tools_menu(self, context):
+    self.layout.separator()
+    self.layout.operator("base.fix_hammer_ramp")
+# </hammer ramp fixer>

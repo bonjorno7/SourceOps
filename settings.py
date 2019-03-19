@@ -1,7 +1,17 @@
 # <import>
+import os
 import bpy
 from . import common
 # </import>
+
+# <functions>
+def update_path(self, context):
+    settings = context.scene.BASE.settings
+    game = settings.games[settings.game_index]
+
+    self["path"] = bpy.path.abspath(game.path)
+    game.name = os.path.basename(os.path.normpath(game.path + ".."))
+# </functions>
 
 # </types>
 class Game(bpy.types.PropertyGroup):
@@ -14,9 +24,10 @@ class Game(bpy.types.PropertyGroup):
 
     path: bpy.props.StringProperty(
         name = "Game Path",
-        description = "Path to your game folder, eg cstrike for CS:S. This must be an absolute path so make sure to untick Relative Path in bottom of the left bar in the file browser",
+        description = "Path to your game folder, eg cstrike for CS:S",
         default = "",
         subtype = 'FILE_PATH',
+        update = update_path,
     )
 
 class Settings(bpy.types.PropertyGroup):
@@ -36,7 +47,7 @@ class GameList(bpy.types.UIList):
     """List of games"""
     bl_idname = "base.game_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, "name", text = "", emboss = False, translate = False)
+        layout.label(text = item.name)
 
 class GameAdd(bpy.types.Operator):
     """Add a game"""
@@ -66,9 +77,32 @@ class GameRemove(bpy.types.Operator):
             len(settings.games) - 1
         )
         return {'FINISHED'}
+
+class GameMove(bpy.types.Operator):
+    """Move the selected game up or down in the list"""
+    bl_idname = "base.game_move"
+    bl_label = "Move Game"
+
+    direction: bpy.props.EnumProperty(items = (
+        ('UP', "Up", "Move the item up"),
+        ('DOWN', "Down", "Move the item down"),
+    ))
+
+    @classmethod
+    def poll(cls, context):
+        settings = context.scene.BASE.settings
+        return len(settings.games) > 1
+
+    def execute(self, context):
+        settings = context.scene.BASE.settings
+        neighbor = settings.game_index + (-1 if self.direction == 'UP' else 1)
+        settings.games.move(neighbor, settings.game_index)
+        list_length = len(settings.games) - 1
+        settings.game_index = max(0, min(neighbor, list_length))
+        return {'FINISHED'}
 # </game list>
 
-# <panel>
+# <panels>
 class SettingsPanel(bpy.types.Panel):
     bl_idname = "base.settings_panel"
     bl_space_type = "VIEW_3D"
@@ -77,24 +111,56 @@ class SettingsPanel(bpy.types.Panel):
     bl_category = "BASE"
     bl_label = "Settings"
 
+    def draw_header(self, context):
+        self.layout.label(icon = 'PREFERENCES')
+
+    def draw(self, context):
+        pass
+
+class OptionsPanel(bpy.types.Panel):
+    bl_parent_id = "base.settings_panel"
+    bl_idname = "base.options_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Options"
+
+    def draw_header(self, context):
+        self.layout.label(icon = 'SETTINGS')
+
     def draw(self, context):
         settings = context.scene.BASE.settings
-        box = self.layout.box()
-        box.label(text = "Options", icon = 'PREFERENCES')
-        common.add_prop(box, "Model Scale", settings, "scale")
+        common.add_prop(self.layout, "Model Scale", settings, "scale")
 
-        box = self.layout.box()
-        box.label(text = "Games", icon = 'TOOL_SETTINGS')
-        row = box.row()
-        row.template_list("base.game_list", "", settings, "games", settings, "game_index", rows = 3)
+class GamesPanel(bpy.types.Panel):
+    bl_parent_id = "base.settings_panel"
+    bl_idname = "base.games_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Games"
+
+    def draw_header(self, context):
+        self.layout.label(icon = 'TOOL_SETTINGS')
+
+    def draw(self, context):
+        settings = context.scene.BASE.settings
+
+        row = self.layout.row()
+        row.template_list("base.game_list", "", settings, "games", settings, "game_index", rows = 4)
         col = row.column(align = True)
         col.operator("base.game_add", text = "", icon = 'ADD')
         col.operator("base.game_remove", text = "", icon = 'REMOVE')
+        col.separator()
+        col.operator("base.game_move", text = "", icon = 'TRIA_UP').direction = 'UP'
+        col.operator("base.game_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
 
         games = settings.games
         game_index = settings.game_index
 
         if games and game_index >= 0:
             game = games[game_index]
-            common.add_prop(box, "Game Path", game, "path")
-# </panel>
+            common.add_prop(self.layout, "Path", game, "path")
+# </panels>

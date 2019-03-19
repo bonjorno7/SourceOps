@@ -4,7 +4,7 @@ import bpy, bmesh
 from . import common
 # </import>
 
-# </types>
+# <types>
 class Mesh(bpy.types.PropertyGroup):
     """Properties for a mesh"""
     obj: bpy.props.PointerProperty(
@@ -47,13 +47,13 @@ class Model(bpy.types.PropertyGroup):
 
     surface_property: bpy.props.EnumProperty(
         name = "Surface Property",
-        description = "Choose the substance your model is made out of, this affects decals and how it sounds in game",
+        description = "Choose the surface property of your model, this affects decals and how it sounds in game",
         items = common.surface_properties,
     )
 
     mostly_opaque: bpy.props.BoolProperty(
         name = "Mostly Opaque",
-        description = "$mostlyopaque, use this if your model has something transparent like glass in it, and something behind that glass",
+        description = "$mostlyopaque, use this if your model has something transparent like glass",
         default = False,
     )
 
@@ -79,7 +79,8 @@ class MeshAdd(bpy.types.Operator):
     bl_label = "Add Mesh"
 
     def execute(self, context):
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
+        base = context.scene.BASE
+        model = base.models[base.model_index]
         for o in context.selected_objects:
             if o.type == 'MESH':
                 duplicate = False
@@ -99,13 +100,42 @@ class MeshRemove(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
-        return len(model.meshes) > 0
+        base = context.scene.BASE
+        if len(base.models) > 0:
+            model = base.models[base.model_index]
+            return len(model.meshes) > 0
+        return False
 
     def execute(self, context):
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
+        base = context.scene.BASE
+        model = base.models[base.model_index]
         model.meshes.remove(model.mesh_index)
         model.mesh_index = min(max(0, model.mesh_index - 1), len(model.meshes) - 1)
+        return {'FINISHED'}
+
+class MeshMove(bpy.types.Operator):
+    """Move the selected mesh up or down in the list"""
+    bl_idname = "base.mesh_move"
+    bl_label = "Move Mesh"
+
+    direction: bpy.props.EnumProperty(items = (
+        ('UP', "Up", "Move the item up"),
+        ('DOWN', "Down", "Move the item down"),
+    ))
+
+    @classmethod
+    def poll(cls, context):
+        base = context.scene.BASE
+        model = base.models[base.model_index]
+        return len(model.meshes) > 1
+
+    def execute(self, context):
+        base = context.scene.BASE
+        model = base.models[base.model_index]
+        neighbor = model.mesh_index + (-1 if self.direction == 'UP' else 1)
+        model.meshes.move(neighbor, model.mesh_index)
+        list_length = len(model.meshes) - 1
+        model.mesh_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
 # </mesh list>
 
@@ -122,7 +152,8 @@ class MatDirAdd(bpy.types.Operator):
     bl_label = "Add Material Folder"
 
     def execute(self, context):
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
+        base = context.scene.BASE
+        model = base.models[base.model_index]
         model.matdirs.add()
         return {'FINISHED'}
 
@@ -133,13 +164,45 @@ class MatDirRemove(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
-        return len(model.matdirs) > 0
+        base = context.scene.BASE
+        if len(base.models) > 0:
+            model = base.models[base.model_index]
+            return len(model.matdirs) > 0
+        return False
 
     def execute(self, context):
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
+        base = context.scene.BASE
+        model = base.models[base.model_index]
         model.matdirs.remove(model.matdir_index)
-        model.matdir_index = min(max(0, model.matdir_index - 1), len(model.matdirs) - 1)
+        model.matdir_index = min(
+            max(0, model.matdir_index - 1),
+            len(model.matdirs) - 1
+        )
+        return {'FINISHED'}
+
+class MatDirMove(bpy.types.Operator):
+    """Move the selected material folder up or down in the list"""
+    bl_idname = "base.matdir_move"
+    bl_label = "Move Material Folder"
+
+    direction: bpy.props.EnumProperty(items = (
+        ('UP', "Up", "Move the item up"),
+        ('DOWN', "Down", "Move the item down"),
+    ))
+
+    @classmethod
+    def poll(cls, context):
+        base = context.scene.BASE
+        model = base.models[base.model_index]
+        return len(model.matdirs) > 1
+
+    def execute(self, context):
+        base = context.scene.BASE
+        model = base.models[base.model_index]
+        neighbor = model.matdir_index + (-1 if self.direction == 'UP' else 1)
+        model.matdirs.move(neighbor, model.matdir_index)
+        list_length = len(model.matdirs) - 1
+        model.matdir_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
 # </matdir list>
 
@@ -166,18 +229,43 @@ class ModelRemove(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(context.scene.BASE.models) > 0
+        base = context.scene.BASE
+        return len(base.models) > 0
 
     def execute(self, context):
-        context.scene.BASE.models.remove(context.scene.BASE.model_index)
-        context.scene.BASE.model_index = min(
-            max(0, context.scene.BASE.model_index - 1),
-            len(context.scene.BASE.models) - 1
+        base = context.scene.BASE
+        base.models.remove(base.model_index)
+        base.model_index = min(
+            max(0, base.model_index - 1),
+            len(base.models) - 1
         )
+        return {'FINISHED'}
+
+class ModelMove(bpy.types.Operator):
+    """Move the selected model up or down in the list"""
+    bl_idname = "base.model_move"
+    bl_label = "Move Model"
+
+    direction: bpy.props.EnumProperty(items = (
+        ('UP', "Up", "Move the item up"),
+        ('DOWN', "Down", "Move the item down"),
+    ))
+
+    @classmethod
+    def poll(cls, context):
+        base = context.scene.BASE
+        return len(base.models) > 1
+
+    def execute(self, context):
+        base = context.scene.BASE
+        neighbor = base.model_index + (-1 if self.direction == 'UP' else 1)
+        base.models.move(neighbor, base.model_index)
+        list_length = len(base.models) - 1
+        base.model_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
 # </model list>
 
-# <panel>
+# <panels>
 class ModelExportPanel(bpy.types.Panel):
     bl_idname = "base.model_export_panel"
     bl_space_type = "VIEW_3D"
@@ -186,51 +274,122 @@ class ModelExportPanel(bpy.types.Panel):
     bl_category = "BASE"
     bl_label = "Model Export"
 
+    def draw_header(self, context):
+        self.layout.label(icon = 'EXPORT')
+
     def draw(self, context):
-        box = self.layout.box()
-        box.label(text = "Models", icon = 'CUBE')
-        row = box.row()
-        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 3)
+        pass
+
+class ModelPanel(bpy.types.Panel):
+    bl_parent_id = "base.model_export_panel"
+    bl_idname = "base.model_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Models"
+
+    def draw_header(self, context):
+        self.layout.label(icon = 'CUBE')
+
+    def draw(self, context):
+        row = self.layout.row()
+        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 4)
         col = row.column(align = True)
         col.operator("base.model_add", text = "", icon = 'ADD')
         col.operator("base.model_remove", text = "", icon = 'REMOVE')
+        col.separator()
+        col.operator("base.model_move", text = "", icon = 'TRIA_UP').direction = 'UP'
+        col.operator("base.model_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
 
         models = context.scene.BASE.models
         model_index = context.scene.BASE.model_index
         if models and model_index >= 0:
             model = models[model_index]
+            common.add_prop(self.layout, "Surface", model, "surface_property")
 
-            common.add_prop(box, "Surface Property", model, "surface_property")
-            common.add_prop(box, "Mostly Opaque", model, "mostly_opaque")
-            common.add_prop(box, "Weighted Normals", model, "weighted_normals")
+            flow = self.layout.grid_flow(even_columns=True)
+            col = flow.column()
+            col.prop(model, "mostly_opaque")
+            col = flow.column()
+            col.prop(model, "weighted_normals")
 
-            box = self.layout.box()
-            box.label(text = "Meshes", icon = 'MESH_DATA')
-            row = box.row()
-            row.template_list("base.mesh_list", "", model, "meshes", model, "mesh_index", rows = 3)
-            col = row.column(align = True)
-            col.operator("base.mesh_add", text = "", icon = 'ADD')
-            col.operator("base.mesh_remove", text = "", icon = 'REMOVE')
+            flow = self.layout.grid_flow(even_columns=True)
+            col = flow.column()
+            col.operator("base.model_export")
+            col = flow.column()
+            col.operator("base.model_view")
 
-            box = self.layout.box()
-            box.label(text = "Material Folders", icon = 'FILE_FOLDER')
-            row = box.row()
-            row.template_list("base.matdir_list", "", model, "matdirs", model, "matdir_index", rows = 3)
-            col = row.column(align = True)
-            col.operator("base.matdir_add", text = "", icon = 'ADD')
-            col.operator("base.matdir_remove", text = "", icon = 'REMOVE')
+class MeshPanel(bpy.types.Panel):
+    bl_parent_id = "base.model_export_panel"
+    bl_idname = "base.mesh_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Meshes"
 
-            box = self.layout.box()
-            box.label(text = "Export", icon = 'FILE')
-            box.operator("base.model_export")
-            box.operator("base.model_view")
-# </panel>
+    @classmethod
+    def poll(cls, context):
+        models = context.scene.BASE.models
+        model_index = context.scene.BASE.model_index
+        return models and model_index >= 0
+
+    def draw_header(self, context):
+        self.layout.label(icon = 'MESH_DATA')
+
+    def draw(self, context):
+        models = context.scene.BASE.models
+        model_index = context.scene.BASE.model_index
+        model = models[model_index]
+
+        row = self.layout.row()
+        row.template_list("base.mesh_list", "", model, "meshes", model, "mesh_index", rows = 4)
+        col = row.column(align = True)
+        col.operator("base.mesh_add", text = "", icon = 'ADD')
+        col.operator("base.mesh_remove", text = "", icon = 'REMOVE')
+        col.separator()
+        col.operator("base.mesh_move", text = "", icon = 'TRIA_UP').direction = 'UP'
+        col.operator("base.mesh_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
+
+class MatDirPanel(bpy.types.Panel):
+    bl_parent_id = "base.model_export_panel"
+    bl_idname = "base.matdir_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_context = "objectmode"
+    bl_category = "BASE"
+    bl_label = "Material Folders"
+
+    @classmethod
+    def poll(cls, context):
+        models = context.scene.BASE.models
+        model_index = context.scene.BASE.model_index
+        return models and model_index >= 0
+
+    def draw_header(self, context):
+        self.layout.label(icon = 'FILE_FOLDER')
+
+    def draw(self, context):
+        models = context.scene.BASE.models
+        model_index = context.scene.BASE.model_index
+        model = models[model_index]
+
+        row = self.layout.row()
+        row.template_list("base.matdir_list", "", model, "matdirs", model, "matdir_index", rows = 4)
+        col = row.column(align = True)
+        col.operator("base.matdir_add", text = "", icon = 'ADD')
+        col.operator("base.matdir_remove", text = "", icon = 'REMOVE')
+        col.separator()
+        col.operator("base.matdir_move", text = "", icon = 'TRIA_UP').direction = 'UP'
+        col.operator("base.matdir_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
+# </panels>
 
 # <operators>
 class ModelExport(bpy.types.Operator):
     """Export this model's meshes, generate a QC and compile it"""
     bl_idname = "base.model_export"
-    bl_label = "Export and Compile"
+    bl_label = "Export Model"
 
     @classmethod
     def poll(cls, context):
@@ -401,7 +560,7 @@ class ModelExport(bpy.types.Operator):
 class ModelView(bpy.types.Operator):
     """Open this model in HLMV"""
     bl_idname = "base.model_view"
-    bl_label = "View Compiled Model"
+    bl_label = "View Model"
 
     @classmethod
     def poll(cls, context):
