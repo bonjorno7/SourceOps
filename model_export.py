@@ -4,6 +4,14 @@ import bpy, bmesh
 from . import common
 # </import>
 
+# <functions>
+def update_model_name(self, context):
+    self["name"] = bpy.path.native_pathsep(self["name"])
+
+def update_matdir_name(self, context):
+    self["name"] = bpy.path.native_pathsep(self["name"])
+# </functions>
+
 # <types>
 class Mesh(bpy.types.PropertyGroup):
     """Properties for a mesh"""
@@ -26,9 +34,10 @@ class Mesh(bpy.types.PropertyGroup):
 class MatDir(bpy.types.PropertyGroup):
     """Properties for a material folder"""
     name: bpy.props.StringProperty(
-        name = "Material Folder Path",
+        name = "Material Folder",
         description = "Material path, eg models\\props\\example",
         default = "models\\props\\example",
+        update = update_matdir_name,
     )
 
 class Model(bpy.types.PropertyGroup):
@@ -43,6 +52,7 @@ class Model(bpy.types.PropertyGroup):
         name = "Model Name",
         description = "Your model's path, eg props\\example\\model (do not add the file extension)",
         default = "props\\example\\model",
+        update = update_model_name,
     )
 
     surface_property: bpy.props.EnumProperty(
@@ -55,12 +65,6 @@ class Model(bpy.types.PropertyGroup):
         name = "Mostly Opaque",
         description = "$mostlyopaque, use this if your model has something transparent like glass",
         default = False,
-    )
-
-    weighted_normals: bpy.props.BoolProperty(
-        name = "Weighted Normals",
-        description = "Should this model use weighted normals, meaning the larger the face the bigger influence it has on the vertex normal",
-        default = True,
     )
 # </types>
 
@@ -81,16 +85,23 @@ class MeshAdd(bpy.types.Operator):
     def execute(self, context):
         base = context.scene.BASE
         model = base.models[base.model_index]
+
         for o in context.selected_objects:
             if o.type == 'MESH':
                 duplicate = False
+
                 for m in model.meshes:
                     if m.obj == o:
                         duplicate = True
+
                 if not duplicate:
                     model.meshes.add()
-                    mesh = model.meshes[len(model.meshes) - 1]
+                    mesh = model.meshes[-1]
                     mesh.obj = o
+
+                    if mesh.obj.name.find(".col") != -1:
+                        mesh.kind = 'COLLISION'
+
         return {'FINISHED'}
 
 class MeshRemove(bpy.types.Operator):
@@ -241,6 +252,33 @@ class ModelRemove(bpy.types.Operator):
         )
         return {'FINISHED'}
 
+class ModelCopy(bpy.types.Operator):
+    """Copy this model, everything except the list of meshes"""
+    bl_idname = "base.model_copy"
+    bl_label = "Copy Model"
+
+    @classmethod
+    def poll(cls, context):
+        base = context.scene.BASE
+        return len(base.models) > 0
+
+    def execute(self, context):
+        base = context.scene.BASE
+        old = base.models[base.model_index]
+        base.models.add()
+        new = base.models[-1]
+
+        new.name = old.name
+        new.surface_property = old.surface_property
+        new.mostly_opaque = old.mostly_opaque
+
+        for matdir in old.matdirs:
+            new.matdirs.add()
+            new.matdirs[-1].name = matdir.name
+
+        base.model_index = len(base.models) - 1
+        return {'FINISHED'}
+
 class ModelMove(bpy.types.Operator):
     """Move the selected model up or down in the list"""
     bl_idname = "base.model_move"
@@ -294,10 +332,12 @@ class ModelPanel(bpy.types.Panel):
 
     def draw(self, context):
         row = self.layout.row()
-        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 4)
+        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 5)
         col = row.column(align = True)
         col.operator("base.model_add", text = "", icon = 'ADD')
         col.operator("base.model_remove", text = "", icon = 'REMOVE')
+        col.separator()
+        col.operator("base.model_copy", text = "", icon = 'COPYDOWN')
         col.separator()
         col.operator("base.model_move", text = "", icon = 'TRIA_UP').direction = 'UP'
         col.operator("base.model_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
@@ -307,12 +347,7 @@ class ModelPanel(bpy.types.Panel):
         if models and model_index >= 0:
             model = models[model_index]
             common.add_prop(self.layout, "Surface", model, "surface_property")
-
-            flow = self.layout.grid_flow(even_columns=True)
-            col = flow.column()
-            col.prop(model, "mostly_opaque")
-            col = flow.column()
-            col.prop(model, "weighted_normals")
+            self.layout.prop(model, "mostly_opaque")
 
             flow = self.layout.grid_flow(even_columns=True)
             col = flow.column()
@@ -393,7 +428,8 @@ class ModelExport(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         games = settings.games
         game_index = settings.game_index
 
@@ -401,8 +437,8 @@ class ModelExport(bpy.types.Operator):
             game = games[game_index]
 
             if game.path:
-                models = context.scene.BASE.models
-                model_index = context.scene.BASE.model_index
+                models = base.models
+                model_index = base.model_index
 
                 if models and model_index >= 0:
                     model = models[model_index]
@@ -456,33 +492,37 @@ class ModelExport(bpy.types.Operator):
         for obj in references:
             temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
             common.triangulate(temp)
-            common.split_sharp(temp)
-            bm = bmesh.new()
-            bm.from_mesh(temp)
+            temp.calc_normals_split()
 
-            for face in bm.faces:
+            for poly in temp.polygons:
                 material_name = "no_material"
-                if face.material_index < len(obj.material_slots):
-                    material = obj.material_slots[face.material_index].material
+                if poly.material_index < len(obj.material_slots):
+                    material = obj.material_slots[poly.material_index].material
                     if material != None: material_name = material.name
                 ref.write(material_name + "\n")
 
-                for index, vert in enumerate(face.verts):
+                for index in range(3):
                     ref.write("0" + "    ")
+                    loop_index = poly.loop_indices[index]
+                    loop = temp.loops[loop_index]
+
+                    vert_index = loop.vertex_index
+                    vert = temp.vertices[vert_index]
                     ref.write(str(-vert.co[1] * scale) + " " + str(vert.co[0] * scale) + " " + str(vert.co[2] * scale) + "    ")
 
-                    normal = common.weighted_normal(vert) if model.weighted_normals else vert.normal
+                    normal = loop.normal
                     ref.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
 
-                    uv_layers = bm.loops.layers.uv
-                    if uv_layers:
-                        uv = face.loops[index][uv_layers[0]].uv
-                        ref.write(str(uv[0]) + " " + str(uv[1]))
-                    else: ref.write(str(0) + " " + str(0))
-                    ref.write("\n")
+                    if temp.uv_layers:
+                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
+                        uv_loop = uv_layer.data[loop_index]
+                        uv = uv_loop.uv
+                        ref.write(str(uv[0]) + " " + str(uv[1]) + "\n")
+                    else:
+                        ref.write(str(0) + " " + str(0) + "\n")
 
-            bm.free()
-            del temp
+            temp.free_normals_split()
+            bpy.data.meshes.remove(temp)
 
         ref.write("end\n")
         ref.close()
@@ -494,14 +534,17 @@ class ModelExport(bpy.types.Operator):
         for obj in collisions:
             temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
             common.triangulate(temp)
-            bm = bmesh.new()
-            bm.from_mesh(temp)
 
-            for face in bm.faces:
+            for poly in temp.polygons:
                 col.write("no_material" + "\n")
 
-                for index, vert in enumerate(face.verts):
+                for index in range(3):
                     col.write("0" + "    ")
+                    loop_index = poly.loop_indices[index]
+                    loop = temp.loops[loop_index]
+
+                    vert_index = loop.vertex_index
+                    vert = temp.vertices[vert_index]
                     col.write(str(-vert.co[1] * scale) + " " + str(vert.co[0] * scale) + " " + str(vert.co[2] * scale) + "    ")
 
                     normal = vert.normal
@@ -510,8 +553,7 @@ class ModelExport(bpy.types.Operator):
                     col.write(str(0) + " " + str(0))
                     col.write("\n")
 
-            bm.free()
-            del temp
+            bpy.data.meshes.remove(temp)
 
         col.write("end\n")
         col.close()
@@ -520,7 +562,8 @@ class ModelExport(bpy.types.Operator):
 
     def generate_qc(self, context, directory):
         """Generate the QC for this model"""
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
+        base = context.scene.BASE
+        model = base.models[base.model_index]
         modelname = model.name
         if not modelname.lower().endswith(".mdl"):
             modelname += ".mdl"
@@ -529,12 +572,16 @@ class ModelExport(bpy.types.Operator):
         qc.write("$modelname \"" + modelname + "\"\n")
         qc.write("$body shell \"reference.smd\"\n")
         if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
-            qc.write("$collisionmodel \"collision.smd\" { $concave $maxconvexpieces 4500 }\n")
+            qc.write("$collisionmodel \"collision.smd\" { $concave $maxconvexpieces 10000 }\n")
         qc.write("$sequence idle \"reference.smd\"\n")
-        for matdir in model.matdirs: qc.write("$cdmaterials \"" + matdir.name + "\"\n")
+        for matdir in model.matdirs:
+            qc.write("$cdmaterials \"" + matdir.name + "\"\n")
         qc.write("$surfaceprop \"" + model.surface_property + "\"\n")
-        if model.mostly_opaque: qc.write("$mostlyopaque\n")
-        qc.write("$staticprop")
+        qc.write("$staticprop\n")
+
+        if model.mostly_opaque:
+            qc.write("$mostlyopaque\n")
+
         qc.close()
         return True
 

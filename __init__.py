@@ -2,55 +2,51 @@
 bl_info = {
     "blender" : (2, 80, 0),
     "name" : "BASE",
-    "description" : "Blender Add-on for Source Engine, a more convenient but less powerful alternative to Blender Source Tools that's mostly focused on surf mapping",
+    "description" : "Blender Add-on for Source Engine, a more convenient but less powerful alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 2, 6),
+    "version" : (0, 2, 7),
     "location" : "3D View > Sidebar",
     "category" : "Import-Export",
-    "warning" : "",
+    "warning" : "This is beta software",
 }
 # </definition>
 
 # <import>
 import bpy
-from . import settings as se
-from . import model_export as me
-from . import material_export as ma
-from . import surf_tools as st
+from .settings import *
+from .model_export import *
+from .surf_tools import *
 # </import>
 
 # <classes>
 class Properties(bpy.types.PropertyGroup):
     """Global variables for this add-on"""
-    settings: bpy.props.PointerProperty(type = se.Settings)
+    settings: bpy.props.PointerProperty(type = Settings)
 
-    models: bpy.props.CollectionProperty(type = me.Model)
+    models: bpy.props.CollectionProperty(type = Model)
     model_index: bpy.props.IntProperty(default = 0)
 
-    material: bpy.props.PointerProperty(type = ma.Material)
-
-    collision: bpy.props.PointerProperty(type = st.Collision)
-    surf_ramp: bpy.props.PointerProperty(type = st.SurfRamp)
+    collision: bpy.props.PointerProperty(type = Collision)
+    surf_ramp: bpy.props.PointerProperty(type = SurfRamp)
 # </classes>
 
 # <variables>
 classes = (
-    se.Game, se.Settings,
-    me.Mesh, me.MatDir, me.Model,
-    ma.Material,
-    st.Collision, st.SurfRamp,
+    Game, Settings,
+    Mesh, MatDir, Model,
+    Collision, SurfRamp,
 
-    se.GameList, se.GameAdd, se.GameRemove, se.GameMove,
-    me.ModelList, me.ModelAdd, me.ModelRemove, me.ModelMove,
-    me.MeshList, me.MeshAdd, me.MeshRemove, me.MeshMove,
-    me.MatDirList, me.MatDirAdd, me.MatDirRemove, me.MatDirMove,
+    GameList, GameAdd, GameRemove, GameMove,
+    ModelList, ModelAdd, ModelCopy, ModelRemove, ModelMove,
+    MeshList, MeshAdd, MeshRemove, MeshMove,
+    MatDirList, MatDirAdd, MatDirRemove, MatDirMove,
 
-    me.ModelExport, me.ModelView,
-    st.SurfToolsAddModifiers, st.GenerateCollision, st.FixHammerRamp,
+    ModelExport, ModelView,
+    SurfRampify, SurfCollision,
 
-    se.SettingsPanel, se.OptionsPanel, se.GamesPanel,
-    me.ModelExportPanel, me.ModelPanel, me.MeshPanel, me.MatDirPanel,
-    st.SurfToolsPanel, st.CollisionPanel, st.CurvedRampPanel,
+    SettingsPanel, OptionsPanel, GamesPanel,
+    ModelExportPanel, ModelPanel, MeshPanel, MatDirPanel,
+    SurfToolsPanel, CollisionPanel, CurvedRampPanel,
 
     Properties,
 )
@@ -62,12 +58,10 @@ register_classes, unregister_classes = bpy.utils.register_classes_factory(classe
 def register():
     register_classes()
     bpy.types.Scene.BASE = bpy.props.PointerProperty(type = Properties)
-    bpy.types.VIEW3D_MT_edit_mesh_specials.append(st.surf_tools_menu)
 
 def unregister():
     unregister_classes()
     del bpy.types.Scene.BASE
-    bpy.types.VIEW3D_MT_edit_mesh_specials.remove(st.surf_tools_menu)
 
 if __name__ == "__main__":
     register()

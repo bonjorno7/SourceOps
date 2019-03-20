@@ -32,9 +32,9 @@ class Collision(bpy.types.PropertyGroup):
         default = 32,
     )
 
-class GenerateCollision(bpy.types.Operator):
+class SurfCollision(bpy.types.Operator):
     """Generate flawless but expensive collision meshes for the selected objects"""
-    bl_idname = "base.surf_tools_generate_collision"
+    bl_idname = "base.surf_collision"
     bl_label = "Generate Collision"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -123,9 +123,9 @@ class SurfRamp(bpy.types.PropertyGroup):
         poll = common.is_mesh,
     )
 
-class SurfToolsAddModifiers(bpy.types.Operator):
+class SurfRampify(bpy.types.Operator):
     """Add the appropriate modifiers to the chosen objects"""
-    bl_idname = "base.surf_tools_add_modifiers"
+    bl_idname = "base.surf_rampify"
     bl_label = "Add Modifiers"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -190,7 +190,7 @@ class CollisionPanel(bpy.types.Panel):
         common.add_enum(self.layout, "Target", collision, "target")
         common.add_enum(self.layout, "Modifiers", collision, "modifiers")
         common.add_prop(self.layout, "Thickness", collision, "thickness")
-        self.layout.operator("base.surf_tools_generate_collision")
+        self.layout.operator("base.surf_collision")
 
 class CurvedRampPanel(bpy.types.Panel):
     bl_parent_id = "base.surf_tools_panel"
@@ -211,61 +211,5 @@ class CurvedRampPanel(bpy.types.Panel):
         if surf_ramp.segment:
             common.add_prop(self.layout, "Start Cap", surf_ramp, "start_cap")
             common.add_prop(self.layout, "End Cap", surf_ramp, "end_cap")
-        self.layout.operator("base.surf_tools_add_modifiers")
+        self.layout.operator("base.surf_rampify")
 # </panels>
-
-# <hammer ramp fixer>
-class FixHammerRamp(bpy.types.Operator):
-    """Combine pairs of selected faces, then remove them"""
-    bl_idname = "base.fix_hammer_ramp"
-    bl_label = "Fix Hammer Ramp"
-    bl_options = {"REGISTER", "UNDO"}
-
-    @classmethod
-    def poll(cls, context):
-        return "whether any faces are selected"
-
-    def execute(self, context):
-        obj = bpy.context.edit_object
-        bm = bmesh.from_edit_mesh(obj.data)
-
-        verts = []
-        closest_verts = []
-        middle_verts = []
-
-        for face in bm.faces:
-            if not face.select: continue
-            for vert in face.verts:
-                closest_vert = None
-                closest_dist = 1000000
-
-                for other_face in bm.faces:
-                    if not other_face.select: continue
-                    if other_face is face: continue
-                    for other_vert in other_face.verts:
-                        v_other_vert = mathutils.Vector(other_vert.co)
-                        v_vert = mathutils.Vector(vert.co)
-                        distance = mathutils.Vector(v_other_vert - v_vert).length
-                        if distance < closest_dist:
-                            closest_vert = other_vert
-                            closest_dist = distance
-
-                v_closest_vert = mathutils.Vector(closest_vert.co)
-                v_vert = mathutils.Vector(vert.co)
-                middle_vert = (v_closest_vert - v_vert) / 2
-
-                verts.append(vert)
-                closest_verts.append(closest_vert)
-                middle_verts.append(middle_vert)
-
-        for vert, closest_vert, middle_vert in zip(verts, closest_verts, middle_verts):
-            vert_list = [vert, closest_vert]
-            bmesh.ops.pointmerge(bm, verts = vert_list, merge_co = middle_vert)
-
-        bmesh.update_edit_mesh(obj.data)
-        return {"FINISHED"}
-
-def surf_tools_menu(self, context):
-    self.layout.separator()
-    self.layout.operator("base.fix_hammer_ramp")
-# </hammer ramp fixer>

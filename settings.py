@@ -1,6 +1,5 @@
 # <import>
-import os
-import bpy
+import os, bpy
 from . import common
 # </import>
 

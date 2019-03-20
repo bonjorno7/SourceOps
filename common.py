@@ -1,5 +1,6 @@
 # <import>
-import bpy, bmesh, mathutils
+import bpy, bmesh
+import mathutils
 # </import>
 
 # <functions>
@@ -30,29 +31,6 @@ def triangulate(me):
     bmesh.ops.triangulate(bm, faces = bm.faces)
     bm.to_mesh(me)
     bm.free()
-
-def split_sharp(me):
-    """Split sharp edges, both those marked manually and those determined by autosmooth"""
-    me.split_faces()
-    bm = bmesh.new()
-    bm.from_mesh(me)
-    edges = [edge for edge in bm.edges if not edge.smooth]
-    bmesh.ops.split_edges(bm, edges = edges)
-    bm.to_mesh(me)
-    bm.free()
-
-def weighted_normal(vert):
-    """Calucate a normal for this vertex based on the faces surrounding it, influence weighted by the area of each faces"""
-    link_faces = vert.link_faces
-    face_normals = [face.normal for face in link_faces]
-    face_areas = [face.calc_area() for face in link_faces]
-
-    normal = mathutils.Vector()
-    for n, a in zip(face_normals, face_areas):
-        normal += n * a
-
-    normal.normalize()
-    return normal
 
 def find_collection(context, item):
     """Return the first collection this item is in, if none return the scene collection"""
