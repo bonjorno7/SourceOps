@@ -1,6 +1,6 @@
 # <import>
 import os, subprocess
-import bpy, bmesh
+import bpy, bmesh, mathutils
 from . import common
 # </import>
 
@@ -508,7 +508,8 @@ class ModelExport(bpy.types.Operator):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    ref.write(str(-vert.co[1] * scale) + " " + str(vert.co[0] * scale) + " " + str(vert.co[2] * scale) + "    ")
+                    vec = obj.matrix_local @ mathutils.Vector(vert.co)
+                    ref.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
                     normal = loop.normal
                     ref.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
@@ -545,7 +546,8 @@ class ModelExport(bpy.types.Operator):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    col.write(str(-vert.co[1] * scale) + " " + str(vert.co[0] * scale) + " " + str(vert.co[2] * scale) + "    ")
+                    vec = obj.matrix_local @ mathutils.Vector(vert.co)
+                    col.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
                     normal = vert.normal
                     col.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
