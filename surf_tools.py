@@ -80,6 +80,7 @@ class SurfCollision(bpy.types.Operator):
                 collision = bpy.data.objects.new(obj.name + ".col", mesh)
                 collection = common.find_collection(context, obj)
                 collection.objects.link(collision)
+                collision.matrix_local = obj.matrix_local
 
             elif colset.target == 'SELF':
                 mesh = obj.data
