@@ -5,11 +5,8 @@ from . import common
 
 # <functions>
 def update_path(self, context):
-    settings = context.scene.BASE.settings
-    game = settings.games[settings.game_index]
-
-    self["path"] = bpy.path.abspath(game.path)
-    game.name = os.path.basename(os.path.normpath(game.path + ".."))
+    self["path"] = os.path.realpath(bpy.path.abspath(self["path"]))
+    self["name"] = os.path.basename(os.path.realpath(self["path"] + common.dir_up))
 # </functions>
 
 # </types>
@@ -56,6 +53,7 @@ class GameAdd(bpy.types.Operator):
     def execute(self, context):
         settings = context.scene.BASE.settings
         settings.games.add()
+        settings.game_index = len(settings.games) - 1
         return {'FINISHED'}
 
 class GameRemove(bpy.types.Operator):

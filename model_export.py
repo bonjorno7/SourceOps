@@ -6,7 +6,10 @@ from . import common
 
 # <functions>
 def update_model_name(self, context):
-    self["name"] = bpy.path.native_pathsep(self["name"])
+    name = bpy.path.native_pathsep(self["name"])
+    if name.lower().endswith(".mdl"):
+        name = name[:-4]
+    self["name"] = name
 
 def update_matdir_name(self, context):
     self["name"] = bpy.path.native_pathsep(self["name"])
@@ -35,8 +38,8 @@ class MatDir(bpy.types.PropertyGroup):
     """Properties for a material folder"""
     name: bpy.props.StringProperty(
         name = "Material Folder",
-        description = "Material path, eg models\\props\\example",
-        default = "models\\props\\example",
+        description = "Material path, eg models\\example",
+        default = "models\\example",
         update = update_matdir_name,
     )
 
@@ -50,8 +53,8 @@ class Model(bpy.types.PropertyGroup):
 
     name: bpy.props.StringProperty(
         name = "Model Name",
-        description = "Your model's path, eg props\\example\\model (do not add the file extension)",
-        default = "props\\example\\model",
+        description = "Your model's path, eg example\\model (don't add the file extension)",
+        default = "example\\model",
         update = update_model_name,
     )
 
@@ -62,7 +65,7 @@ class Model(bpy.types.PropertyGroup):
     )
 
     mostly_opaque: bpy.props.BoolProperty(
-        name = "Mostly Opaque",
+        name = "Has Glass",
         description = "$mostlyopaque, use this if your model has something transparent like glass",
         default = False,
     )
@@ -102,6 +105,7 @@ class MeshAdd(bpy.types.Operator):
                     if mesh.obj.name.find(".col") != -1:
                         mesh.kind = 'COLLISION'
 
+        model.mesh_index = len(model.meshes) - 1
         return {'FINISHED'}
 
 class MeshRemove(bpy.types.Operator):
@@ -166,6 +170,7 @@ class MatDirAdd(bpy.types.Operator):
         base = context.scene.BASE
         model = base.models[base.model_index]
         model.matdirs.add()
+        model.matdir_index = len(model.matdirs) - 1
         return {'FINISHED'}
 
 class MatDirRemove(bpy.types.Operator):
@@ -230,7 +235,9 @@ class ModelAdd(bpy.types.Operator):
     bl_label = "Add Model"
 
     def execute(self, context):
-        context.scene.BASE.models.add()
+        base = context.scene.BASE
+        base.models.add()
+        base.model_index = len(base.models) - 1
         return {'FINISHED'}
 
 class ModelRemove(bpy.types.Operator):
@@ -562,16 +569,23 @@ class ModelExport(bpy.types.Operator):
 
         return True
 
-    def generate_qc(self, context, directory):
+    def generate_qc(self, context, game_path):
         """Generate the QC for this model"""
         base = context.scene.BASE
         model = base.models[base.model_index]
-        modelname = model.name
-        if not modelname.lower().endswith(".mdl"):
-            modelname += ".mdl"
 
-        qc = open(directory + "compile.qc", "w+")
-        qc.write("$modelname \"" + modelname + "\"\n")
+        # deleting the old model so that the model viewer won't load it if you try to view it while it's still compiling
+        model_path = game_path + os.sep + "models" + os.sep + model.name
+        if os.path.isfile(model_path + ".dx90.vtx"): os.remove(model_path + ".dx90.vtx")
+        if os.path.isfile(model_path + ".dx80.vtx"): os.remove(model_path + ".dx80.vtx")
+        if os.path.isfile(model_path + ".sw.vtx"): os.remove(model_path + ".sw.vtx")
+        if os.path.isfile(model_path + ".vvd"): os.remove(model_path + ".vvd")
+        if os.path.isfile(model_path + ".mdl"): os.remove(model_path + ".mdl")
+        if os.path.isfile(model_path + ".phy"): os.remove(model_path + ".phy")
+
+        modelsrc_path = game_path + os.sep + "modelsrc" + os.sep + model.name + os.sep
+        qc = open(modelsrc_path + "compile.qc", "w+")
+        qc.write("$modelname \"" + model.name + "\"\n")
         qc.write("$body shell \"reference.smd\"\n")
         if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
             qc.write("$collisionmodel \"collision.smd\" { $concave $maxconvexpieces 10000 }\n")
@@ -594,16 +608,15 @@ class ModelExport(bpy.types.Operator):
         model_path = game_path + os.sep + "modelsrc" + os.sep + model.name + os.sep
         if not os.path.exists(model_path): os.makedirs(model_path)
 
-        if self.export_meshes(context, model_path) and self.generate_qc(context, model_path):
+        if self.export_meshes(context, model_path) and self.generate_qc(context, game_path):
             path, _ = os.path.split(game_path)
             studiomdl = path + "\\bin\\studiomdl.exe"
-            print(studiomdl + " " + model_path + "compile.qc" + "\n")
-            process = subprocess.Popen([studiomdl, model_path + "compile.qc"], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-            stdout, stderr = process.communicate()
+            print(studiomdl + "    " + model_path + "compile.qc" + "\n")
+            subprocess.Popen([studiomdl, model_path + "compile.qc"], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
-            log = open(model_path + "log.txt", "w+")
-            log.write(stdout.decode("utf-8"))
-            log.close()
+            #log = open(model_path + "log.txt", "w+")
+            #log.write(stdout.decode("utf-8"))
+            #log.close()
         return {'FINISHED'}
 
 class ModelView(bpy.types.Operator):
@@ -641,6 +654,7 @@ class ModelView(bpy.types.Operator):
             path, _ = os.path.split(game_path)
             hlmv = path + "\\bin\\hlmv.exe"
             args = [hlmv, "-game", game_path, model_path]
+            print(hlmv + "    " + model_path + "\n")
             subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         return {'FINISHED'}
 # </operators>

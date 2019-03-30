@@ -1,4 +1,5 @@
 # <import>
+import os
 import bpy, bmesh
 import mathutils
 # </import>
@@ -41,6 +42,8 @@ def find_collection(context, item):
 # </functions>
 
 # <variables>
+dir_up = os.pardir + os.sep + os.pardir
+
 surface_properties = [
     ("default", "default", ""),
     ("default_silent", "default_silent", ""),

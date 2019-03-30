@@ -29,7 +29,7 @@ class Collision(bpy.types.PropertyGroup):
     thickness: bpy.props.FloatProperty(
         name = "Thickness",
         description = "Thickness of the collision bodies in hammer units",
-        default = 32,
+        default = 16,
     )
 
 class SurfCollision(bpy.types.Operator):
@@ -140,7 +140,7 @@ class SurfRampify(bpy.types.Operator):
         sr.segment.modifiers.clear()
 
         array = sr.segment.modifiers.new("Array", 'ARRAY')
-        array.show_expanded = False
+        array.show_expanded = True
         array.show_in_editmode = False
         array.fit_type = 'FIT_CURVE'
         array.relative_offset_displace = (0, 0, 1)
@@ -150,7 +150,7 @@ class SurfRampify(bpy.types.Operator):
         if sr.end_cap: array.end_cap = sr.end_cap
 
         curve = sr.segment.modifiers.new("Curve", 'CURVE')
-        curve.show_expanded = False
+        curve.show_expanded = True
         curve.show_in_editmode = False
         curve.deform_axis = 'POS_Z'
         array.curve = sr.curve
