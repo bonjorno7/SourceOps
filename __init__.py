@@ -4,7 +4,7 @@ bl_info = {
     "name" : "BASE",
     "description" : "Blender Add-on for Source Engine, a more convenient but less powerful alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 2, 9),
+    "version" : (0, 3, 0),
     "location" : "3D View > Sidebar",
     "category" : "Import-Export",
     "warning" : "",
@@ -33,19 +33,17 @@ class Properties(bpy.types.PropertyGroup):
 # <variables>
 classes = (
     Game, Settings,
-    Mesh, MatDir, Model,
+    Mesh, Model,
     Collision, SurfRamp,
 
     GameList, GameAdd, GameRemove, GameMove,
-    ModelList, ModelAdd, ModelCopy, ModelRemove, ModelMove,
+    ModelList, ModelAdd, ModelRemove, ModelMove,
     MeshList, MeshAdd, MeshRemove, MeshMove,
-    MatDirList, MatDirAdd, MatDirRemove, MatDirMove,
-
     ModelExport, ModelView,
     SurfRampify, SurfCollision,
 
     SettingsPanel, OptionsPanel, GamesPanel,
-    ModelExportPanel, ModelPanel, MeshPanel, MatDirPanel,
+    ModelExportPanel, ModelPanel, MeshPanel, PropertiesPanel,
     SurfToolsPanel, CollisionPanel, CurvedRampPanel,
 
     Properties,

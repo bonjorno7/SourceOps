@@ -1,5 +1,5 @@
 # <import>
-import os, subprocess
+import os, subprocess, math
 import bpy, bmesh, mathutils
 from . import common
 # </import>
@@ -10,9 +10,6 @@ def update_model_name(self, context):
     if name.lower().endswith(".mdl"):
         name = name[:-4]
     self["name"] = name
-
-def update_matdir_name(self, context):
-    self["name"] = bpy.path.native_pathsep(self["name"])
 # </functions>
 
 # <types>
@@ -34,22 +31,10 @@ class Mesh(bpy.types.PropertyGroup):
         ),
     )
 
-class MatDir(bpy.types.PropertyGroup):
-    """Properties for a material folder"""
-    name: bpy.props.StringProperty(
-        name = "Material Folder",
-        description = "Material path, eg models\\example",
-        default = "models\\example",
-        update = update_matdir_name,
-    )
-
 class Model(bpy.types.PropertyGroup):
     """Properties for a model"""
     meshes: bpy.props.CollectionProperty(type = Mesh)
     mesh_index: bpy.props.IntProperty(default = 0)
-
-    matdirs: bpy.props.CollectionProperty(type = MatDir)
-    matdir_index: bpy.props.IntProperty(default = 0)
 
     name: bpy.props.StringProperty(
         name = "Model Name",
@@ -62,6 +47,12 @@ class Model(bpy.types.PropertyGroup):
         name = "Surface Property",
         description = "Choose the surface property of your model, this affects decals and how it sounds in game",
         items = common.surface_properties,
+    )
+
+    autocenter: bpy.props.BoolProperty(
+        name = "Auto Center",
+        description = "$autocenter, aligns the model's $origin to the center of its bounding box and creates an attachment point called \"placementOrigin\" where its origin used to be",
+        default = False,
     )
 
     mostly_opaque: bpy.props.BoolProperty(
@@ -154,74 +145,6 @@ class MeshMove(bpy.types.Operator):
         return {'FINISHED'}
 # </mesh list>
 
-# <matdir list>
-class MatDirList(bpy.types.UIList):
-    """List of material paths for this model"""
-    bl_idname = "base.matdir_list"
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, "name", text = "", emboss = False, translate = False)
-
-class MatDirAdd(bpy.types.Operator):
-    """Add a new material path to this model"""
-    bl_idname = "base.matdir_add"
-    bl_label = "Add Material Folder"
-
-    def execute(self, context):
-        base = context.scene.BASE
-        model = base.models[base.model_index]
-        model.matdirs.add()
-        model.matdir_index = len(model.matdirs) - 1
-        return {'FINISHED'}
-
-class MatDirRemove(bpy.types.Operator):
-    """Remove the selected material path from this model"""
-    bl_idname = "base.matdir_remove"
-    bl_label = "Remove Material Folder"
-
-    @classmethod
-    def poll(cls, context):
-        base = context.scene.BASE
-        if len(base.models) > 0:
-            model = base.models[base.model_index]
-            return len(model.matdirs) > 0
-        return False
-
-    def execute(self, context):
-        base = context.scene.BASE
-        model = base.models[base.model_index]
-        model.matdirs.remove(model.matdir_index)
-        model.matdir_index = min(
-            max(0, model.matdir_index - 1),
-            len(model.matdirs) - 1
-        )
-        return {'FINISHED'}
-
-class MatDirMove(bpy.types.Operator):
-    """Move the selected material folder up or down in the list"""
-    bl_idname = "base.matdir_move"
-    bl_label = "Move Material Folder"
-
-    direction: bpy.props.EnumProperty(items = (
-        ('UP', "Up", "Move the item up"),
-        ('DOWN', "Down", "Move the item down"),
-    ))
-
-    @classmethod
-    def poll(cls, context):
-        base = context.scene.BASE
-        model = base.models[base.model_index]
-        return len(model.matdirs) > 1
-
-    def execute(self, context):
-        base = context.scene.BASE
-        model = base.models[base.model_index]
-        neighbor = model.matdir_index + (-1 if self.direction == 'UP' else 1)
-        model.matdirs.move(neighbor, model.matdir_index)
-        list_length = len(model.matdirs) - 1
-        model.matdir_index = max(0, min(neighbor, list_length))
-        return {'FINISHED'}
-# </matdir list>
-
 # <model list>
 class ModelList(bpy.types.UIList):
     """List of models"""
@@ -257,33 +180,6 @@ class ModelRemove(bpy.types.Operator):
             max(0, base.model_index - 1),
             len(base.models) - 1
         )
-        return {'FINISHED'}
-
-class ModelCopy(bpy.types.Operator):
-    """Copy this model, everything except the list of meshes"""
-    bl_idname = "base.model_copy"
-    bl_label = "Copy Model"
-
-    @classmethod
-    def poll(cls, context):
-        base = context.scene.BASE
-        return len(base.models) > 0
-
-    def execute(self, context):
-        base = context.scene.BASE
-        old = base.models[base.model_index]
-        base.models.add()
-        new = base.models[-1]
-
-        new.name = old.name
-        new.surface_property = old.surface_property
-        new.mostly_opaque = old.mostly_opaque
-
-        for matdir in old.matdirs:
-            new.matdirs.add()
-            new.matdirs[-1].name = matdir.name
-
-        base.model_index = len(base.models) - 1
         return {'FINISHED'}
 
 class ModelMove(bpy.types.Operator):
@@ -339,28 +235,19 @@ class ModelPanel(bpy.types.Panel):
 
     def draw(self, context):
         row = self.layout.row()
-        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 5)
+        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 4)
         col = row.column(align = True)
         col.operator("base.model_add", text = "", icon = 'ADD')
         col.operator("base.model_remove", text = "", icon = 'REMOVE')
         col.separator()
-        col.operator("base.model_copy", text = "", icon = 'COPYDOWN')
-        col.separator()
         col.operator("base.model_move", text = "", icon = 'TRIA_UP').direction = 'UP'
         col.operator("base.model_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
 
-        models = context.scene.BASE.models
-        model_index = context.scene.BASE.model_index
-        if models and model_index >= 0:
-            model = models[model_index]
-            common.add_prop(self.layout, "Surface", model, "surface_property")
-            self.layout.prop(model, "mostly_opaque")
-
-            flow = self.layout.grid_flow(even_columns=True)
-            col = flow.column()
-            col.operator("base.model_export")
-            col = flow.column()
-            col.operator("base.model_view")
+        flow = self.layout.grid_flow(even_columns=True)
+        col = flow.column()
+        col.operator("base.model_export")
+        col = flow.column()
+        col.operator("base.model_view")
 
 class MeshPanel(bpy.types.Panel):
     bl_parent_id = "base.model_export_panel"
@@ -394,14 +281,14 @@ class MeshPanel(bpy.types.Panel):
         col.operator("base.mesh_move", text = "", icon = 'TRIA_UP').direction = 'UP'
         col.operator("base.mesh_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
 
-class MatDirPanel(bpy.types.Panel):
+class PropertiesPanel(bpy.types.Panel):
     bl_parent_id = "base.model_export_panel"
-    bl_idname = "base.matdir_panel"
+    bl_idname = "base.properties_panel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
     bl_category = "BASE"
-    bl_label = "Material Folders"
+    bl_label = "Properties"
 
     @classmethod
     def poll(cls, context):
@@ -410,21 +297,19 @@ class MatDirPanel(bpy.types.Panel):
         return models and model_index >= 0
 
     def draw_header(self, context):
-        self.layout.label(icon = 'FILE_FOLDER')
+        self.layout.label(icon = 'MESH_DATA')
 
     def draw(self, context):
         models = context.scene.BASE.models
         model_index = context.scene.BASE.model_index
         model = models[model_index]
 
-        row = self.layout.row()
-        row.template_list("base.matdir_list", "", model, "matdirs", model, "matdir_index", rows = 4)
-        col = row.column(align = True)
-        col.operator("base.matdir_add", text = "", icon = 'ADD')
-        col.operator("base.matdir_remove", text = "", icon = 'REMOVE')
-        col.separator()
-        col.operator("base.matdir_move", text = "", icon = 'TRIA_UP').direction = 'UP'
-        col.operator("base.matdir_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
+        common.add_prop(self.layout, "Surface", model, "surface_property")
+        flow = self.layout.grid_flow(even_columns=True)
+        col = flow.column()
+        col.prop(model, "autocenter")
+        col = flow.column()
+        col.prop(model, "mostly_opaque")
 # </panels>
 
 # <operators>
@@ -449,7 +334,7 @@ class ModelExport(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.meshes and model.matdirs
+                    return model.name and model.meshes
 
         return False
 
@@ -515,7 +400,8 @@ class ModelExport(bpy.types.Operator):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = obj.matrix_local @ mathutils.Vector(vert.co)
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
                     ref.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
                     normal = loop.normal
@@ -590,13 +476,12 @@ class ModelExport(bpy.types.Operator):
         if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
             qc.write("$collisionmodel \"collision.smd\" { $concave $maxconvexpieces 10000 }\n")
         qc.write("$sequence idle \"reference.smd\"\n")
-        for matdir in model.matdirs:
-            qc.write("$cdmaterials \"" + matdir.name + "\"\n")
+        qc.write("$cdmaterials \"" + os.sep + "\"\n")
         qc.write("$surfaceprop \"" + model.surface_property + "\"\n")
         qc.write("$staticprop\n")
 
-        if model.mostly_opaque:
-            qc.write("$mostlyopaque\n")
+        if model.autocenter: qc.write("$autocenter\n")
+        if model.mostly_opaque: qc.write("$mostlyopaque\n")
 
         qc.close()
         return True
@@ -613,10 +498,6 @@ class ModelExport(bpy.types.Operator):
             studiomdl = path + "\\bin\\studiomdl.exe"
             print(studiomdl + "    " + model_path + "compile.qc" + "\n")
             subprocess.Popen([studiomdl, model_path + "compile.qc"], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
-            #log = open(model_path + "log.txt", "w+")
-            #log.write(stdout.decode("utf-8"))
-            #log.close()
         return {'FINISHED'}
 
 class ModelView(bpy.types.Operator):
@@ -639,7 +520,7 @@ class ModelView(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.meshes and model.matdirs
+                    return model.name and model.meshes
 
         return False
 
@@ -649,7 +530,6 @@ class ModelView(bpy.types.Operator):
         model = context.scene.BASE.models[context.scene.BASE.model_index]
         model_path = game_path + os.sep + "models" + os.sep + model.name + ".mdl"
 
-        print(model_path + "\n")
         if os.path.isfile(model_path):
             path, _ = os.path.split(game_path)
             hlmv = path + "\\bin\\hlmv.exe"

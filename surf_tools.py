@@ -67,7 +67,8 @@ class SurfCollision(bpy.types.Operator):
         colset = context.scene.BASE.collision
         apply_modifiers = True if colset.modifiers == 'APPLY' else False
 
-        for obj in context.selected_objects:
+        selected_objects = context.selected_objects
+        for obj in selected_objects:
             if obj.type != 'MESH': continue
             bm = bmesh.new()
             bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = apply_modifiers))
@@ -81,6 +82,9 @@ class SurfCollision(bpy.types.Operator):
                 collection = common.find_collection(context, obj)
                 collection.objects.link(collision)
                 collision.matrix_local = obj.matrix_local
+
+                obj.select_set(False)
+                collision.select_set(True)
 
             elif colset.target == 'SELF':
                 mesh = obj.data
