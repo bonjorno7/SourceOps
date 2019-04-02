@@ -439,7 +439,8 @@ class ModelExport(bpy.types.Operator):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = obj.matrix_local @ mathutils.Vector(vert.co)
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
                     col.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
                     normal = vert.normal
