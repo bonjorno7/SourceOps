@@ -297,7 +297,7 @@ class PropertiesPanel(bpy.types.Panel):
         return models and model_index >= 0
 
     def draw_header(self, context):
-        self.layout.label(icon = 'MESH_DATA')
+        self.layout.label(icon = 'PROPERTIES')
 
     def draw(self, context):
         models = context.scene.BASE.models
