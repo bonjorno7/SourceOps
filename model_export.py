@@ -489,16 +489,20 @@ class ModelExport(bpy.types.Operator):
 
     def execute(self, context):
         settings = context.scene.BASE.settings
-        game_path, _ = os.path.split(settings.games[settings.game_index].path)
+        game_path = settings.games[settings.game_index].path
         model = context.scene.BASE.models[context.scene.BASE.model_index]
         model_path = game_path + os.sep + "modelsrc" + os.sep + model.name + os.sep
         if not os.path.exists(model_path): os.makedirs(model_path)
 
         if self.export_meshes(context, model_path) and self.generate_qc(context, game_path):
-            path, _ = os.path.split(game_path)
-            studiomdl = path + "\\bin\\studiomdl.exe"
+            studiomdl = os.path.split(game_path)[0] + "\\bin\\studiomdl.exe"
+            args = [studiomdl, model_path + "compile.qc"]
             print(studiomdl + "    " + model_path + "compile.qc" + "\n")
-            subprocess.Popen([studiomdl, model_path + "compile.qc"], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+
+            if os.path.isfile(studiomdl):
+                subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            else: self.report({'ERROR'}, "StudioMDL not found, your game path is invalid")
+
         return {'FINISHED'}
 
 class ModelView(bpy.types.Operator):
@@ -527,15 +531,19 @@ class ModelView(bpy.types.Operator):
 
     def execute(self, context):
         settings = context.scene.BASE.settings
-        game_path, _ = os.path.split(settings.games[settings.game_index].path)
+        game_path = settings.games[settings.game_index].path
         model = context.scene.BASE.models[context.scene.BASE.model_index]
         model_path = game_path + os.sep + "models" + os.sep + model.name + ".mdl"
 
-        if os.path.isfile(model_path):
-            path, _ = os.path.split(game_path)
-            hlmv = path + "\\bin\\hlmv.exe"
-            args = [hlmv, "-game", game_path, model_path]
-            print(hlmv + "    " + model_path + "\n")
-            subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        hlmv = os.path.split(game_path)[0] + "\\bin\\hlmv.exe"
+        args = [hlmv, "-game", game_path, model_path]
+        print(hlmv + "    " + model_path + "\n")
+
+        if os.path.isfile(hlmv):
+            if os.path.isfile(model_path):
+                subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            else: self.report({"WARNING"}, "Model not found")
+        else: self.report({'ERROR'}, "HLMV not found, your game path is invalid")
+
         return {'FINISHED'}
 # </operators>
