@@ -4,7 +4,7 @@ bl_info = {
     "name" : "BASE",
     "description" : "Blender Add-on for Source Engine, a more convenient but less powerful alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 3, 1),
+    "version" : (0, 3, 2),
     "location" : "3D View > Sidebar",
     "category" : "Import-Export",
     "warning" : "",
@@ -16,7 +16,7 @@ import bpy
 from .settings import *
 from .model_export import *
 from .surf_tools import *
-from .material_import import *
+#from .material_import import *
 # </import>
 
 # <classes>
@@ -42,12 +42,12 @@ classes = (
     MeshList, MeshAdd, MeshRemove, MeshMove,
     ModelExport, ModelView,
     SurfRampify, SurfCollision,
-    ImportMaterial,
+    #ImportMaterial,
 
     SettingsPanel, OptionsPanel, GamesPanel,
     ModelExportPanel, ModelPanel, MeshPanel, PropertiesPanel,
     SurfToolsPanel, CollisionPanel, CurvedRampPanel,
-    MaterialImportPanel,
+    #MaterialImportPanel,
 
     Properties,
 )
