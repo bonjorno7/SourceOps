@@ -404,7 +404,7 @@ class ModelExport(bpy.types.Operator):
                     vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
                     ref.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
-                    normal = loop.normal
+                    normal = rot @ obj.matrix_local @ mathutils.Vector(loop.normal)
                     ref.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
 
                     if temp.uv_layers:
@@ -443,7 +443,7 @@ class ModelExport(bpy.types.Operator):
                     vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
                     col.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
-                    normal = vert.normal
+                    normal = rot @ obj.matrix_local @ mathutils.Vector(vert.normal)
                     col.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
 
                     col.write(str(0) + " " + str(0))
