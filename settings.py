@@ -7,6 +7,7 @@ from . import common
 def update_path(self, context):
     self["path"] = os.path.realpath(bpy.path.abspath(self["path"]))
     self["name"] = os.path.basename(os.path.realpath(self["path"] + common.dir_up))
+    #if not os.path.isdir(self["path"]): self.report({'WARNING'}, "Invalid game path")
 # </functions>
 
 # </types>

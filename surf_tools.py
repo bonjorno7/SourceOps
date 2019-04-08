@@ -65,34 +65,31 @@ class SurfCollision(bpy.types.Operator):
         """Iterate through all selected objects and make collision meshes for them"""
         scale = context.scene.BASE.settings.scale
         colset = context.scene.BASE.collision
-        apply_modifiers = True if colset.modifiers == 'APPLY' else False
+        apply = colset.modifiers == 'APPLY'
 
         selected_objects = context.selected_objects
         for obj in selected_objects:
             if obj.type != 'MESH': continue
             bm = bmesh.new()
-            bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = apply_modifiers))
+            bm.from_mesh(obj.to_mesh(context.depsgraph) if apply else obj.data)
             self.generate_collision(bm, obj.matrix_world, colset.thickness / scale)
 
             if colset.target == 'NEW':
                 mesh = bpy.data.meshes.new(name = obj.data.name + ".col")
                 bm.to_mesh(mesh)
 
-                collision = bpy.data.objects.new(obj.name + ".col", mesh)
+                new_object = bpy.data.objects.new(obj.name + ".col", mesh)
                 collection = common.find_collection(context, obj)
-                collection.objects.link(collision)
-                collision.matrix_local = obj.matrix_local
+                collection.objects.link(new_object)
+                new_object.matrix_local = obj.matrix_local
 
                 obj.select_set(False)
-                collision.select_set(True)
+                new_object.select_set(True)
 
             elif colset.target == 'SELF':
-                mesh = obj.data
-                bm.to_mesh(mesh)
-
+                bm.to_mesh(obj.data)
                 obj.data.use_auto_smooth = False
-                if colset.modifiers == 'APPLY':
-                    obj.modifiers.clear()
+                if apply: obj.modifiers.clear()
 
         return {'FINISHED'}
 # </collision generator>
