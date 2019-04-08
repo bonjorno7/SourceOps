@@ -71,7 +71,7 @@ class SurfCollision(bpy.types.Operator):
         for obj in selected_objects:
             if obj.type != 'MESH': continue
             bm = bmesh.new()
-            bm.from_mesh(obj.to_mesh(context.depsgraph) if apply else obj.data)
+            bm.from_mesh(obj.to_mesh(context.depsgraph, apply_modifiers = True) if apply else obj.data)
             self.generate_collision(bm, obj.matrix_world, colset.thickness / scale)
 
             if colset.target == 'NEW':
