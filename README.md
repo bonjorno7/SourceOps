@@ -3,4 +3,6 @@ Meant to be a more convenient but less powerful alternative to Blender Source To
 <br>
 Has some tools for surf mapping.
 <br>
-Currently working on material import/export.
+Currently working on material import.
+<br>
+https://discord.gg/N35zhHm
