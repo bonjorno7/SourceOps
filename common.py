@@ -6,11 +6,11 @@ import mathutils
 
 # <functions>
 def is_mesh(self, obj):
-    """Return whether the object is a mesh type"""
+    """Return whether the object is a mesh"""
     return obj.type == 'MESH'
 
 def is_curve(self, obj):
-    """Return whether the object is a curve type"""
+    """Return whether the object is a curve"""
     return obj.type == 'CURVE'
 
 def add_prop(layout, label, scope, prop):
