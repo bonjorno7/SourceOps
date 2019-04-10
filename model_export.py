@@ -530,13 +530,14 @@ class BASE_OT_ModelView(bpy.types.Operator):
         game_path = settings.games[settings.game_index].path
         model = context.scene.BASE.models[context.scene.BASE.model_index]
         model_path = game_path + os.sep + "models" + os.sep + model.name + ".mdl"
+        dx90path = game_path + os.sep + "models" + os.sep + model.name + ".dx90.vtx"
 
         hlmv = os.path.split(game_path)[0] + "\\bin\\hlmv.exe"
         args = [hlmv, "-game", game_path, model_path]
         print(hlmv + "    " + model_path + "\n")
 
         if os.path.isfile(hlmv):
-            if os.path.isfile(model_path):
+            if os.path.isfile(dx90path):
                 subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
             else: self.report({"WARNING"}, "Model not found")
         else: self.report({'ERROR'}, "HLMV not found, your game path is invalid")
