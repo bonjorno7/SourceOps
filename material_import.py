@@ -5,10 +5,10 @@ from . import common
 # </import>
 
 # <classes>
-class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+class BASE_OT_ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     """Create materials with the names of the paths to your VMTs relative to the materials folder and import the VTFs as PNGs"""
     bl_idname = "base.import_material"
-    bl_label = "Import Material(s)"
+    bl_label = "Import Materials"
     bl_options = {"REGISTER", "UNDO"}
 
     files: bpy.props.CollectionProperty(type = bpy.types.PropertyGroup)
@@ -22,8 +22,7 @@ class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         return {"FINISHED"}
 
-class MaterialImportPanel(bpy.types.Panel):
-    bl_idname = "base.material_import_panel"
+class BASE_PT_MaterialImport(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"

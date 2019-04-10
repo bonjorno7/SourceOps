@@ -11,7 +11,7 @@ def update_path(self, context):
 # </functions>
 
 # </types>
-class Game(bpy.types.PropertyGroup):
+class BASE_PG_Game(bpy.types.PropertyGroup):
     """Properties for a game"""
     name: bpy.props.StringProperty(
         name = "Game Name",
@@ -27,9 +27,9 @@ class Game(bpy.types.PropertyGroup):
         update = update_path,
     )
 
-class Settings(bpy.types.PropertyGroup):
+class BASE_PG_Settings(bpy.types.PropertyGroup):
     """Properties for the Settings panel"""
-    games: bpy.props.CollectionProperty(type = Game)
+    games: bpy.props.CollectionProperty(type = BASE_PG_Game)
     game_index: bpy.props.IntProperty(default = 0)
 
     scale: bpy.props.FloatProperty(
@@ -40,13 +40,12 @@ class Settings(bpy.types.PropertyGroup):
 # </types>
 
 # <game list>
-class GameList(bpy.types.UIList):
+class BASE_UL_Game(bpy.types.UIList):
     """List of games"""
-    bl_idname = "base.game_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         layout.label(text = item.name)
 
-class GameAdd(bpy.types.Operator):
+class BASE_OT_GameAdd(bpy.types.Operator):
     """Add a game"""
     bl_idname = "base.game_add"
     bl_label = "Add Game"
@@ -57,7 +56,7 @@ class GameAdd(bpy.types.Operator):
         settings.game_index = len(settings.games) - 1
         return {'FINISHED'}
 
-class GameRemove(bpy.types.Operator):
+class BASE_OT_GameRemove(bpy.types.Operator):
     """Remove the selected game from the list"""
     bl_idname = "base.game_remove"
     bl_label = "Remove Game"
@@ -76,7 +75,7 @@ class GameRemove(bpy.types.Operator):
         )
         return {'FINISHED'}
 
-class GameMove(bpy.types.Operator):
+class BASE_OT_GameMove(bpy.types.Operator):
     """Move the selected game up or down in the list"""
     bl_idname = "base.game_move"
     bl_label = "Move Game"
@@ -101,8 +100,7 @@ class GameMove(bpy.types.Operator):
 # </game list>
 
 # <panels>
-class SettingsPanel(bpy.types.Panel):
-    bl_idname = "base.settings_panel"
+class BASE_PT_Settings(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -115,9 +113,8 @@ class SettingsPanel(bpy.types.Panel):
     def draw(self, context):
         pass
 
-class OptionsPanel(bpy.types.Panel):
-    bl_parent_id = "base.settings_panel"
-    bl_idname = "base.options_panel"
+class BASE_PT_Options(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_Settings"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -131,9 +128,8 @@ class OptionsPanel(bpy.types.Panel):
         settings = context.scene.BASE.settings
         common.add_prop(self.layout, "Model Scale", settings, "scale")
 
-class GamesPanel(bpy.types.Panel):
-    bl_parent_id = "base.settings_panel"
-    bl_idname = "base.games_panel"
+class BASE_PT_Games(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_Settings"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -147,7 +143,7 @@ class GamesPanel(bpy.types.Panel):
         settings = context.scene.BASE.settings
 
         row = self.layout.row()
-        row.template_list("base.game_list", "", settings, "games", settings, "game_index", rows = 4)
+        row.template_list("BASE_UL_Game", "", settings, "games", settings, "game_index", rows = 4)
         col = row.column(align = True)
         col.operator("base.game_add", text = "", icon = 'ADD')
         col.operator("base.game_remove", text = "", icon = 'REMOVE')

@@ -13,7 +13,7 @@ def update_model_name(self, context):
 # </functions>
 
 # <types>
-class Mesh(bpy.types.PropertyGroup):
+class BASE_PG_Mesh(bpy.types.PropertyGroup):
     """Properties for a mesh"""
     obj: bpy.props.PointerProperty(
         name = "Mesh Object",
@@ -31,9 +31,9 @@ class Mesh(bpy.types.PropertyGroup):
         ),
     )
 
-class Model(bpy.types.PropertyGroup):
+class BASE_PG_Model(bpy.types.PropertyGroup):
     """Properties for a model"""
-    meshes: bpy.props.CollectionProperty(type = Mesh)
+    meshes: bpy.props.CollectionProperty(type = BASE_PG_Mesh)
     mesh_index: bpy.props.IntProperty(default = 0)
 
     name: bpy.props.StringProperty(
@@ -63,15 +63,14 @@ class Model(bpy.types.PropertyGroup):
 # </types>
 
 # <mesh list>
-class MeshList(bpy.types.UIList):
+class BASE_UL_Mesh(bpy.types.UIList):
     """List of meshes for this model"""
-    bl_idname = "base.mesh_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         row = layout.row().split(factor = 0.6)
         row.label(text = item.obj.name)
         row.split().row().prop(item, "kind", expand = True)
 
-class MeshAdd(bpy.types.Operator):
+class BASE_OT_MeshAdd(bpy.types.Operator):
     """Add selected objects as meshes to this model"""
     bl_idname = "base.mesh_add"
     bl_label = "Add Mesh"
@@ -99,7 +98,7 @@ class MeshAdd(bpy.types.Operator):
         model.mesh_index = len(model.meshes) - 1
         return {'FINISHED'}
 
-class MeshRemove(bpy.types.Operator):
+class BASE_OT_MeshRemove(bpy.types.Operator):
     """Remove selected mesh from the list"""
     bl_idname = "base.mesh_remove"
     bl_label = "Remove Mesh"
@@ -119,7 +118,7 @@ class MeshRemove(bpy.types.Operator):
         model.mesh_index = min(max(0, model.mesh_index - 1), len(model.meshes) - 1)
         return {'FINISHED'}
 
-class MeshMove(bpy.types.Operator):
+class BASE_OT_MeshMove(bpy.types.Operator):
     """Move the selected mesh up or down in the list"""
     bl_idname = "base.mesh_move"
     bl_label = "Move Mesh"
@@ -146,13 +145,12 @@ class MeshMove(bpy.types.Operator):
 # </mesh list>
 
 # <model list>
-class ModelList(bpy.types.UIList):
+class BASE_UL_Model(bpy.types.UIList):
     """List of models"""
-    bl_idname = "base.model_list"
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         layout.prop(item, "name", text = "", emboss = False, translate = False)
 
-class ModelAdd(bpy.types.Operator):
+class BASE_OT_ModelAdd(bpy.types.Operator):
     """Create a model"""
     bl_idname = "base.model_add"
     bl_label = "Add Model"
@@ -163,7 +161,7 @@ class ModelAdd(bpy.types.Operator):
         base.model_index = len(base.models) - 1
         return {'FINISHED'}
 
-class ModelRemove(bpy.types.Operator):
+class BASE_OT_ModelRemove(bpy.types.Operator):
     """Remove the selected model"""
     bl_idname = "base.model_remove"
     bl_label = "Remove Model"
@@ -182,7 +180,7 @@ class ModelRemove(bpy.types.Operator):
         )
         return {'FINISHED'}
 
-class ModelMove(bpy.types.Operator):
+class BASE_OT_ModelMove(bpy.types.Operator):
     """Move the selected model up or down in the list"""
     bl_idname = "base.model_move"
     bl_label = "Move Model"
@@ -207,8 +205,7 @@ class ModelMove(bpy.types.Operator):
 # </model list>
 
 # <panels>
-class ModelExportPanel(bpy.types.Panel):
-    bl_idname = "base.model_export_panel"
+class BASE_PT_ModelExport(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -221,9 +218,8 @@ class ModelExportPanel(bpy.types.Panel):
     def draw(self, context):
         pass
 
-class ModelPanel(bpy.types.Panel):
-    bl_parent_id = "base.model_export_panel"
-    bl_idname = "base.model_panel"
+class BASE_PT_Model(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_ModelExport"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -235,7 +231,7 @@ class ModelPanel(bpy.types.Panel):
 
     def draw(self, context):
         row = self.layout.row()
-        row.template_list("base.model_list", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 4)
+        row.template_list("BASE_UL_Model", "", context.scene.BASE, "models", context.scene.BASE, "model_index", rows = 4)
         col = row.column(align = True)
         col.operator("base.model_add", text = "", icon = 'ADD')
         col.operator("base.model_remove", text = "", icon = 'REMOVE')
@@ -249,9 +245,8 @@ class ModelPanel(bpy.types.Panel):
         col = flow.column()
         col.operator("base.model_view")
 
-class MeshPanel(bpy.types.Panel):
-    bl_parent_id = "base.model_export_panel"
-    bl_idname = "base.mesh_panel"
+class BASE_PT_Mesh(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_ModelExport"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -273,7 +268,7 @@ class MeshPanel(bpy.types.Panel):
         model = models[model_index]
 
         row = self.layout.row()
-        row.template_list("base.mesh_list", "", model, "meshes", model, "mesh_index", rows = 4)
+        row.template_list("BASE_UL_Mesh", "", model, "meshes", model, "mesh_index", rows = 4)
         col = row.column(align = True)
         col.operator("base.mesh_add", text = "", icon = 'ADD')
         col.operator("base.mesh_remove", text = "", icon = 'REMOVE')
@@ -281,9 +276,8 @@ class MeshPanel(bpy.types.Panel):
         col.operator("base.mesh_move", text = "", icon = 'TRIA_UP').direction = 'UP'
         col.operator("base.mesh_move", text = "", icon = 'TRIA_DOWN').direction = 'DOWN'
 
-class PropertiesPanel(bpy.types.Panel):
-    bl_parent_id = "base.model_export_panel"
-    bl_idname = "base.properties_panel"
+class BASE_PT_Properties(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_ModelExport"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -313,7 +307,7 @@ class PropertiesPanel(bpy.types.Panel):
 # </panels>
 
 # <operators>
-class ModelExport(bpy.types.Operator):
+class BASE_OT_ModelExport(bpy.types.Operator):
     """Export this model's meshes, generate a QC and compile it"""
     bl_idname = "base.model_export"
     bl_label = "Export Model"
@@ -404,7 +398,8 @@ class ModelExport(bpy.types.Operator):
                     vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
                     ref.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
-                    normal = rot @ obj.matrix_local @ mathutils.Vector(loop.normal)
+                    normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
+                    normal = rot @ obj.matrix_local @ normal
                     ref.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
 
                     if temp.uv_layers:
@@ -443,7 +438,8 @@ class ModelExport(bpy.types.Operator):
                     vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
                     col.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
 
-                    normal = rot @ obj.matrix_local @ mathutils.Vector(vert.normal)
+                    normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
+                    normal = rot @ obj.matrix_local @ normal
                     col.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
 
                     col.write(str(0) + " " + str(0))
@@ -505,7 +501,7 @@ class ModelExport(bpy.types.Operator):
 
         return {'FINISHED'}
 
-class ModelView(bpy.types.Operator):
+class BASE_OT_ModelView(bpy.types.Operator):
     """Open this model in HLMV"""
     bl_idname = "base.model_view"
     bl_label = "View Model"

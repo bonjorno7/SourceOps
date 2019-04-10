@@ -4,7 +4,7 @@ from . import common
 # </libraries>
 
 # <collision generator>
-class Collision(bpy.types.PropertyGroup):
+class BASE_PG_Collision(bpy.types.PropertyGroup):
     """Properties used by the collision generator"""
     target: bpy.props.EnumProperty(
         name = "Target Object",
@@ -32,7 +32,7 @@ class Collision(bpy.types.PropertyGroup):
         default = 16,
     )
 
-class SurfCollision(bpy.types.Operator):
+class BASE_OT_SurfCollision(bpy.types.Operator):
     """Generate flawless but expensive collision meshes for the selected objects"""
     bl_idname = "base.surf_collision"
     bl_label = "Generate Collision"
@@ -95,7 +95,7 @@ class SurfCollision(bpy.types.Operator):
 # </collision generator>
 
 # <surf ramp tool>
-class SurfRamp(bpy.types.PropertyGroup):
+class BASE_PG_SurfRamp(bpy.types.PropertyGroup):
     """Properties for the Surf Ramp Tool"""
     curve: bpy.props.PointerProperty(
         name = "Curve",
@@ -125,7 +125,7 @@ class SurfRamp(bpy.types.PropertyGroup):
         poll = common.is_mesh,
     )
 
-class SurfRampify(bpy.types.Operator):
+class BASE_OT_SurfRampify(bpy.types.Operator):
     """Add the appropriate modifiers to the chosen objects"""
     bl_idname = "base.surf_rampify"
     bl_label = "Add Modifiers"
@@ -161,8 +161,7 @@ class SurfRampify(bpy.types.Operator):
 # </surf ramp tool>
 
 # <panels>
-class SurfToolsPanel(bpy.types.Panel):
-    bl_idname = "base.surf_tools_panel"
+class BASE_PT_SurfTools(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -175,9 +174,8 @@ class SurfToolsPanel(bpy.types.Panel):
     def draw(self, context):
         pass
 
-class CollisionPanel(bpy.types.Panel):
-    bl_parent_id = "base.surf_tools_panel"
-    bl_idname = "base.collision_panel"
+class BASE_PT_Collision(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_SurfTools"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -194,9 +192,8 @@ class CollisionPanel(bpy.types.Panel):
         common.add_prop(self.layout, "Thickness", collision, "thickness")
         self.layout.operator("base.surf_collision")
 
-class CurvedRampPanel(bpy.types.Panel):
-    bl_parent_id = "base.surf_tools_panel"
-    bl_idname = "base.curved_ramp_panel"
+class BASE_PT_CurvedRamp(bpy.types.Panel):
+    bl_parent_id = "BASE_PT_SurfTools"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
