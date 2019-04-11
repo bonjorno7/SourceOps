@@ -4,7 +4,7 @@ bl_info = {
     "name" : "BASE",
     "description" : "Blender Add-on for Source Engine, a more convenient but less powerful alternative to Blender Source Tools",
     "author" : "bonjorno7",
-    "version" : (0, 3, 3),
+    "version" : (0, 3, 4),
     "location" : "3D View > Sidebar",
     "category" : "Import-Export",
     "warning" : "",
@@ -12,44 +12,54 @@ bl_info = {
 # </definition>
 
 # <import>
-import bpy
-from . settings import *
-from . model_export import *
-from . surf_tools import *
-from . material_import import *
+import os, subprocess, math
+import bpy, bmesh, mathutils
+
+from . settings . settings import BASE_PG_SettingsProps
+from . settings . game import BASE_PG_GameProps, BASE_UL_GameList, BASE_OT_AddGame, BASE_OT_RemoveGame, BASE_OT_MoveGame
+from . settings . panels import BASE_PT_SettingsPanel, BASE_PT_OptionsPanel, BASE_PT_GamesPanel
+
+from . model_export . model import BASE_PG_ModelProps, BASE_UL_ModelList, BASE_OT_AddModel, BASE_OT_RemoveModel, BASE_OT_MoveModel
+from . model_export . mesh import BASE_PG_MeshProps, BASE_UL_MeshList, BASE_OT_AddMesh, BASE_OT_RemoveMesh, BASE_OT_MoveMesh
+from . model_export . export_model import BASE_OT_ExportModel
+from . model_export . view_model import BASE_OT_ViewModel
+from . model_export . panels import BASE_PT_ModelExportPanel, BASE_PT_ModelPanel, BASE_PT_MeshPanel, BASE_PT_PropertiesPanel
+
+from . surf_tools . surf_collision import BASE_PG_CollisionProps, BASE_OT_SurfCollision
+from . surf_tools . curved_ramp import BASE_PG_SurfRampProps, BASE_OT_SurfRampify
+from . surf_tools . panels import BASE_PT_SurfToolsPanel, BASE_PT_CollisionPanel, BASE_PT_CurvedRampPanel
 # </import>
 
-# <classes>
-class BASE_PG_Properties(bpy.types.PropertyGroup):
+# <props>
+class BASE_PG_Props(bpy.types.PropertyGroup):
     """Global variables for this add-on"""
-    settings: bpy.props.PointerProperty(type = BASE_PG_Settings)
+    settings: bpy.props.PointerProperty(type = BASE_PG_SettingsProps)
 
-    models: bpy.props.CollectionProperty(type = BASE_PG_Model)
+    models: bpy.props.CollectionProperty(type = BASE_PG_ModelProps)
     model_index: bpy.props.IntProperty(default = 0)
 
-    collision: bpy.props.PointerProperty(type = BASE_PG_Collision)
-    surf_ramp: bpy.props.PointerProperty(type = BASE_PG_SurfRamp)
-# </classes>
+    collision: bpy.props.PointerProperty(type = BASE_PG_CollisionProps)
+    surf_ramp: bpy.props.PointerProperty(type = BASE_PG_SurfRampProps)
+# </props>
 
 # <variables>
 classes = (
-    BASE_PG_Game, BASE_PG_Settings,
-    BASE_PG_Mesh, BASE_PG_Model,
-    BASE_PG_Collision, BASE_PG_SurfRamp,
+    BASE_PG_GameProps, BASE_PG_SettingsProps,
+    BASE_UL_GameList, BASE_OT_AddGame, BASE_OT_RemoveGame, BASE_OT_MoveGame,
+    BASE_PT_SettingsPanel, BASE_PT_OptionsPanel, BASE_PT_GamesPanel,
 
-    BASE_UL_Game, BASE_OT_GameAdd, BASE_OT_GameRemove, BASE_OT_GameMove,
-    BASE_UL_Model, BASE_OT_ModelAdd, BASE_OT_ModelRemove, BASE_OT_ModelMove,
-    BASE_UL_Mesh, BASE_OT_MeshAdd, BASE_OT_MeshRemove, BASE_OT_MeshMove,
-    BASE_OT_ModelExport, BASE_OT_ModelView,
-    BASE_OT_SurfRampify, BASE_OT_SurfCollision,
-    BASE_OT_ImportMaterial,
+    BASE_PG_MeshProps, BASE_PG_ModelProps,
+    BASE_UL_ModelList, BASE_UL_MeshList,
+    BASE_OT_AddModel, BASE_OT_RemoveModel, BASE_OT_MoveModel,
+    BASE_OT_AddMesh, BASE_OT_RemoveMesh, BASE_OT_MoveMesh,
+    BASE_OT_ExportModel, BASE_OT_ViewModel,
+    BASE_PT_ModelExportPanel, BASE_PT_ModelPanel, BASE_PT_MeshPanel, BASE_PT_PropertiesPanel,
 
-    BASE_PT_Settings, BASE_PT_Options, BASE_PT_Games,
-    BASE_PT_ModelExport, BASE_PT_Model, BASE_PT_Mesh, BASE_PT_Properties,
-    BASE_PT_SurfTools, BASE_PT_Collision, BASE_PT_CurvedRamp,
-    BASE_PT_MaterialImport,
+    BASE_PG_CollisionProps, BASE_PG_SurfRampProps,
+    BASE_OT_SurfCollision, BASE_OT_SurfRampify,
+    BASE_PT_SurfToolsPanel, BASE_PT_CollisionPanel, BASE_PT_CurvedRampPanel,
 
-    BASE_PG_Properties,
+    BASE_PG_Props,
 )
 
 register_classes, unregister_classes = bpy.utils.register_classes_factory(classes)
@@ -58,7 +68,7 @@ register_classes, unregister_classes = bpy.utils.register_classes_factory(classe
 # <functions>
 def register():
     register_classes()
-    bpy.types.Scene.BASE = bpy.props.PointerProperty(type = BASE_PG_Properties)
+    bpy.types.Scene.BASE = bpy.props.PointerProperty(type = BASE_PG_Props)
 
 def unregister():
     unregister_classes()
