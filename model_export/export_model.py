@@ -23,8 +23,8 @@ def write_smd_header(smd):
     smd.write("skeleton\n")
     smd.write("time 0\n")
     smd.write("0" + "    ")
-    smd.write(str(0.0) + " " + str(0.0) + " " + str(0.0) + "    ")
-    smd.write(str(0.0) + " " + str(0.0) + " " + str(0.0) + "\n")
+    smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
+    smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
     smd.write("end\n")
 
 def export_meshes(context, directory):
@@ -61,7 +61,7 @@ def export_meshes(context, directory):
             ref.write(material_name + "\n")
 
             for index in range(3):
-                ref.write("0" + "    ")
+                ref.write("0    ")
                 loop_index = poly.loop_indices[index]
                 loop = temp.loops[loop_index]
 
@@ -69,19 +69,19 @@ def export_meshes(context, directory):
                 vert = temp.vertices[vert_index]
                 rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
                 vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                ref.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
+                ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
                 normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
                 normal = rot @ obj.matrix_local @ normal
-                ref.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
+                ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
                 if temp.uv_layers:
                     uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
                     uv_loop = uv_layer.data[loop_index]
                     uv = uv_loop.uv
-                    ref.write(str(uv[0]) + " " + str(uv[1]) + "\n")
+                    ref.write("%f %f\n" % (uv[0], uv[1]))
                 else:
-                    ref.write(str(0) + " " + str(0) + "\n")
+                    ref.write("%f %f\n" % (0.0, 0.0))
 
         temp.free_normals_split()
         bpy.data.meshes.remove(temp)
@@ -109,13 +109,13 @@ def export_meshes(context, directory):
                 vert = temp.vertices[vert_index]
                 rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
                 vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                col.write(str(-vec[1] * scale) + " " + str(vec[0] * scale) + " " + str(vec[2] * scale) + "    ")
+                ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
                 normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
                 normal = rot @ obj.matrix_local @ normal
-                col.write(str(-normal[1]) + " " + str(normal[0]) + " " + str(normal[2]) + "    ")
+                ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
-                col.write(str(0) + " " + str(0))
+                ref.write("%f %f\n" % (0.0, 0.0))
                 col.write("\n")
 
         bpy.data.meshes.remove(temp)
@@ -179,25 +179,27 @@ class BASE_OT_ExportModel(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.meshes
+
+                    if model.name and model.meshes:
+                        return not game.name == "Invalid Game"
 
         return False
 
     def execute(self, context):
-        settings = context.scene.BASE.settings
-        game_path = settings.games[settings.game_index].path
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
-        model_path = game_path + os.sep + "modelsrc" + os.sep + model.name + os.sep
+        base = context.scene.BASE
+        settings = base.settings
+        games = settings.games
+        game_index = settings.game_index
+        game = games[game_index]
+
+        model = base.models[base.model_index]
+        model_path = game.path + os.sep + "modelsrc" + os.sep + model.name + os.sep
         if not os.path.exists(model_path): os.makedirs(model_path)
 
-        if export_meshes(context, model_path) and generate_qc(context, game_path):
-            studiomdl = os.path.split(game_path)[0] + "\\bin\\studiomdl.exe"
-            args = [studiomdl, model_path + "compile.qc"]
-            print(studiomdl + "    " + model_path + "compile.qc" + "\n")
-
-            if os.path.isfile(studiomdl):
-                subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-            else: self.report({'ERROR'}, "StudioMDL not found, your game path is invalid")
+        if export_meshes(context, model_path) and generate_qc(context, game.path):
+            args = [game.studiomdl, model_path + "compile.qc"]
+            print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
+            subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
         return {'FINISHED'}
 # </operators>

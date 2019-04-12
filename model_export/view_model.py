@@ -12,7 +12,8 @@ class BASE_OT_ViewModel(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         games = settings.games
         game_index = settings.game_index
 
@@ -20,31 +21,34 @@ class BASE_OT_ViewModel(bpy.types.Operator):
             game = games[game_index]
 
             if game.path:
-                models = context.scene.BASE.models
-                model_index = context.scene.BASE.model_index
+                models = base.models
+                model_index = base.model_index
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.meshes
+
+                    if model.name and model.meshes:
+                        return not game.name == "Invalid Game"
 
         return False
 
     def execute(self, context):
-        settings = context.scene.BASE.settings
-        game_path = settings.games[settings.game_index].path
-        model = context.scene.BASE.models[context.scene.BASE.model_index]
-        model_path = game_path + os.sep + "models" + os.sep + model.name + ".mdl"
-        dx90path = game_path + os.sep + "models" + os.sep + model.name + ".dx90.vtx"
+        base = context.scene.BASE
+        settings = base.settings
+        games = settings.games
+        game_index = settings.game_index
+        game = games[game_index]
 
-        hlmv = os.path.split(game_path)[0] + "\\bin\\hlmv.exe"
-        args = [hlmv, "-game", game_path, model_path]
-        print(hlmv + "    " + model_path + "\n")
+        model = base.models[base.model_index]
+        model_path = game.path + os.sep + "models" + os.sep + model.name + ".mdl"
+        dx90path = game.path + os.sep + "models" + os.sep + model.name + ".dx90.vtx"
 
-        if os.path.isfile(hlmv):
-            if os.path.isfile(dx90path):
-                subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-            else: self.report({"WARNING"}, "Model not found")
-        else: self.report({'ERROR'}, "HLMV not found, your game path is invalid")
+        args = [game.hlmv, "-game", game.path, model_path]
+        print(game.hlmv + "    " + model_path + "\n")
+
+        if os.path.isfile(dx90path):
+            subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        else: self.report({"WARNING"}, "Model not found")
 
         return {'FINISHED'}
 # </operators>

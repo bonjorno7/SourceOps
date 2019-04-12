@@ -61,5 +61,5 @@ class BASE_PT_GamesPanel(bpy.types.Panel):
 
         if games and game_index >= 0:
             game = games[game_index]
-            common.add_prop(self.layout, "Path", game, "path")
+            self.layout.row().prop(game, "path", text = "")
 # </panels>

@@ -3,10 +3,6 @@ import os, subprocess, math
 import bpy, bmesh, mathutils
 # </import>
 
-# <variables>
-dir_up = os.pardir + os.sep + os.pardir
-# </variables>
-
 # <functions>
 def is_mesh(self, obj):
     """Return whether the object is a mesh"""

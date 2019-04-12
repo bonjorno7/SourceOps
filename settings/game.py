@@ -7,25 +7,41 @@ from .. import common
 # <functions>
 def update_path(self, context):
     self["path"] = os.path.realpath(bpy.path.abspath(self["path"]))
-    self["name"] = os.path.basename(os.path.realpath(self["path"] + common.dir_up))
-    if not os.path.isdir(self["path"]): self.report({'WARNING'}, "Invalid game path")
+    self["name"] = os.path.basename(os.path.realpath(self["path"] + "..\\.."))
+    self["studiomdl"] = os.path.split(self["path"])[0] + "\\bin\\studiomdl.exe"
+    self["hlmv"] = os.path.split(self["path"])[0] + "\\bin\\hlmv.exe"
+
+    if not os.path.isfile(self["studiomdl"]):
+        self["name"] = "Invalid Game"
 # </functions>
 
 # <props>
 class BASE_PG_GameProps(bpy.types.PropertyGroup):
     """Properties for a game"""
-    name: bpy.props.StringProperty(
-        name = "Game Name",
-        description = "Name of the game you're exporting for",
-        default = "Game Name",
-    )
-
     path: bpy.props.StringProperty(
         name = "Game Path",
         description = "Path to your game folder, eg cstrike for CS:S",
         default = "",
         subtype = 'FILE_PATH',
         update = update_path,
+    )
+
+    name: bpy.props.StringProperty(
+        name = "Game Name",
+        description = "Name of the game you're exporting for",
+        default = "Game Name",
+    )
+
+    studiomdl: bpy.props.StringProperty(
+        name = "StudioMDL",
+        description = "Path to studiomdl.exe",
+        default = "",
+    )
+
+    hlmv: bpy.props.StringProperty(
+        name = "HLMV",
+        description = "Path to hlmv.exe",
+        default = "",
     )
 # </props>
 
@@ -41,7 +57,8 @@ class BASE_OT_AddGame(bpy.types.Operator):
     bl_label = "Add Game"
 
     def execute(self, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         settings.games.add()
         settings.game_index = len(settings.games) - 1
         return {'FINISHED'}
@@ -53,11 +70,13 @@ class BASE_OT_RemoveGame(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         return len(settings.games) > 0
 
     def execute(self, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         settings.games.remove(settings.game_index)
         settings.game_index = min(
             max(0, settings.game_index - 1),
@@ -77,11 +96,13 @@ class BASE_OT_MoveGame(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         return len(settings.games) > 1
 
     def execute(self, context):
-        settings = context.scene.BASE.settings
+        base = context.scene.BASE
+        settings = base.settings
         neighbor = settings.game_index + (-1 if self.direction == 'UP' else 1)
         settings.games.move(neighbor, settings.game_index)
         list_length = len(settings.games) - 1
