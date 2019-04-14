@@ -2,6 +2,8 @@
 import os, subprocess, math
 import bpy, bmesh, mathutils
 from .. import common
+
+
 # </import>
 
 # <functions>
@@ -13,6 +15,7 @@ def refresh_meshes(model):
             meshes_to_remove.append(i)
     for i in reversed(meshes_to_remove):
         model.meshes.remove(i)
+
 
 def write_smd_header(smd):
     """Write the header for this SMD file, including the required dummy skeleton and animation data"""
@@ -26,6 +29,7 @@ def write_smd_header(smd):
     smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
     smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
     smd.write("end\n")
+
 
 def export_meshes(context, directory):
     """Export this model's meshes as SMD"""
@@ -49,7 +53,7 @@ def export_meshes(context, directory):
         ref.write("triangles\n")
 
         for obj in references:
-            temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
             common.triangulate(temp)
             temp.calc_normals_split()
 
@@ -93,7 +97,7 @@ def export_meshes(context, directory):
         col.write("triangles\n")
 
         for obj in collisions:
-            temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
             common.triangulate(temp)
 
             for poly in temp.polygons:
@@ -122,6 +126,7 @@ def export_meshes(context, directory):
         col.write("end\n")
 
     return True
+
 
 def generate_qc(context, game_path):
     """Generate the QC for this model"""
@@ -153,6 +158,8 @@ def generate_qc(context, game_path):
 
     qc.close()
     return True
+
+
 # </functions>
 
 # <operators>
@@ -197,7 +204,12 @@ class BASE_OT_ExportModel(bpy.types.Operator):
         if export_meshes(context, model_path) and generate_qc(context, game.path):
             args = [game.studiomdl, model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
-            subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            while 1:
+                poll = pipe.poll()
+                if poll is None:
+                    print(pipe.communicate())
+                else:
+                    break
         return {'FINISHED'}
 # </operators>

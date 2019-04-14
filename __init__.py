@@ -81,6 +81,8 @@ def register():
 
 
 def unregister():
+    from . utils.vtf_wrapper.VTFLib import VTFLib
+    del VTFLib.vtflib_cdll
     unregister_classes()
     del bpy.types.Scene.BASE
 

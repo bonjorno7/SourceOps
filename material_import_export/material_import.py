@@ -28,6 +28,7 @@ class BASE_OT_ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelpe
         game_index = settings.game_index
         folder = Path(self.properties.filepath).parent
         for f in self.files:
+            print(f'Trying to import {f.name}')
             if not f.name.lower().endswith(".vmt"):
                 continue
 
