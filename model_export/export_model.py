@@ -44,84 +44,82 @@ def export_meshes(context, directory):
         if mesh.kind == 'COLLISION':
             collisions.append(mesh.obj)
 
-    ref = open(directory + "reference.smd", "w+")
-    write_smd_header(ref)
-    ref.write("triangles\n")
+    with open(directory + "reference.smd", "w+") as ref:
+        write_smd_header(ref)
+        ref.write("triangles\n")
 
-    for obj in references:
-        temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
-        common.triangulate(temp)
-        temp.calc_normals_split()
+        for obj in references:
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
+            common.triangulate(temp)
+            temp.calc_normals_split()
 
-        for poly in temp.polygons:
-            material_name = "no_material"
-            if poly.material_index < len(obj.material_slots):
-                material = obj.material_slots[poly.material_index].material
-                if material != None: material_name = material.name
-            ref.write(material_name + "\n")
+            for poly in temp.polygons:
+                material_name = "no_material"
+                if poly.material_index < len(obj.material_slots):
+                    material = obj.material_slots[poly.material_index].material
+                    if material != None: material_name = material.name
+                ref.write(material_name + "\n")
 
-            for index in range(3):
-                ref.write("0    ")
-                loop_index = poly.loop_indices[index]
-                loop = temp.loops[loop_index]
+                for index in range(3):
+                    ref.write("0    ")
+                    loop_index = poly.loop_indices[index]
+                    loop = temp.loops[loop_index]
 
-                vert_index = loop.vertex_index
-                vert = temp.vertices[vert_index]
-                rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-                vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                    vert_index = loop.vertex_index
+                    vert = temp.vertices[vert_index]
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
+                    ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
-                normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
-                normal = rot @ obj.matrix_local @ normal
-                ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                    normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
+                    normal = rot @ obj.matrix_local @ normal
+                    ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
-                if temp.uv_layers:
-                    uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
-                    uv_loop = uv_layer.data[loop_index]
-                    uv = uv_loop.uv
-                    ref.write("%f %f\n" % (uv[0], uv[1]))
-                else:
-                    ref.write("%f %f\n" % (0.0, 0.0))
+                    if temp.uv_layers:
+                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
+                        uv_loop = uv_layer.data[loop_index]
+                        uv = uv_loop.uv
+                        ref.write("%f %f\n" % (uv[0], uv[1]))
+                    else:
+                        ref.write("%f %f\n" % (0.0, 0.0))
 
-        temp.free_normals_split()
-        bpy.data.meshes.remove(temp)
+            temp.free_normals_split()
+            bpy.data.meshes.remove(temp)
 
-    ref.write("end\n")
-    ref.close()
+        ref.write("end\n")
 
-    col = open(directory + "collision.smd", "w+")
-    write_smd_header(col)
-    col.write("triangles\n")
+    with open(directory + "collision.smd", "w+") as col:
+        write_smd_header(col)
+        col.write("triangles\n")
 
-    for obj in collisions:
-        temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
-        common.triangulate(temp)
+        for obj in collisions:
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
+            common.triangulate(temp)
 
-        for poly in temp.polygons:
-            col.write("no_material" + "\n")
+            for poly in temp.polygons:
+                col.write("no_material" + "\n")
 
-            for index in range(3):
-                col.write("0" + "    ")
-                loop_index = poly.loop_indices[index]
-                loop = temp.loops[loop_index]
+                for index in range(3):
+                    col.write("0" + "    ")
+                    loop_index = poly.loop_indices[index]
+                    loop = temp.loops[loop_index]
 
-                vert_index = loop.vertex_index
-                vert = temp.vertices[vert_index]
-                rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-                vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                    vert_index = loop.vertex_index
+                    vert = temp.vertices[vert_index]
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
+                    col.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
-                normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
-                normal = rot @ obj.matrix_local @ normal
-                ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                    normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
+                    normal = rot @ obj.matrix_local @ normal
+                    col.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
-                ref.write("%f %f\n" % (0.0, 0.0))
-                col.write("\n")
+                    col.write("%f %f\n" % (0.0, 0.0))
+                    col.write("\n")
 
-        bpy.data.meshes.remove(temp)
+            bpy.data.meshes.remove(temp)
 
-    col.write("end\n")
-    col.close()
+        col.write("end\n")
 
     return True
 

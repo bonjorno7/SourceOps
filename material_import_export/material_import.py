@@ -26,7 +26,6 @@ class BASE_OT_ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelpe
         settings = base.settings
         games = settings.games
         game_index = settings.game_index
-        # folder, _ = os.path.split(self.properties.filepath)
         folder = Path(self.properties.filepath).parent
         for f in self.files:
             if not f.name.lower().endswith(".vmt"):
