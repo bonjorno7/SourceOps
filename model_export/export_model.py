@@ -109,13 +109,13 @@ def export_meshes(context, directory):
                 vert = temp.vertices[vert_index]
                 rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
                 vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                col.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
                 normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
                 normal = rot @ obj.matrix_local @ normal
-                ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                col.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
-                ref.write("%f %f\n" % (0.0, 0.0))
+                col.write("%f %f\n" % (0.0, 0.0))
                 col.write("\n")
 
         bpy.data.meshes.remove(temp)
