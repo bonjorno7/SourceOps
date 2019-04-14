@@ -3,8 +3,8 @@ from pathlib import Path
 
 import numpy as np
 
-from SourceIO.vtf.VTFWrapper import VTFLib
-from SourceIO.vtf.VTFWrapper.VTFLibEnums import ImageFlag
+from ..utils.vtf_wrapper import VTFLib, VTFLibEnums
+from ..utils.vtf_wrapper.VTFLibEnums import ImageFlag
 
 vtf_lib = VTFLib.VTFLib()
 
@@ -33,7 +33,7 @@ def import_texture(path, load_alpha=True, alpha_only=False):
             ImageFlag.ImageFlagOneBitAlpha)) and load_alpha:
         print('Image has alpha channel, splitting and saving it!')
         alpha_view = pixels[3::4]
-        has_alpha = int(alpha_view.sum()) != int(alpha_view.shape[1] * alpha_view.shape[0])
+        has_alpha = int(alpha_view.sum(dtype=np.double)) != int(alpha_view.shape[0] * 255)
         if load_alpha and has_alpha:
             alpha = alpha_view.copy()
             alpha = np.repeat(alpha, 4)
@@ -66,3 +66,6 @@ def import_texture(path, load_alpha=True, alpha_only=False):
     vtf_lib.image_destroy()
 
     return name + '_RGB', (name + '_A') if has_alpha else None
+
+if __name__ == '__main__':
+    pass

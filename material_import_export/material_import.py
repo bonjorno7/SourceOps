@@ -5,7 +5,9 @@ from pprint import pprint
 
 import bpy, bmesh, mathutils, bpy_extras
 from .. import common
+
 from . import vmt
+from . import import_vtf
 
 
 # </import>
@@ -36,7 +38,11 @@ class BASE_OT_ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelpe
                 mod_folder = None
             material = vmt.VMT(folder / f.name, mod_folder)
             material.parse()
+            # all used textures are in material.textures
+            # TODO: implement cycles material builder
             pprint(material.textures)
+            for tex in material.textures.values():
+                import_vtf.import_texture(tex)
 
         return {"FINISHED"}
 
