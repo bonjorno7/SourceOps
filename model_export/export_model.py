@@ -119,7 +119,6 @@ def export_meshes(context, directory):
                     col.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
                     col.write("%f %f\n" % (0.0, 0.0))
-                    col.write("\n")
 
             bpy.data.meshes.remove(temp)
 
@@ -147,7 +146,7 @@ def generate_qc(context, game_path):
     qc.write("$modelname \"" + model.name + "\"\n")
     qc.write("$body shell \"reference.smd\"\n")
     if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
-        qc.write("$collisionmodel \"collision.smd\" { $concave $maxconvexpieces 10000 }\n")
+        qc.write("$collisionmodel \"collision.smd\" {\n\t$concave\n\t$maxconvexpieces 10000\n}\n")
     qc.write("$sequence idle \"reference.smd\"\n")
     qc.write("$cdmaterials \"" + os.sep + "\"\n")
     qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
@@ -202,13 +201,13 @@ class BASE_OT_ExportModel(bpy.types.Operator):
         if not os.path.exists(model_path): os.makedirs(model_path)
 
         if export_meshes(context, model_path) and generate_qc(context, game.path):
-            args = [game.studiomdl, model_path + "compile.qc"]
+            args = [game.studiomdl,'-nop4','-fullcollide', model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             while 1:
-                poll = pipe.poll()
-                if poll is None:
-                    print(pipe.communicate())
+                code = pipe.returncode
+                if code is None:
+                    print(pipe.communicate()[0].decode('utf'))
                 else:
                     break
         return {'FINISHED'}
