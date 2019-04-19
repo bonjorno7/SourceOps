@@ -207,7 +207,8 @@ class BASE_OT_ExportModel(bpy.types.Operator):
             while 1:
                 code = pipe.returncode
                 if code is None:
-                    print(pipe.communicate()[0].decode('utf'))
+                    with open(model_path + "log.txt", "w+") as log:
+                        log.write(pipe.communicate()[0].decode('utf'))
                 else:
                     break
         return {'FINISHED'}
