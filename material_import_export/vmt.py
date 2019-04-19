@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 import os
 
 from ..utils.valve_utils import MaterialPathResolver, KeyValueFile, GameInfoFile

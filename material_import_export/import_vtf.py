@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 import bpy
 from pathlib import Path
 

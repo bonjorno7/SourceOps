@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 # <import>
 import os, subprocess, math
 import bpy, bmesh, mathutils
@@ -201,7 +204,7 @@ class BASE_OT_ExportModel(bpy.types.Operator):
         if not os.path.exists(model_path): os.makedirs(model_path)
 
         if export_meshes(context, model_path) and generate_qc(context, game.path):
-            args = [game.studiomdl,'-nop4','-fullcollide', model_path + "compile.qc"]
+            args = [game.studiomdl, '-nop4', '-fullcollide', model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             while 1:

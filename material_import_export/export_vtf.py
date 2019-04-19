@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 from ctypes import create_string_buffer
 from pathlib import Path
 

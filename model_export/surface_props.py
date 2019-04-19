@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 surface_props = [
     ("default", "default", ""),
     ("default_silent", "default_silent", ""),

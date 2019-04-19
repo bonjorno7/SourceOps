@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 # <import>
 import os, subprocess, math
 import bpy, bmesh, mathutils

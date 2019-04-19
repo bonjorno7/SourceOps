@@ -1,3 +1,6 @@
+# <pep8 compliant>
+
+
 # <definition>
 bl_info = {
     "blender" : (2, 80, 0),
