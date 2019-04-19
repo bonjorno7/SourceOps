@@ -2,6 +2,8 @@
 import os, subprocess, math
 import bpy, bmesh, mathutils
 from .. import common
+
+
 # </import>
 
 # <functions>
@@ -13,6 +15,7 @@ def refresh_meshes(model):
             meshes_to_remove.append(i)
     for i in reversed(meshes_to_remove):
         model.meshes.remove(i)
+
 
 def write_smd_header(smd):
     """Write the header for this SMD file, including the required dummy skeleton and animation data"""
@@ -26,6 +29,7 @@ def write_smd_header(smd):
     smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
     smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
     smd.write("end\n")
+
 
 def export_meshes(context, directory):
     """Export this model's meshes as SMD"""
@@ -44,86 +48,84 @@ def export_meshes(context, directory):
         if mesh.kind == 'COLLISION':
             collisions.append(mesh.obj)
 
-    ref = open(directory + "reference.smd", "w+")
-    write_smd_header(ref)
-    ref.write("triangles\n")
+    with open(directory + "reference.smd", "w+") as ref:
+        write_smd_header(ref)
+        ref.write("triangles\n")
 
-    for obj in references:
-        temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
-        common.triangulate(temp)
-        temp.calc_normals_split()
+        for obj in references:
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
+            common.triangulate(temp)
+            temp.calc_normals_split()
 
-        for poly in temp.polygons:
-            material_name = "no_material"
-            if poly.material_index < len(obj.material_slots):
-                material = obj.material_slots[poly.material_index].material
-                if material != None: material_name = material.name
-            ref.write(material_name + "\n")
+            for poly in temp.polygons:
+                material_name = "no_material"
+                if poly.material_index < len(obj.material_slots):
+                    material = obj.material_slots[poly.material_index].material
+                    if material != None: material_name = material.name
+                ref.write(material_name + "\n")
 
-            for index in range(3):
-                ref.write("0    ")
-                loop_index = poly.loop_indices[index]
-                loop = temp.loops[loop_index]
+                for index in range(3):
+                    ref.write("0    ")
+                    loop_index = poly.loop_indices[index]
+                    loop = temp.loops[loop_index]
 
-                vert_index = loop.vertex_index
-                vert = temp.vertices[vert_index]
-                rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-                vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                    vert_index = loop.vertex_index
+                    vert = temp.vertices[vert_index]
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
+                    ref.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
-                normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
-                normal = rot @ obj.matrix_local @ normal
-                ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                    normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
+                    normal = rot @ obj.matrix_local @ normal
+                    ref.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
-                if temp.uv_layers:
-                    uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
-                    uv_loop = uv_layer.data[loop_index]
-                    uv = uv_loop.uv
-                    ref.write("%f %f\n" % (uv[0], uv[1]))
-                else:
-                    ref.write("%f %f\n" % (0.0, 0.0))
+                    if temp.uv_layers:
+                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
+                        uv_loop = uv_layer.data[loop_index]
+                        uv = uv_loop.uv
+                        ref.write("%f %f\n" % (uv[0], uv[1]))
+                    else:
+                        ref.write("%f %f\n" % (0.0, 0.0))
 
-        temp.free_normals_split()
-        bpy.data.meshes.remove(temp)
+            temp.free_normals_split()
+            bpy.data.meshes.remove(temp)
 
-    ref.write("end\n")
-    ref.close()
+        ref.write("end\n")
 
-    col = open(directory + "collision.smd", "w+")
-    write_smd_header(col)
-    col.write("triangles\n")
+    with open(directory + "collision.smd", "w+") as col:
+        write_smd_header(col)
+        col.write("triangles\n")
 
-    for obj in collisions:
-        temp = obj.to_mesh(context.depsgraph, apply_modifiers = True, calc_undeformed = False)
-        common.triangulate(temp)
+        for obj in collisions:
+            temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
+            common.triangulate(temp)
 
-        for poly in temp.polygons:
-            col.write("no_material" + "\n")
+            for poly in temp.polygons:
+                col.write("no_material" + "\n")
 
-            for index in range(3):
-                col.write("0" + "    ")
-                loop_index = poly.loop_indices[index]
-                loop = temp.loops[loop_index]
+                for index in range(3):
+                    col.write("0" + "    ")
+                    loop_index = poly.loop_indices[index]
+                    loop = temp.loops[loop_index]
 
-                vert_index = loop.vertex_index
-                vert = temp.vertices[vert_index]
-                rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-                vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                col.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                    vert_index = loop.vertex_index
+                    vert = temp.vertices[vert_index]
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
+                    col.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
 
-                normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
-                normal = rot @ obj.matrix_local @ normal
-                col.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                    normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
+                    normal = rot @ obj.matrix_local @ normal
+                    col.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
 
-                col.write("%f %f\n" % (0.0, 0.0))
-                col.write("\n")
+                    col.write("%f %f\n" % (0.0, 0.0))
 
-        bpy.data.meshes.remove(temp)
+            bpy.data.meshes.remove(temp)
 
-    col.write("end\n")
-    col.close()
+        col.write("end\n")
 
     return True
+
 
 def generate_qc(context, game_path):
     """Generate the QC for this model"""
@@ -144,7 +146,7 @@ def generate_qc(context, game_path):
     qc.write("$modelname \"" + model.name + "\"\n")
     qc.write("$body shell \"reference.smd\"\n")
     if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
-        qc.write("$collisionmodel \"collision.smd\" { $concave $maxconvexpieces 10000 }\n")
+        qc.write("$collisionmodel \"collision.smd\" {\n\t$concave\n\t$maxconvexpieces 10000\n}\n")
     qc.write("$sequence idle \"reference.smd\"\n")
     qc.write("$cdmaterials \"" + os.sep + "\"\n")
     qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
@@ -155,6 +157,8 @@ def generate_qc(context, game_path):
 
     qc.close()
     return True
+
+
 # </functions>
 
 # <operators>
@@ -197,9 +201,15 @@ class BASE_OT_ExportModel(bpy.types.Operator):
         if not os.path.exists(model_path): os.makedirs(model_path)
 
         if export_meshes(context, model_path) and generate_qc(context, game.path):
-            args = [game.studiomdl, model_path + "compile.qc"]
+            args = [game.studiomdl,'-nop4','-fullcollide', model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
-            subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            while 1:
+                code = pipe.returncode
+                if code is None:
+                    with open(model_path + "log.txt", "w+") as log:
+                        log.write(pipe.communicate()[0].decode('utf'))
+                else:
+                    break
         return {'FINISHED'}
 # </operators>
