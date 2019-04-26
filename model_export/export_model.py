@@ -100,7 +100,7 @@ def export_meshes(context, directory):
 
         for obj in collisions:
             temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
-            # common.fill_holes(temp) # sometimes StudioMDL does this on its own and sometimes it doesn't
+            common.fill_holes(temp)    # sometimes StudioMDL does this on its own and sometimes it doesn't
             common.triangulate(temp)
 
             for poly in temp.polygons:
