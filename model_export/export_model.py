@@ -37,7 +37,8 @@ def export_meshes(context, directory):
     scale = settings.scale
     model = context.scene.BASE.models[context.scene.BASE.model_index]
     refresh_meshes(model)
-    if not model.meshes: return None
+    if not model.meshes:
+        return None
 
     references = []
     collisions = []
@@ -61,17 +62,18 @@ def export_meshes(context, directory):
                 material_name = "no_material"
                 if poly.material_index < len(obj.material_slots):
                     material = obj.material_slots[poly.material_index].material
-                    if material is not None: material_name = material.name
+                    if material is not None:
+                        material_name = material.name
                 smd.write(material_name + "\n")
 
                 for index in range(3):
                     smd.write("0    ")
                     loop_index = poly.loop_indices[index]
                     loop = temp.loops[loop_index]
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
                     vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co) * scale
                     smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
@@ -98,7 +100,7 @@ def export_meshes(context, directory):
 
         for obj in collisions:
             temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
-            common.fill_holes(temp)
+            # common.fill_holes(temp) # sometimes StudioMDL does this on its own and sometimes it doesn't
             common.triangulate(temp)
 
             for poly in temp.polygons:
@@ -108,10 +110,10 @@ def export_meshes(context, directory):
                     smd.write("0" + "    ")
                     loop_index = poly.loop_indices[index]
                     loop = temp.loops[loop_index]
+                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
                     vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co) * scale
                     smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
@@ -135,12 +137,18 @@ def generate_qc(context, game_path):
 
     # deleting the old model so that the model viewer won't load it if you try to view it while it's still compiling
     model_path = game_path + os.sep + "models" + os.sep + model.name
-    if os.path.isfile(model_path + ".dx90.vtx"): os.remove(model_path + ".dx90.vtx")
-    if os.path.isfile(model_path + ".dx80.vtx"): os.remove(model_path + ".dx80.vtx")
-    if os.path.isfile(model_path + ".sw.vtx"): os.remove(model_path + ".sw.vtx")
-    if os.path.isfile(model_path + ".vvd"): os.remove(model_path + ".vvd")
-    if os.path.isfile(model_path + ".mdl"): os.remove(model_path + ".mdl")
-    if os.path.isfile(model_path + ".phy"): os.remove(model_path + ".phy")
+    if os.path.isfile(model_path + ".dx90.vtx"):
+        os.remove(model_path + ".dx90.vtx")
+    if os.path.isfile(model_path + ".dx80.vtx"):
+        os.remove(model_path + ".dx80.vtx")
+    if os.path.isfile(model_path + ".sw.vtx"):
+        os.remove(model_path + ".sw.vtx")
+    if os.path.isfile(model_path + ".vvd"):
+        os.remove(model_path + ".vvd")
+    if os.path.isfile(model_path + ".mdl"):
+        os.remove(model_path + ".mdl")
+    if os.path.isfile(model_path + ".phy"):
+        os.remove(model_path + ".phy")
 
     modelsrc_path = game_path + os.sep + "modelsrc" + os.sep + model.name + os.sep
     qc = open(modelsrc_path + "compile.qc", "w+")
@@ -153,8 +161,10 @@ def generate_qc(context, game_path):
     qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
     qc.write("$staticprop\n")
 
-    if model.autocenter: qc.write("$autocenter\n")
-    if model.mostly_opaque: qc.write("$mostlyopaque\n")
+    if model.autocenter:
+        qc.write("$autocenter\n")
+    if model.mostly_opaque:
+        qc.write("$mostlyopaque\n")
 
     qc.close()
     return True
@@ -199,7 +209,8 @@ class BASE_OT_ExportModel(bpy.types.Operator):
 
         model = base.models[base.model_index]
         model_path = game.path + os.sep + "modelsrc" + os.sep + model.name + os.sep
-        if not os.path.exists(model_path): os.makedirs(model_path)
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
 
         if export_meshes(context, model_path) and generate_qc(context, game.path):
             args = [game.studiomdl, '-nop4', '-fullcollide', model_path + "compile.qc"]
