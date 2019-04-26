@@ -1,6 +1,3 @@
-# <pep8 compliant>
-
-
 # <import>
 import os, subprocess, math
 import bpy, bmesh, mathutils
@@ -64,7 +61,7 @@ def export_meshes(context, directory):
                 material_name = "no_material"
                 if poly.material_index < len(obj.material_slots):
                     material = obj.material_slots[poly.material_index].material
-                    if material != None: material_name = material.name
+                    if material is not None: material_name = material.name
                 smd.write(material_name + "\n")
 
                 for index in range(3):
@@ -75,12 +72,12 @@ def export_meshes(context, directory):
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
                     rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                    smd.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co) * scale
+                    smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
-                    normal = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
-                    normal = rot @ obj.matrix_local @ normal
-                    smd.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                    nor = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
+                    nor = rot @ obj.matrix_local @ nor
+                    smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
 
                     if temp.uv_layers:
                         uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
@@ -115,12 +112,12 @@ def export_meshes(context, directory):
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
                     rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co)
-                    smd.write("%f %f %f    " % (-vec[1] * scale, vec[0] * scale, vec[2] * scale))
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co) * scale
+                    smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
-                    normal = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
-                    normal = rot @ obj.matrix_local @ normal
-                    smd.write("%f %f %f    " % (-normal[1], normal[0], normal[2]))
+                    nor = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
+                    nor = rot @ obj.matrix_local @ nor
+                    smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
 
                     smd.write("%f %f\n" % (0.0, 0.0))
 

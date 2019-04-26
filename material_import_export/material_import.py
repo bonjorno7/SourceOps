@@ -1,6 +1,3 @@
-# <pep8 compliant>
-
-
 # <import>
 import os, subprocess, math
 from pathlib import Path

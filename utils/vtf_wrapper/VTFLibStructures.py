@@ -1,6 +1,3 @@
-# <pep8 compliant>
-
-
 from ctypes import *
 try:
     from VTFLibEnums import *
