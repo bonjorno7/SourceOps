@@ -1,12 +1,11 @@
-# <import>
-import os, subprocess, math
-import bpy, bmesh, mathutils
+import os
+import subprocess
+import math
+import bpy
+import mathutils
 from .. import common
 
 
-# </import>
-
-# <functions>
 def refresh_meshes(model):
     """Refresh the list of meshes for this model, remove ones that don't exist anymore"""
     meshes_to_remove = []
@@ -54,7 +53,8 @@ def export_meshes(context, directory):
         smd.write("triangles\n")
 
         for obj in references:
-            temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
+            temp = obj.to_mesh(context.depsgraph,
+                               apply_modifiers=True, calc_undeformed=False)
             common.triangulate(temp)
             temp.calc_normals_split()
 
@@ -74,15 +74,18 @@ def export_meshes(context, directory):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co) * scale
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(
+                        vert.co) * scale
                     smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
-                    nor = mathutils.Vector([loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
+                    nor = mathutils.Vector(
+                        [loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
                     nor = rot @ obj.matrix_local @ nor
                     smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
 
                     if temp.uv_layers:
-                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
+                        uv_layer = [
+                            layer for layer in temp.uv_layers if layer.active_render][0]
                         uv_loop = uv_layer.data[loop_index]
                         uv = uv_loop.uv
                         smd.write("%f %f\n" % (uv[0], uv[1]))
@@ -99,8 +102,10 @@ def export_meshes(context, directory):
         smd.write("triangles\n")
 
         for obj in collisions:
-            temp = obj.to_mesh(context.depsgraph, apply_modifiers=True, calc_undeformed=False)
-            common.fill_holes(temp)    # sometimes StudioMDL does this on its own and sometimes it doesn't
+            temp = obj.to_mesh(context.depsgraph,
+                               apply_modifiers=True, calc_undeformed=False)
+            # sometimes StudioMDL does this on its own and sometimes it doesn't
+            common.fill_holes(temp)
             common.triangulate(temp)
 
             for poly in temp.polygons:
@@ -114,10 +119,12 @@ def export_meshes(context, directory):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = rot @ obj.matrix_local @ mathutils.Vector(vert.co) * scale
+                    vec = rot @ obj.matrix_local @ mathutils.Vector(
+                        vert.co) * scale
                     smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
-                    nor = mathutils.Vector([vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
+                    nor = mathutils.Vector(
+                        [vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
                     nor = rot @ obj.matrix_local @ nor
                     smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
 
@@ -155,7 +162,8 @@ def generate_qc(context, game_path):
     qc.write("$modelname \"" + model.name + "\"\n")
     qc.write("$body shell \"reference.smd\"\n")
     if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
-        qc.write("$collisionmodel \"collision.smd\" {\n\t$concave\n\t$maxconvexpieces 10000\n}\n")
+        qc.write(
+            "$collisionmodel \"collision.smd\" {\n\t$concave\n\t$maxconvexpieces 10000\n}\n")
     qc.write("$sequence idle \"reference.smd\"\n")
     qc.write("$cdmaterials \"" + os.sep + "\"\n")
     qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
@@ -170,10 +178,7 @@ def generate_qc(context, game_path):
     return True
 
 
-# </functions>
-
-# <operators>
-class BASE_OT_ExportModel(bpy.types.Operator):
+class ExportModel(bpy.types.Operator):
     """Export this model's meshes, generate a QC and compile it"""
     bl_idname = "base.export_model"
     bl_label = "Export Model"
@@ -188,15 +193,13 @@ class BASE_OT_ExportModel(bpy.types.Operator):
         if games and game_index >= 0:
             game = games[game_index]
 
-            if game.path:
+            if game.name != "Invalid Game":
                 models = base.models
                 model_index = base.model_index
 
                 if models and model_index >= 0:
                     model = models[model_index]
-
-                    if model.name and model.meshes:
-                        return not game.name == "Invalid Game"
+                    return model.name and model.meshes
 
         return False
 
@@ -208,14 +211,16 @@ class BASE_OT_ExportModel(bpy.types.Operator):
         game = games[game_index]
 
         model = base.models[base.model_index]
-        model_path = game.path + os.sep + "modelsrc" + os.sep + model.name + os.sep
+        model_path = game.mod + os.sep + "modelsrc" + os.sep + model.name + os.sep
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
-        if export_meshes(context, model_path) and generate_qc(context, game.path):
-            args = [game.studiomdl, '-nop4', '-fullcollide', model_path + "compile.qc"]
+        if export_meshes(context, model_path) and generate_qc(context, game.mod):
+            args = [game.studiomdl, '-nop4',
+                    '-fullcollide', model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            pipe = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             while 1:
                 code = pipe.returncode
                 if code is None:
@@ -224,4 +229,3 @@ class BASE_OT_ExportModel(bpy.types.Operator):
                 else:
                     break
         return {'FINISHED'}
-# </operators>

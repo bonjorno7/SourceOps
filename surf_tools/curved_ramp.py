@@ -1,43 +1,46 @@
-# <import>
-import os, subprocess, math
-import bpy, bmesh, mathutils
+import os
+import subprocess
+import math
+import bpy
+import bmesh
+import mathutils
 from .. import common
-# </import>
 
-# <props>
-class BASE_PG_SurfRampProps(bpy.types.PropertyGroup):
+
+class SurfRampProps(bpy.types.PropertyGroup):
     """Properties for the Surf Ramp Tool"""
+    bl_idname = "BASE_PG_SurfRampProps"
+
     curve: bpy.props.PointerProperty(
-        name = "Curve",
-        description = "Select your Ramp Curve object here",
-        type = bpy.types.Object,
-        poll = common.is_curve,
+        name="Curve",
+        description="Select your Ramp Curve object here",
+        type=bpy.types.Object,
+        poll=common.is_curve,
     )
 
     segment: bpy.props.PointerProperty(
-        name = "Segment",
-        description = "Select your Ramp Reference mesh here",
-        type = bpy.types.Object,
-        poll = common.is_mesh,
+        name="Segment",
+        description="Select your Ramp Reference mesh here",
+        type=bpy.types.Object,
+        poll=common.is_mesh,
     )
 
     start_cap: bpy.props.PointerProperty(
-        name = "Start Cap",
-        description = "Select your Reference Start Cap here",
-        type = bpy.types.Object,
-        poll = common.is_mesh,
+        name="Start Cap",
+        description="Select your Reference Start Cap here",
+        type=bpy.types.Object,
+        poll=common.is_mesh,
     )
 
     end_cap: bpy.props.PointerProperty(
-        name = "End Cap",
-        description = "Select your Reference End Cap here",
-        type = bpy.types.Object,
-        poll = common.is_mesh,
+        name="End Cap",
+        description="Select your Reference End Cap here",
+        type=bpy.types.Object,
+        poll=common.is_mesh,
     )
-# </props>
 
-# <operators>
-class BASE_OT_SurfRampify(bpy.types.Operator):
+
+class SurfRampify(bpy.types.Operator):
     """Add the appropriate modifiers to the chosen objects"""
     bl_idname = "base.surf_rampify"
     bl_label = "Add Modifiers"
@@ -59,8 +62,10 @@ class BASE_OT_SurfRampify(bpy.types.Operator):
         array.relative_offset_displace = (0, 0, 1)
         array.use_merge_vertices = True
         array.use_merge_vertices_cap = True
-        if sr.start_cap: array.start_cap = sr.start_cap
-        if sr.end_cap: array.end_cap = sr.end_cap
+        if sr.start_cap:
+            array.start_cap = sr.start_cap
+        if sr.end_cap:
+            array.end_cap = sr.end_cap
 
         curve = sr.segment.modifiers.new("Curve", 'CURVE')
         curve.show_expanded = True
@@ -70,4 +75,3 @@ class BASE_OT_SurfRampify(bpy.types.Operator):
         curve.object = sr.curve
 
         return {"FINISHED"}
-# </operators>

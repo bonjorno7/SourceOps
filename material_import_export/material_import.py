@@ -1,19 +1,18 @@
-# <import>
-import os, subprocess, math
+import os
+import subprocess
+import math
 from pathlib import Path
 from pprint import pprint
-
-import bpy, bmesh, mathutils, bpy_extras
+import bpy
+import bmesh
+import mathutils
+import bpy_extras
 from .. import common
-
 from . import vmt
 from . import import_vtf
 
 
-# </import>
-
-# <classes>
-class BASE_OT_ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     """Create materials with the names of the paths to your VMTs relative to the materials folder and import the VTFs as PNGs"""
     bl_idname = "base.import_material"
     bl_label = "Import Materials"
@@ -47,7 +46,8 @@ class BASE_OT_ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelpe
         return {"FINISHED"}
 
 
-class BASE_PT_MaterialImportPanel(bpy.types.Panel):
+class MaterialImportPanel(bpy.types.Panel):
+    bl_idname = "BASE_PT_MaterialImportPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_context = "objectmode"
@@ -59,4 +59,3 @@ class BASE_PT_MaterialImportPanel(bpy.types.Panel):
 
     def draw(self, context):
         self.layout.operator("base.import_material")
-# </classes>

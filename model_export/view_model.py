@@ -1,11 +1,13 @@
-# <import>
-import os, subprocess, math
-import bpy, bmesh, mathutils
+import os
+import subprocess
+import math
+import bpy
+import bmesh
+import mathutils
 from .. import common
-# </import>
 
-# <operators>
-class BASE_OT_ViewModel(bpy.types.Operator):
+
+class ViewModel(bpy.types.Operator):
     """Open this model in HLMV"""
     bl_idname = "base.view_model"
     bl_label = "View Model"
@@ -20,15 +22,13 @@ class BASE_OT_ViewModel(bpy.types.Operator):
         if games and game_index >= 0:
             game = games[game_index]
 
-            if game.path:
+            if game.name != "Invalid Game":
                 models = base.models
                 model_index = base.model_index
 
                 if models and model_index >= 0:
                     model = models[model_index]
-
-                    if model.name and model.meshes:
-                        return not game.name == "Invalid Game"
+                    return model.name and model.meshes
 
         return False
 
@@ -40,15 +40,16 @@ class BASE_OT_ViewModel(bpy.types.Operator):
         game = games[game_index]
 
         model = base.models[base.model_index]
-        model_path = game.path + os.sep + "models" + os.sep + model.name + ".mdl"
-        dx90path = game.path + os.sep + "models" + os.sep + model.name + ".dx90.vtx"
+        model_path = game.mod + os.sep + "models" + os.sep + model.name + ".mdl"
+        dx90path = game.mod + os.sep + "models" + os.sep + model.name + ".dx90.vtx"
 
-        args = [game.hlmv, "-game", game.path, model_path]
+        args = [game.hlmv, "-game", game.mod, model_path]
         print(game.hlmv + "    " + model_path + "\n")
 
         if os.path.isfile(dx90path):
-            subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        else: self.report({"WARNING"}, "Model not found")
+            subprocess.Popen(args, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        else:
+            self.report({"WARNING"}, "Model not found")
 
         return {'FINISHED'}
-# </operators>
