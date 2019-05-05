@@ -1,53 +1,56 @@
-# <import>
-import os, subprocess, math
+import os
+import subprocess
+import math
 from pathlib import Path
-
-import bpy, bmesh, mathutils
+import bpy
+import bmesh
+import mathutils
 from .. import common
 
 
-# </import>
-
-# <functions>
 def update_path(self, context):
-    mod_path = Path(self["path"]).absolute()
-    game_path = mod_path.parent
-    studiomdl_exe = game_path / r"bin/studiomdl.exe"
-    hlmv_exe = game_path / r"bin/hlmv.exe"
-    self["path"] = str(mod_path)
-    self["game"] = str(game_path)
-    self["name"] = str(mod_path.name)
-    self["studiomdl"] = str(studiomdl_exe)
-    self["hlmv"] = str(hlmv_exe)
+    path = bpy.path.abspath(self["gameinfo"])
+    gameinfo = Path(path).resolve()
+    mod = gameinfo.parent
+    game = mod.parent
+    studiomdl = game / r"bin/studiomdl.exe"
+    hlmv = game / r"bin/hlmv.exe"
+    name = game.name
 
-    if not studiomdl_exe.is_file():
+    self["gameinfo"] = str(gameinfo)
+    self["mod"] = str(mod)
+    self["game"] = str(game)
+    self["studiomdl"] = str(studiomdl)
+    self["hlmv"] = str(hlmv)
+
+    if studiomdl.is_file():
+        self["name"] = str(name)
+    else:
         self["name"] = "Invalid Game"
 
 
-# </functions>
-
-# <props>
-class BASE_PG_GameProps(bpy.types.PropertyGroup):
+class GameProps(bpy.types.PropertyGroup):
     """Properties for a game"""
-    path: bpy.props.StringProperty(
+    bl_idname = "BASE_PG_GameProps"
+
+    gameinfo: bpy.props.StringProperty(
         name="Mod Path",
-        description="Path to your game mod folder, eg cstrike for CS:S",
+        description="Path to your gameinfo.txt",
         default="",
         subtype='FILE_PATH',
         update=update_path,
     )
+
+    mod: bpy.props.StringProperty(
+        name="Mod Path",
+        description="Path to your mod folder, eg cstrike for CS:S",
+        default="",
+    )
+
     game: bpy.props.StringProperty(
         name="Game Path",
-        description="Path to your game folder, eg cstrike for CS:S",
+        description="Path to your game folder, eg Counter-Strike Source for CS:S",
         default="",
-        subtype='FILE_PATH',
-        update=update_path,
-    )
-
-    name: bpy.props.StringProperty(
-        name="Game Name",
-        description="Name of the game you're exporting for",
-        default="Game Name",
     )
 
     studiomdl: bpy.props.StringProperty(
@@ -62,18 +65,22 @@ class BASE_PG_GameProps(bpy.types.PropertyGroup):
         default="",
     )
 
+    name: bpy.props.StringProperty(
+        name="Game Name",
+        description="Name of the game you're exporting for",
+        default="Game Name",
+    )
 
-# </props>
 
-# <list>
-class BASE_UL_GameList(bpy.types.UIList):
+class GameList(bpy.types.UIList):
     """List of games"""
+    bl_idname = "BASE_UL_GameList"
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         layout.label(text=item.name)
 
 
-class BASE_OT_AddGame(bpy.types.Operator):
+class AddGame(bpy.types.Operator):
     """Add a game"""
     bl_idname = "base.add_game"
     bl_label = "Add Game"
@@ -86,7 +93,7 @@ class BASE_OT_AddGame(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class BASE_OT_RemoveGame(bpy.types.Operator):
+class RemoveGame(bpy.types.Operator):
     """Remove the selected game from the list"""
     bl_idname = "base.remove_game"
     bl_label = "Remove Game"
@@ -108,7 +115,7 @@ class BASE_OT_RemoveGame(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class BASE_OT_MoveGame(bpy.types.Operator):
+class MoveGame(bpy.types.Operator):
     """Move the selected game up or down in the list"""
     bl_idname = "base.move_game"
     bl_label = "Move Game"
@@ -132,4 +139,3 @@ class BASE_OT_MoveGame(bpy.types.Operator):
         list_length = len(settings.games) - 1
         settings.game_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
-# </list>

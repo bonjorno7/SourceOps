@@ -1,59 +1,58 @@
-# <import>
-import os, subprocess, math
-import bpy, bmesh, mathutils
-from .. import common
-
-from . mesh import BASE_PG_MeshProps
+import bpy
+import os
+from . mesh import MeshProps
 from . surface_props import surface_props
-# </import>
 
-# <functions>
+
 def update_model_name(self, context):
     name = bpy.path.native_pathsep(self["name"])
     if name.lower().endswith(".mdl"):
         name = name[:-4]
     self["name"] = name
-# </functions>
 
-# <props>
-class BASE_PG_ModelProps(bpy.types.PropertyGroup):
+
+class ModelProps(bpy.types.PropertyGroup):
     """Properties for a model"""
-    meshes: bpy.props.CollectionProperty(type = BASE_PG_MeshProps)
-    mesh_index: bpy.props.IntProperty(default = 0)
+    bl_idname = "BASE_PG_ModelProps"
+    meshes = bpy.props.CollectionProperty(type=MeshProps)
+    mesh_index = bpy.props.IntProperty(default=0)
 
     name: bpy.props.StringProperty(
-        name = "Model Name",
-        description = "Your model's path, eg example\\model (don't add the file extension)",
-        default = "example\\model",
-        update = update_model_name,
+        name="Model Name",
+        description="Your model's path, eg example" +
+        os.sep + "model (don't add the file extension)",
+        default="example" + os.sep + "model",
+        update=update_model_name,
     )
 
     surface_prop: bpy.props.EnumProperty(
-        name = "Surface Property",
-        description = "Choose the surface property of your model, this affects decals and how it sounds in game",
-        items = surface_props,
+        name="Surface Property",
+        description="Choose the surface property of your model, this affects decals and how it sounds in game",
+        items=surface_props,
     )
 
     autocenter: bpy.props.BoolProperty(
-        name = "Auto Center",
-        description = "$autocenter, aligns the model's $origin to the center of its bounding box and creates an attachment point called \"placementOrigin\" where its origin used to be",
-        default = False,
+        name="Auto Center",
+        description="$autocenter, aligns the model's $origin to the center of its bounding box",
+        default=False,
     )
 
     mostly_opaque: bpy.props.BoolProperty(
-        name = "Has Glass",
-        description = "$mostlyopaque, use this if your model has something transparent like glass",
-        default = False,
+        name="Has Glass",
+        description="$mostlyopaque, use this if your model has something transparent like glass",
+        default=False,
     )
-# </props>
 
-# <list>
-class BASE_UL_ModelList(bpy.types.UIList):
+
+class ModelList(bpy.types.UIList):
     """List of models"""
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-        layout.prop(item, "name", text = "", emboss = False, translate = False)
+    bl_idname = "BASE_UL_ModelList"
 
-class BASE_OT_AddModel(bpy.types.Operator):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, "name", text="", emboss=False, translate=False)
+
+
+class AddModel(bpy.types.Operator):
     """Create a model"""
     bl_idname = "base.add_model"
     bl_label = "Add Model"
@@ -64,7 +63,8 @@ class BASE_OT_AddModel(bpy.types.Operator):
         base.model_index = len(base.models) - 1
         return {'FINISHED'}
 
-class BASE_OT_RemoveModel(bpy.types.Operator):
+
+class RemoveModel(bpy.types.Operator):
     """Remove the selected model"""
     bl_idname = "base.remove_model"
     bl_label = "Remove Model"
@@ -83,12 +83,13 @@ class BASE_OT_RemoveModel(bpy.types.Operator):
         )
         return {'FINISHED'}
 
-class BASE_OT_MoveModel(bpy.types.Operator):
+
+class MoveModel(bpy.types.Operator):
     """Move the selected model up or down in the list"""
     bl_idname = "base.move_model"
     bl_label = "Move Model"
 
-    direction: bpy.props.EnumProperty(items = (
+    direction: bpy.props.EnumProperty(items=(
         ('UP', "Up", "Move the item up"),
         ('DOWN', "Down", "Move the item down"),
     ))
@@ -105,4 +106,3 @@ class BASE_OT_MoveModel(bpy.types.Operator):
         list_length = len(base.models) - 1
         base.model_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
-# </list>

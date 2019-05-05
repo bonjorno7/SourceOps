@@ -1,20 +1,22 @@
-# <import>
-import os, subprocess, math
-import bpy, bmesh, mathutils
+import os
+import subprocess
+import math
+import bpy
+import bmesh
+import mathutils
 from .. import common
+from . game import GameProps
 
-from . game import BASE_PG_GameProps
-# </import>
 
-# <props>
-class BASE_PG_SettingsProps(bpy.types.PropertyGroup):
+class SettingsProps(bpy.types.PropertyGroup):
     """Properties for the Settings panel"""
-    games: bpy.props.CollectionProperty(type = BASE_PG_GameProps)
-    game_index: bpy.props.IntProperty(default = 0)
+    bl_idname: "BASE_PG_SettingsProps"
+
+    games: bpy.props.CollectionProperty(type=GameProps)
+    game_index: bpy.props.IntProperty(default=0)
 
     scale: bpy.props.FloatProperty(
-        name = "Model Scale",
-        description = "Factor to scale your models by for export",
-        default = 1.0,
+        name="Model Scale",
+        description="Factor to scale your models by for export",
+        default=1.0,
     )
-# </props>
