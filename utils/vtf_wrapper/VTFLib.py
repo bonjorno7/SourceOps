@@ -2,6 +2,7 @@ import os
 import platform
 import sys
 from ctypes import *
+from pathlib import Path
 
 try:
     from VTFLibEnums import ImageFlag
@@ -21,11 +22,12 @@ if platform_name == "Windows":
                                     bits='',
                                     linkage='')[0] == "64bit"
     vtf_lib_name = "VTFLib.x64.dll" if is64bit else "VTFLib.x86.dll"
-    full_path = os.path.dirname(__file__)
+    full_path = Path(__file__)
 elif platform_name == "Linux":
     # On linux we assume this lib is in a predictable location
     # VTFLib Linux: https://github.com/panzi/VTFLib
     # requires: libtxc_dxtn
+    full_path = Path(__file__)
     vtf_lib_name = "libVTFLib13.so"
 else:
     raise NotImplementedError()
@@ -37,9 +39,13 @@ def pointer_to_array(poiter, size, type=c_ubyte):
     return cast(poiter, POINTER(type * size))
 
 
+sys.path.append(str(full_path))
+
+
 class VTFLib:
     if platform_name == "Windows":
-        vtflib_cdll = WinDLL(os.path.join(full_path, vtf_lib_name))
+        libHandle = windll.kernel32.LoadLibraryW(vtf_lib_name)
+        vtflib_cdll = CDLL(None, handle=libHandle)
     elif platform_name == "Linux":
         vtflib_cdll = cdll.LoadLibrary(vtf_lib_name)
     else:
@@ -547,13 +553,19 @@ class VTFLib:
     def set_proc(self, proc, value):
         self.SetProc(proc, value)
 
+    @classmethod
+    def unload(cls):
+        del cls.vtflib_cdll
+        if platform_name == "Windows":
+            windll.kernel32.FreeLibrary(cls.libHandle)
+
 
 if __name__ == '__main__':
     a = VTFLib()
     print(a.create_default_params_structure())
-    # a.image_load(
-    #     r"G:\SteamLibrary\SteamApps\common\SourceFilmmaker\game\usermod\materials\models\skuddbutt\mavis\body_clothed.vtf",
-    #     False)
+    a.image_load(
+        r"H:\SteamLibrary\SteamApps\common\SourceFilmmaker\game\usermod\materials\models\skuddbutt\mavis\body_clothed.vtf",
+        False)
     print(a.image_format())
     # print(a.get_image_flags()).get_flag(ImageFlag.ImageFlagBorder)
     # a.image_save("G:\\SteamLibrary\\SteamApps\\common\\SourceFilmmaker\\game\\usermod\\materials\\models\\Red_eye\\Endless\\Feline\\Body2.vtf")
