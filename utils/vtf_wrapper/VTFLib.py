@@ -2,6 +2,7 @@ import os
 import platform
 import sys
 from ctypes import *
+import ctypes.wintypes
 from pathlib import Path
 
 try:
@@ -44,8 +45,16 @@ sys.path.append(str(full_path))
 
 class VTFLib:
     if platform_name == "Windows":
-        libHandle = windll.kernel32.LoadLibraryW(vtf_lib_name)
-        vtflib_cdll = CDLL(None, handle=libHandle)
+        full_dll_path = Path(vtf_lib_name).absolute()
+        # if is64bit:
+        #     libHandle = windll.kernel32.LoadLibraryW(str(full_dll_path))
+        # else:
+        #     libHandle = windll.kernel32.LoadLibraryW(str(full_dll_path))
+        # if libHandle == 0:
+        #     raise WindowsError(windll.kernel32.GetLastError())
+        vtflib_cdll = WinDLL(str(full_dll_path))
+        libHandle = ctypes.wintypes.HANDLE(vtflib_cdll._handle)
+        # vtflib_cdll = CDLL(None, handle=libHandle)
     elif platform_name == "Linux":
         vtflib_cdll = cdll.LoadLibrary(vtf_lib_name)
     else:
@@ -562,11 +571,12 @@ class VTFLib:
 
 if __name__ == '__main__':
     a = VTFLib()
-    print(a.create_default_params_structure())
-    a.image_load(
-        r"H:\SteamLibrary\SteamApps\common\SourceFilmmaker\game\usermod\materials\models\skuddbutt\mavis\body_clothed.vtf",
-        False)
-    print(a.image_format())
-    # print(a.get_image_flags()).get_flag(ImageFlag.ImageFlagBorder)
-    # a.image_save("G:\\SteamLibrary\\SteamApps\\common\\SourceFilmmaker\\game\\usermod\\materials\\models\\Red_eye\\Endless\\Feline\\Body2.vtf")
-    print(a.get_last_error())
+    a.unload()
+    # print(a.create_default_params_structure())
+    # a.image_load(
+    #     r"H:\SteamLibrary\SteamApps\common\SourceFilmmaker\game\usermod\materials\models\skuddbutt\mavis\body_clothed.vtf",
+    #     False)
+    # print(a.image_format())
+    # # print(a.get_image_flags()).get_flag(ImageFlag.ImageFlagBorder)
+    # # a.image_save("G:\\SteamLibrary\\SteamApps\\common\\SourceFilmmaker\\game\\usermod\\materials\\models\\Red_eye\\Endless\\Feline\\Body2.vtf")
+    # print(a.get_last_error())
