@@ -20,7 +20,7 @@ bl_info = {
     "blender": (2, 80, 0),
     "name": "BASE",
     "description": "Blender Add-on for Source Engine",
-    "author": "bonjorno7",
+    "author": "bonjorno7 & REDxEYE",
     "version": (0, 3, 8),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
