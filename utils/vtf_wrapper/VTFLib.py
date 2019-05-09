@@ -23,12 +23,12 @@ if platform_name == "Windows":
                                     bits='',
                                     linkage='')[0] == "64bit"
     vtf_lib_name = "VTFLib.x64.dll" if is64bit else "VTFLib.x86.dll"
-    full_path = Path(__file__)
+    full_path = Path(__file__).parent
 elif platform_name == "Linux":
     # On linux we assume this lib is in a predictable location
     # VTFLib Linux: https://github.com/panzi/VTFLib
     # requires: libtxc_dxtn
-    full_path = Path(__file__)
+    full_path = Path(__file__).parent
     vtf_lib_name = "libVTFLib13.so"
 else:
     raise NotImplementedError()
@@ -40,18 +40,10 @@ def pointer_to_array(poiter, size, type=c_ubyte):
     return cast(poiter, POINTER(type * size))
 
 
-sys.path.append(str(full_path))
-
-
 class VTFLib:
     if platform_name == "Windows":
-        full_dll_path = Path(vtf_lib_name).absolute()
-        # if is64bit:
-        #     libHandle = windll.kernel32.LoadLibraryW(str(full_dll_path))
-        # else:
-        #     libHandle = windll.kernel32.LoadLibraryW(str(full_dll_path))
-        # if libHandle == 0:
-        #     raise WindowsError(windll.kernel32.GetLastError())
+        full_dll_path = full_path/Path(vtf_lib_name)
+        print(full_dll_path)
         vtflib_cdll = WinDLL(str(full_dll_path))
         libHandle = ctypes.wintypes.HANDLE(vtflib_cdll._handle)
         # vtflib_cdll = CDLL(None, handle=libHandle)
