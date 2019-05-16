@@ -32,7 +32,7 @@ class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 continue
 
             if games and game_index >= 0:
-                mod_folder = Path(games[game_index].path)
+                mod_folder = Path(games[game_index].mod)
             else:
                 mod_folder = None
             material = vmt.VMT(folder / f.name, mod_folder)

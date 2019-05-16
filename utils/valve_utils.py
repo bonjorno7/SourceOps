@@ -1,6 +1,7 @@
 import re
 import shlex
 from pathlib import Path
+from pprint import pprint
 
 
 def fix_slashes(path, path_sep='/'):
@@ -434,6 +435,17 @@ class KeyValueFile(object):
         # remove comments
         if self.supports_comments:
             lines = stripcomments(lines)
+        n_lines = []
+        for line in lines:
+            if line.strip()!='{' and '{' in line:
+                n_lines.extend(line.split('{'))
+                n_lines.append('{')
+            elif line.strip()!='}' and '}' in line:
+                n_lines.extend(line.split('}'))
+                n_lines.append('}')
+            else:
+                n_lines.append(line)
+        lines = n_lines
         # lines = remove_line_comments(lines)
         # lines = remove_block_comments(lines)
 
@@ -874,3 +886,8 @@ class MaterialPathResolver:
             return new_filepath
 
         return None
+
+if __name__ == '__main__':
+    gi = GameInfoFile(r'C:\Users\MED45\Downloads\gameinfo.txt')
+    print(gi.FileSystem.SearchPaths)
+    # pprint(gi.as_dict)

@@ -60,7 +60,7 @@ def import_texture(path, load_alpha=True, alpha_only=False):
                 height=vtf_lib.height())
             pixels = np.divide(pixels, 255)
             image.pixels = pixels
-            image.pack(as_png=True)
+            image.pack()
             return image
         except Exception as ex:
             print('Caught exception "{}" '.format(ex))
