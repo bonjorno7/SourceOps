@@ -435,6 +435,14 @@ class KeyValueFile(object):
         # remove comments
         if self.supports_comments:
             lines = stripcomments(lines)
+        n_lines = []
+        for line in lines:
+            if line.strip()!='{' and '{' in line:
+                n_lines.append(line.replace('{',''))
+                n_lines.append('{')
+            else:
+                n_lines.append(line)
+        lines = n_lines
         # lines = remove_line_comments(lines)
         # lines = remove_block_comments(lines)
 
@@ -461,10 +469,7 @@ class KeyValueFile(object):
                 parent_list_end = cur_parent
             elif line == '}':
                 parent_list.pop()
-                try:
-                    parent_list_end = parent_list[-1]
-                except IndexError:
-                    pass
+                parent_list_end = parent_list[-1]
             else:
                 try:
                     key, value = line_parser(line)
@@ -881,4 +886,5 @@ class MaterialPathResolver:
 
 if __name__ == '__main__':
     gi = GameInfoFile(r'C:\Users\MED45\Downloads\gameinfo.txt')
-    pprint(gi.as_dict)
+    print(gi.FileSystem.SearchPaths)
+    # pprint(gi.as_dict)
