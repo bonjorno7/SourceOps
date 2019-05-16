@@ -14,8 +14,8 @@ def update_model_name(self, context):
 class ModelProps(bpy.types.PropertyGroup):
     """Properties for a model"""
     bl_idname = "BASE_PG_ModelProps"
-    meshes = bpy.props.CollectionProperty(type=MeshProps)
-    mesh_index = bpy.props.IntProperty(default=0)
+    meshes: bpy.props.CollectionProperty(type=MeshProps)
+    mesh_index: bpy.props.IntProperty(default=0)
 
     name: bpy.props.StringProperty(
         name="Model Name",

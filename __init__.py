@@ -10,7 +10,7 @@ from . model_export . export_model import ExportModel
 from . model_export . view_model import ViewModel
 from . model_export . panels import ModelExportPanel, ModelPanel, MeshPanel, PropertiesPanel
 
-# from . material_import_export . material_import import ImportMaterial, MaterialImportPanel
+from . material_import_export . material_import import ImportMaterial, MaterialImportPanel
 
 from . surf_tools . surf_collision import CollisionProps, SurfCollision
 from . surf_tools . curved_ramp import SurfRampProps, SurfRampify
@@ -56,7 +56,7 @@ classes = (
     SurfCollision, SurfRampify,
     SurfToolsPanel, CollisionPanel, CurvedRampPanel,
 
-    # ImportMaterial, MaterialImportPanel,
+    ImportMaterial, MaterialImportPanel,
 
     Props,
 )
@@ -72,8 +72,8 @@ def register():
 
 
 def unregister():
-    # from . utils.vtf_wrapper.VTFLib import VTFLib
-    # del VTFLib.vtflib_cdll
+    from . utils.vtf_wrapper.VTFLib import VTFLib
+    del VTFLib.vtflib_cdll
     unregister_classes()
     del bpy.types.Scene.BASE
 
