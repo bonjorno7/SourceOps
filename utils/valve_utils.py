@@ -1,6 +1,7 @@
 import re
 import shlex
 from pathlib import Path
+from pprint import pprint
 
 
 def fix_slashes(path, path_sep='/'):
@@ -460,7 +461,10 @@ class KeyValueFile(object):
                 parent_list_end = cur_parent
             elif line == '}':
                 parent_list.pop()
-                parent_list_end = parent_list[-1]
+                try:
+                    parent_list_end = parent_list[-1]
+                except IndexError:
+                    pass
             else:
                 try:
                     key, value = line_parser(line)
@@ -874,3 +878,7 @@ class MaterialPathResolver:
             return new_filepath
 
         return None
+
+if __name__ == '__main__':
+    gi = GameInfoFile(r'C:\Users\MED45\Downloads\gameinfo.txt')
+    pprint(gi.as_dict)
