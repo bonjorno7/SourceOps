@@ -438,8 +438,11 @@ class KeyValueFile(object):
         n_lines = []
         for line in lines:
             if line.strip()!='{' and '{' in line:
-                n_lines.append(line.replace('{',''))
+                n_lines.extend(line.split('{'))
                 n_lines.append('{')
+            elif line.strip()!='}' and '}' in line:
+                n_lines.extend(line.split('}'))
+                n_lines.append('}')
             else:
                 n_lines.append(line)
         lines = n_lines
