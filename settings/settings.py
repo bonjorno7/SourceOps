@@ -15,6 +15,11 @@ class SettingsProps(bpy.types.PropertyGroup):
     games: bpy.props.CollectionProperty(type=GameProps)
     game_index: bpy.props.IntProperty(default=0)
 
+    def game(self):
+        if self.games:
+            return self.games[self.game_index]
+        return None
+
     scale: bpy.props.FloatProperty(
         name="Model Scale",
         description="Factor to scale your models by for export",

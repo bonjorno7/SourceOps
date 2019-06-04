@@ -4,6 +4,11 @@ import bpy, bmesh, mathutils
 # </import>
 
 # <functions>
+def verify_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
 def is_mesh(self, obj):
     """Return whether the object is a mesh"""
     return obj.type == 'MESH'
