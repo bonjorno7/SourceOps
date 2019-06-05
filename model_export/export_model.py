@@ -40,27 +40,49 @@ class ExportModel(bpy.types.Operator):
         smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
         smd.write("end\n")
 
-    def export_reference(self, context, directory, obj):
+    def export_smd(self, context, directory, collection, kind):
         base = context.scene.BASE
         settings = base.settings
         scale = settings.scale
 
-        with open(directory + obj.name + ".smd", "w+") as smd:
+        reference = True if kind == 'REFERENCE' else False
+        collision = True if kind == 'COLLISION' else False
+        bodygroup = True if kind == 'BODYGROUP' else False
+        clean_name = common.clean_filename(collection.name)
+
+        if collision:
+            collection_directory = common.verify_folder(directory + "collision" + os.sep)
+            smd = open(collection_directory + clean_name + ".smd", "w")
             self.write_smd_header(smd)
             smd.write("triangles\n")
+
+        for obj in collection.all_objects:
+            if reference:
+                collection_directory = common.verify_folder(directory + "reference" + os.sep)
+                smd = open(collection_directory + common.clean_filename(obj.name) + ".smd", "w")
+
+            elif bodygroup:
+                collection_directory = common.verify_folder(directory + clean_name + os.sep)
+                smd = open(collection_directory + common.clean_filename(obj.name) + ".smd", "w")
+
+            if reference or bodygroup:
+                self.write_smd_header(smd)
+                smd.write("triangles\n")
 
             evaluated_obj = obj.evaluated_get(context.view_layer.depsgraph)
             temp = evaluated_obj.to_mesh()
             common.triangulate(temp)
-            temp.calc_normals_split()
+
+            if reference or bodygroup:
+                temp.calc_normals_split()
 
             for poly in temp.polygons:
-                material_name = "no_material"
                 if poly.material_index < len(obj.material_slots):
                     material = obj.material_slots[poly.material_index].material
                     if material is not None:
-                        material_name = material.name
-                smd.write(material_name + "\n")
+                        smd.write(material.name + "\n")
+                else:
+                    smd.write("no_material" + "\n")
 
                 for index in range(3):
                     smd.write("0    ")
@@ -70,91 +92,42 @@ class ExportModel(bpy.types.Operator):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = rot @ evaluated_obj.matrix_local @ mathutils.Vector(
-                        vert.co) * scale
+                    vec = rot @ evaluated_obj.matrix_local @ mathutils.Vector(vert.co) * scale
                     smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
-                    nor = mathutils.Vector(
-                        [loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
+                    normal = vert.normal if collision else loop.normal
+                    nor = mathutils.Vector([normal[0], normal[1], normal[2], 0.0])
                     nor = rot @ evaluated_obj.matrix_local @ nor
                     smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
 
                     if temp.uv_layers:
-                        uv_layer = [
-                            layer for layer in temp.uv_layers if layer.active_render][0]
+                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
                         uv_loop = uv_layer.data[loop_index]
                         uv = uv_loop.uv
                         smd.write("%f %f\n" % (uv[0], uv[1]))
                     else:
                         smd.write("%f %f\n" % (0.0, 0.0))
 
-            temp.free_normals_split()
+            if reference or bodygroup:
+                temp.free_normals_split()
+
             evaluated_obj.to_mesh_clear()
-            smd.write("end\n")
-
-    def export_collision(self, context, directory, objs):
-        base = context.scene.BASE
-        settings = base.settings
-        scale = settings.scale
-
-        with open(directory + "collision.smd", "w+") as smd:
-            self.write_smd_header(smd)
-            smd.write("triangles\n")
-
-            for obj in objs:
-                evaluated_obj = obj.evaluated_get(context.view_layer.depsgraph)
-                temp = evaluated_obj.to_mesh()
-                common.fill_holes(temp)
-                common.triangulate(temp)
-
-                for poly in temp.polygons:
-                    smd.write("no_material" + "\n")
-
-                    for index in range(3):
-                        smd.write("0" + "    ")
-                        loop_index = poly.loop_indices[index]
-                        loop = temp.loops[loop_index]
-                        rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
-
-                        vert_index = loop.vertex_index
-                        vert = temp.vertices[vert_index]
-                        vec = rot @ evaluated_obj.matrix_local @ mathutils.Vector(
-                            vert.co) * scale
-                        smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
-
-                        nor = mathutils.Vector(
-                            [vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
-                        nor = rot @ evaluated_obj.matrix_local @ nor
-                        smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
-
-                        smd.write("%f %f\n" % (0.0, 0.0))
-
-                evaluated_obj.to_mesh_clear()
             smd.write("end\n")
 
     def export_meshes(self, context, directory):
         """Export this model's meshes as SMD"""
         base = context.scene.BASE
-        model = base.models[base.model_index]
-        if not model.collection:
-            return False
+        model = base.model()
 
         for c in model.collection.children:
-            if c.name.lower().count("collision"):
-                self.export_collision(context, directory, c.objects)
+            if c.name.lower().count("reference"):
+                self.export_smd(context, directory, c, 'REFERENCE')
+            elif c.name.lower().count("collision"):
+                self.export_smd(context, directory, c, 'COLLISION')
             else:
-                for o in c.objects:
-                    self.export_reference(context, directory, o)
+                self.export_smd(context, directory, c, 'BODYGROUP')
 
         return True
-
-    def has_collision(self, model):
-        for c in model.collection.children:
-            if c.name.lower().count("collision"):
-                if c.objects:
-                    return True
-
-        return False
 
     def generate_qc(self, context):
         """Generate the QC for this model"""
@@ -163,14 +136,32 @@ class ExportModel(bpy.types.Operator):
         model = base.model()
 
         modelsrc_path = game.mod + os.sep + "modelsrc" + os.sep + model.name + os.sep
-        qc = open(modelsrc_path + "compile.qc", "w+")
+        qc = open(modelsrc_path + "compile.qc", "w")
         qc.write("$modelname \"" + model.name + "\"\n")
-        qc.write("$body shell \"reference.smd\"\n")
 
-        if self.has_collision(model):
-            qc.write("$collisionmodel \"collision.smd\" {\n\t$concave\n\t$maxconvexpieces 10000\n}\n")
+        reference = "reference"
+        for c in model.collection.children:
+            clean_name = common.clean_filename(c.name)
 
-        qc.write("$sequence idle \"reference.smd\"\n")
+            if c.name.lower().count("reference"):
+                for o in c.all_objects:
+                    o_name = common.clean_filename(o.name)
+                    qc.write("$body \"" + o_name + "\" \"")
+                    qc.write("reference" + os.sep + o_name + ".smd\"\n")
+                    reference = "reference" + os.sep + o_name + ".smd"
+
+            elif c.name.lower().count("collision"):
+                qc.write("$collisionmodel \"" + "collision" + os.sep + clean_name)
+                qc.write(".smd\" { $concave $maxconvexpieces 10000 }\n")
+
+            else:
+                qc.write("$bodygroup \"" + clean_name + "\"\n{\n")
+                for o in c.all_objects:
+                    o_name = common.clean_filename(o.name)
+                    qc.write("    studio \"" + clean_name + os.sep + o_name + ".smd\"\n")
+                qc.write("}\n")  # qc.write("    blank\n}\n")  # why does this break it??
+
+        qc.write("$sequence idle \"" + reference + "\"\n")
         qc.write("$cdmaterials \"" + os.sep + "\"\n")
         qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
         qc.write("$staticprop\n")
@@ -199,7 +190,9 @@ class ExportModel(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.collection
+
+                    if model.name and model.collection:
+                        return model.collection.all_objects
 
         return False
 
@@ -218,11 +211,13 @@ class ExportModel(bpy.types.Operator):
             args = [game.studiomdl, '-nop4', '-fullcollide', model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            while 1:
+
+            while True:
                 code = pipe.returncode
                 if code is None:
-                    with open(model_path + "log.txt", "w+") as log:
+                    with open(model_path + "log.txt", "w") as log:
                         log.write(pipe.communicate()[0].decode('utf'))
                 else:
                     break
+
         return {'FINISHED'}
