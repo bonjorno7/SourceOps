@@ -6,65 +6,83 @@ import mathutils
 from .. import common
 
 
-def refresh_meshes(model):
-    """Refresh the list of meshes for this model, remove ones that don't exist anymore"""
-    meshes_to_remove = []
-    for i, m in enumerate(model.meshes):
-        if not m.obj.users_scene:
-            meshes_to_remove.append(i)
-    for i in reversed(meshes_to_remove):
-        model.meshes.remove(i)
+class ExportModel(bpy.types.Operator):
+    """Export this model's meshes, generate a QC and compile it"""
+    bl_idname = "base.export_model"
+    bl_label = "Export Model"
 
+    def delete_old(self, model, game_path):
+        """deleting the old model so the model viewer won't load it if you try to view it while it's still compiling"""
+        model_path = game_path + os.sep + "models" + os.sep + model.name
+        if os.path.isfile(model_path + ".dx90.vtx"):
+            os.remove(model_path + ".dx90.vtx")
+        if os.path.isfile(model_path + ".dx80.vtx"):
+            os.remove(model_path + ".dx80.vtx")
+        if os.path.isfile(model_path + ".sw.vtx"):
+            os.remove(model_path + ".sw.vtx")
+        if os.path.isfile(model_path + ".vvd"):
+            os.remove(model_path + ".vvd")
+        if os.path.isfile(model_path + ".mdl"):
+            os.remove(model_path + ".mdl")
+        if os.path.isfile(model_path + ".phy"):
+            os.remove(model_path + ".phy")
 
-def write_smd_header(smd):
-    """Write the header for this SMD file, including the required dummy skeleton and animation data"""
-    smd.write("version 1\n")
-    smd.write("nodes\n")
-    smd.write("0 \"blender_implicit\" -1\n")
-    smd.write("end\n")
-    smd.write("skeleton\n")
-    smd.write("time 0\n")
-    smd.write("0" + "    ")
-    smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
-    smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
-    smd.write("end\n")
+    def write_smd_header(self, smd):
+        """Write the header for this SMD file, including the required dummy skeleton and animation data"""
+        smd.write("version 1\n")
+        smd.write("nodes\n")
+        smd.write("0 \"blender_implicit\" -1\n")
+        smd.write("end\n")
+        smd.write("skeleton\n")
+        smd.write("time 0\n")
+        smd.write("0" + "    ")
+        smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
+        smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
+        smd.write("end\n")
 
+    def export_smd(self, context, directory, collection, kind):
+        base = context.scene.BASE
+        settings = base.settings
+        scale = settings.scale
 
-def export_meshes(context, directory):
-    """Export this model's meshes as SMD"""
-    settings = context.scene.BASE.settings
-    scale = settings.scale
-    model = context.scene.BASE.models[context.scene.BASE.model_index]
-    refresh_meshes(model)
-    if not model.meshes:
-        return None
+        reference = True if kind == 'REFERENCE' else False
+        collision = True if kind == 'COLLISION' else False
+        bodygroup = True if kind == 'BODYGROUP' else False
+        clean_name = common.clean_filename(collection.name)
 
-    references = []
-    collisions = []
+        if collision:
+            collection_directory = common.verify_folder(directory + "collision" + os.sep)
+            smd = open(collection_directory + clean_name + ".smd", "w")
+            self.write_smd_header(smd)
+            smd.write("triangles\n")
 
-    for mesh in model.meshes:
-        if mesh.kind == 'REFERENCE':
-            references.append(mesh.obj)
-        if mesh.kind == 'COLLISION':
-            collisions.append(mesh.obj)
+        for obj in collection.all_objects:
+            if reference:
+                collection_directory = common.verify_folder(directory + "reference" + os.sep)
+                smd = open(collection_directory + common.clean_filename(obj.name) + ".smd", "w")
 
-    with open(directory + "reference.smd", "w+") as smd:
-        write_smd_header(smd)
-        smd.write("triangles\n")
+            elif bodygroup:
+                collection_directory = common.verify_folder(directory + clean_name + os.sep)
+                smd = open(collection_directory + common.clean_filename(obj.name) + ".smd", "w")
 
-        for obj in references:
-            temp = obj.to_mesh(context.depsgraph,
-                               apply_modifiers=True, calc_undeformed=False)
+            if reference or bodygroup:
+                self.write_smd_header(smd)
+                smd.write("triangles\n")
+
+            evaluated_obj = obj.evaluated_get(context.view_layer.depsgraph)
+            temp = evaluated_obj.to_mesh()
             common.triangulate(temp)
-            temp.calc_normals_split()
+
+            if reference or bodygroup:
+                temp.calc_normals_split()
 
             for poly in temp.polygons:
-                material_name = "no_material"
                 if poly.material_index < len(obj.material_slots):
                     material = obj.material_slots[poly.material_index].material
                     if material is not None:
-                        material_name = material.name
-                smd.write(material_name + "\n")
+                        smd.write(material.name + "\n")
+                else:
+                    smd.write("no_material" + "\n")
 
                 for index in range(3):
                     smd.write("0    ")
@@ -74,114 +92,87 @@ def export_meshes(context, directory):
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = rot @ obj.matrix_local @ mathutils.Vector(
-                        vert.co) * scale
+                    vec = rot @ evaluated_obj.matrix_local @ mathutils.Vector(vert.co) * scale
                     smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
 
-                    nor = mathutils.Vector(
-                        [loop.normal[0], loop.normal[1], loop.normal[2], 0.0])
-                    nor = rot @ obj.matrix_local @ nor
+                    normal = vert.normal if collision else loop.normal
+                    nor = mathutils.Vector([normal[0], normal[1], normal[2], 0.0])
+                    nor = rot @ evaluated_obj.matrix_local @ nor
                     smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
 
                     if temp.uv_layers:
-                        uv_layer = [
-                            layer for layer in temp.uv_layers if layer.active_render][0]
+                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
                         uv_loop = uv_layer.data[loop_index]
                         uv = uv_loop.uv
                         smd.write("%f %f\n" % (uv[0], uv[1]))
                     else:
                         smd.write("%f %f\n" % (0.0, 0.0))
 
-            temp.free_normals_split()
-            bpy.data.meshes.remove(temp)
+            if reference or bodygroup:
+                temp.free_normals_split()
 
-        smd.write("end\n")
+            evaluated_obj.to_mesh_clear()
+            smd.write("end\n")
 
-    with open(directory + "collision.smd", "w+") as smd:
-        write_smd_header(smd)
-        smd.write("triangles\n")
+    def export_meshes(self, context, directory):
+        """Export this model's meshes as SMD"""
+        base = context.scene.BASE
+        model = base.model()
 
-        for obj in collisions:
-            temp = obj.to_mesh(context.depsgraph,
-                               apply_modifiers=True, calc_undeformed=False)
-            # sometimes StudioMDL does this on its own and sometimes it doesn't
-            common.fill_holes(temp)
-            common.triangulate(temp)
+        for c in model.collection.children:
+            if c.name.lower().count("reference"):
+                self.export_smd(context, directory, c, 'REFERENCE')
+            elif c.name.lower().count("collision"):
+                self.export_smd(context, directory, c, 'COLLISION')
+            else:
+                self.export_smd(context, directory, c, 'BODYGROUP')
 
-            for poly in temp.polygons:
-                smd.write("no_material" + "\n")
+        return True
 
-                for index in range(3):
-                    smd.write("0" + "    ")
-                    loop_index = poly.loop_indices[index]
-                    loop = temp.loops[loop_index]
-                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
+    def generate_qc(self, context):
+        """Generate the QC for this model"""
+        base = context.scene.BASE
+        game = base.settings.game()
+        model = base.model()
 
-                    vert_index = loop.vertex_index
-                    vert = temp.vertices[vert_index]
-                    vec = rot @ obj.matrix_local @ mathutils.Vector(
-                        vert.co) * scale
-                    smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
+        modelsrc_path = game.mod + os.sep + "modelsrc" + os.sep + model.name + os.sep
+        qc = open(modelsrc_path + "compile.qc", "w")
+        qc.write("$modelname \"" + model.name + "\"\n")
 
-                    nor = mathutils.Vector(
-                        [vert.normal[0], vert.normal[1], vert.normal[2], 0.0])
-                    nor = rot @ obj.matrix_local @ nor
-                    smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
+        reference = "reference"
+        for c in model.collection.children:
+            clean_name = common.clean_filename(c.name)
 
-                    smd.write("%f %f\n" % (0.0, 0.0))
+            if c.name.lower().count("reference"):
+                for o in c.all_objects:
+                    o_name = common.clean_filename(o.name)
+                    qc.write("$body \"" + o_name + "\" \"")
+                    qc.write("reference" + os.sep + o_name + ".smd\"\n")
+                    reference = "reference" + os.sep + o_name + ".smd"
 
-            bpy.data.meshes.remove(temp)
+            elif c.name.lower().count("collision"):
+                qc.write("$collisionmodel \"" + "collision" + os.sep + clean_name)
+                qc.write(".smd\" { $concave $maxconvexpieces 10000 }\n")
 
-        smd.write("end\n")
+            else:
+                qc.write("$bodygroup \"" + clean_name + "\"\n{\n")
+                for o in c.all_objects:
+                    o_name = common.clean_filename(o.name)
+                    qc.write("    studio \"" + clean_name + os.sep + o_name + ".smd\"\n")
+                qc.write("}\n")  # qc.write("    blank\n}\n")  # why does this break it??
 
-    return True
+        qc.write("$sequence idle \"" + reference + "\"\n")
+        qc.write("$cdmaterials \"" + os.sep + "\"\n")
+        qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
+        qc.write("$staticprop\n")
 
+        if model.autocenter:
+            qc.write("$autocenter\n")
+        if model.mostly_opaque:
+            qc.write("$mostlyopaque\n")
 
-def generate_qc(context, game_path):
-    """Generate the QC for this model"""
-    base = context.scene.BASE
-    model = base.models[base.model_index]
-
-    # deleting the old model so that the model viewer won't load it if you try to view it while it's still compiling
-    model_path = game_path + os.sep + "models" + os.sep + model.name
-    if os.path.isfile(model_path + ".dx90.vtx"):
-        os.remove(model_path + ".dx90.vtx")
-    if os.path.isfile(model_path + ".dx80.vtx"):
-        os.remove(model_path + ".dx80.vtx")
-    if os.path.isfile(model_path + ".sw.vtx"):
-        os.remove(model_path + ".sw.vtx")
-    if os.path.isfile(model_path + ".vvd"):
-        os.remove(model_path + ".vvd")
-    if os.path.isfile(model_path + ".mdl"):
-        os.remove(model_path + ".mdl")
-    if os.path.isfile(model_path + ".phy"):
-        os.remove(model_path + ".phy")
-
-    modelsrc_path = game_path + os.sep + "modelsrc" + os.sep + model.name + os.sep
-    qc = open(modelsrc_path + "compile.qc", "w+")
-    qc.write("$modelname \"" + model.name + "\"\n")
-    qc.write("$body shell \"reference.smd\"\n")
-    if any(mesh.kind == 'COLLISION' for mesh in model.meshes):
-        qc.write(
-            "$collisionmodel \"collision.smd\" {\n\t$concave\n\t$maxconvexpieces 10000\n}\n")
-    qc.write("$sequence idle \"reference.smd\"\n")
-    qc.write("$cdmaterials \"" + os.sep + "\"\n")
-    qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
-    qc.write("$staticprop\n")
-
-    if model.autocenter:
-        qc.write("$autocenter\n")
-    if model.mostly_opaque:
-        qc.write("$mostlyopaque\n")
-
-    qc.close()
-    return True
-
-
-class ExportModel(bpy.types.Operator):
-    """Export this model's meshes, generate a QC and compile it"""
-    bl_idname = "base.export_model"
-    bl_label = "Export Model"
+        qc.close()
+        return True
 
     @classmethod
     def poll(cls, context):
@@ -199,7 +190,9 @@ class ExportModel(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.meshes
+
+                    if model.name and model.collection:
+                        return model.collection.all_objects
 
         return False
 
@@ -211,21 +204,20 @@ class ExportModel(bpy.types.Operator):
         game = games[game_index]
 
         model = base.models[base.model_index]
-        model_path = game.mod + os.sep + "modelsrc" + os.sep + model.name + os.sep
-        if not os.path.exists(model_path):
-            os.makedirs(model_path)
+        model_path = common.verify_folder(game.mod + os.sep + "modelsrc" + os.sep + model.name + os.sep)
+        self.delete_old(model, game.mod)
 
-        if export_meshes(context, model_path) and generate_qc(context, game.mod):
-            args = [game.studiomdl, '-nop4',
-                    '-fullcollide', model_path + "compile.qc"]
+        if self.export_meshes(context, model_path) and self.generate_qc(context):
+            args = [game.studiomdl, '-nop4', '-fullcollide', model_path + "compile.qc"]
             print(game.studiomdl + "    " + model_path + "compile.qc" + "\n")
-            pipe = subprocess.Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            while 1:
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            while True:
                 code = pipe.returncode
                 if code is None:
-                    with open(model_path + "log.txt", "w+") as log:
+                    with open(model_path + "log.txt", "w") as log:
                         log.write(pipe.communicate()[0].decode('utf'))
                 else:
                     break
+
         return {'FINISHED'}

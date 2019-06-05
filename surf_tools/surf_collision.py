@@ -82,9 +82,15 @@ class SurfCollision(bpy.types.Operator):
         for obj in selected_objects:
             if obj.type != 'MESH':
                 continue
+
+            if apply:
+                evaluated_obj = obj.evaluated_get(context.view_layer.depsgraph)
+                temp = evaluated_obj.to_mesh()
+            else:
+                temp = obj.to_mesh()
+
             bm = bmesh.new()
-            bm.from_mesh(obj.to_mesh(context.depsgraph,
-                                     apply_modifiers=True) if apply else obj.data)
+            bm.from_mesh(temp)
             self.generate_collision(
                 bm, obj.matrix_world, colset.thickness / scale)
 
@@ -105,5 +111,10 @@ class SurfCollision(bpy.types.Operator):
                 obj.data.use_auto_smooth = False
                 if apply:
                     obj.modifiers.clear()
+
+            if apply:
+                evaluated_obj.to_mesh_clear()
+            else:
+                obj.to_mesh_clear()
 
         return {'FINISHED'}

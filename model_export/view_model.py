@@ -28,7 +28,7 @@ class ViewModel(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-                    return model.name and model.meshes
+                    return model.name and model.collection
 
         return False
 

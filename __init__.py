@@ -5,10 +5,9 @@ from . settings . game import GameProps, GameList, AddGame, RemoveGame, MoveGame
 from . settings . panels import SettingsPanel, OptionsPanel, GamesPanel
 
 from . model_export . model import ModelProps, ModelList, AddModel, RemoveModel, MoveModel
-from . model_export . mesh import MeshProps, MeshList, AddMesh, RemoveMesh, MoveMesh
 from . model_export . export_model import ExportModel
 from . model_export . view_model import ViewModel
-from . model_export . panels import ModelExportPanel, ModelPanel, MeshPanel, PropertiesPanel
+from . model_export . panels import ModelExportPanel, ModelPanel, PropertiesPanel
 
 from . material_import_export . material_import import ImportMaterial, MaterialImportPanel
 
@@ -22,7 +21,7 @@ bl_info = {
     "name": "BASE",
     "description": "Blender Add-on for Source Engine",
     "author": "bonjorno7 & REDxEYE",
-    "version": (0, 3, 8),
+    "version": (0, 4, 0),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
     "warning": "",
@@ -31,10 +30,16 @@ bl_info = {
 
 class Props(bpy.types.PropertyGroup):
     """Global variables for this add-on"""
+    bl_idname = "BASE_PG_Props"
     settings: bpy.props.PointerProperty(type=SettingsProps)
 
     models: bpy.props.CollectionProperty(type=ModelProps)
     model_index: bpy.props.IntProperty(default=0)
+
+    def model(self):
+        if self.models:
+            return self.models[self.model_index]
+        return None
 
     collision: bpy.props.PointerProperty(type=CollisionProps)
     surf_ramp: bpy.props.PointerProperty(type=SurfRampProps)
@@ -45,12 +50,10 @@ classes = (
     GameList, AddGame, RemoveGame, MoveGame,
     SettingsPanel, OptionsPanel, GamesPanel,
 
-    MeshProps, ModelProps,
-    ModelList, MeshList,
+    ModelProps, ModelList,
     AddModel, RemoveModel, MoveModel,
-    AddMesh, RemoveMesh, MoveMesh,
     ExportModel, ViewModel,
-    ModelExportPanel, ModelPanel, MeshPanel, PropertiesPanel,
+    ModelExportPanel, ModelPanel, PropertiesPanel,
 
     CollisionProps, SurfRampProps,
     SurfCollision, SurfRampify,
@@ -62,8 +65,7 @@ classes = (
 )
 
 
-register_classes, unregister_classes = bpy.utils.register_classes_factory(
-    classes)
+register_classes, unregister_classes = bpy.utils.register_classes_factory(classes)
 
 
 def register():

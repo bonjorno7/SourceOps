@@ -1,21 +1,18 @@
 import bpy
 import os
-from . mesh import MeshProps
 from . surface_props import surface_props
-
-
-def update_model_name(self, context):
-    name = bpy.path.native_pathsep(self["name"])
-    if name.lower().endswith(".mdl"):
-        name = name[:-4]
-    self["name"] = name
 
 
 class ModelProps(bpy.types.PropertyGroup):
     """Properties for a model"""
     bl_idname = "BASE_PG_ModelProps"
-    meshes: bpy.props.CollectionProperty(type=MeshProps)
-    mesh_index: bpy.props.IntProperty(default=0)
+    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+
+    def update_model_name(self, context):
+        name = bpy.path.native_pathsep(self["name"])
+        if name.lower().endswith(".mdl"):
+            name = name[:-4]
+        self["name"] = name
 
     name: bpy.props.StringProperty(
         name="Model Name",
