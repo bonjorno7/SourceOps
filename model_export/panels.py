@@ -48,7 +48,9 @@ class ModelPanel(bpy.types.Panel):
 
         if base.models:
             model = base.models[base.model_index]
-            common.add_prop(self.layout, "Collection", model, "collection")
+            common.add_prop(self.layout, "Reference", model, "reference")
+            common.add_prop(self.layout, "Collision", model, "collision")
+            common.add_prop(self.layout, "Bodygroups", model, "bodygroups")
 
 
 class PropertiesPanel(bpy.types.Panel):

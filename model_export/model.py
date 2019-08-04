@@ -6,7 +6,9 @@ from . surface_props import surface_props
 class ModelProps(bpy.types.PropertyGroup):
     """Properties for a model"""
     bl_idname = "BASE_PG_ModelProps"
-    collection: bpy.props.PointerProperty(type=bpy.types.Collection)
+    reference: bpy.props.PointerProperty(type=bpy.types.Collection)
+    collision: bpy.props.PointerProperty(type=bpy.types.Collection)
+    bodygroups: bpy.props.PointerProperty(type=bpy.types.Collection)
 
     def update_model_name(self, context):
         name = bpy.path.native_pathsep(self["name"])

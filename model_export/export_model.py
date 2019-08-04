@@ -39,46 +39,35 @@ class ExportModel(bpy.types.Operator):
         smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
         smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
         smd.write("end\n")
+        smd.write("triangles\n")
 
-    def export_smd(self, context, directory, collection, kind):
+    def export_smd(self, context, directory, name, objects, combine, collision):
+        """Export objects to one or more SMD files"""
         base = context.scene.BASE
         settings = base.settings
         scale = settings.scale
+        common.verify_folder(directory)
 
-        reference = True if kind == 'REFERENCE' else False
-        collision = True if kind == 'COLLISION' else False
-        bodygroup = True if kind == 'BODYGROUP' else False
-        clean_name = common.clean_filename(collection.name)
-
-        if collision:
-            collection_directory = common.verify_folder(directory + "collision" + os.sep)
-            smd = open(collection_directory + clean_name + ".smd", "w")
+        if combine:
+            smd = open(directory + name + ".smd", "w")
             self.write_smd_header(smd)
-            smd.write("triangles\n")
 
-        for obj in collection.all_objects:
-            if reference:
-                collection_directory = common.verify_folder(directory + "reference" + os.sep)
-                smd = open(collection_directory + common.clean_filename(obj.name) + ".smd", "w")
-
-            elif bodygroup:
-                collection_directory = common.verify_folder(directory + clean_name + os.sep)
-                smd = open(collection_directory + common.clean_filename(obj.name) + ".smd", "w")
-
-            if reference or bodygroup:
+        for o in objects:
+            if not combine:
+                o_name = common.clean_filename(o.name)
+                smd = open(directory + o_name + ".smd", "w")
                 self.write_smd_header(smd)
-                smd.write("triangles\n")
 
-            evaluated_obj = obj.evaluated_get(context.view_layer.depsgraph)
+            evaluated_obj = o.evaluated_get(context.view_layer.depsgraph)
             temp = evaluated_obj.to_mesh()
             common.triangulate(temp)
 
-            if reference or bodygroup:
+            if not collision:
                 temp.calc_normals_split()
 
             for poly in temp.polygons:
-                if poly.material_index < len(obj.material_slots):
-                    material = obj.material_slots[poly.material_index].material
+                if poly.material_index < len(o.material_slots):
+                    material = o.material_slots[poly.material_index].material
                     if material is not None:
                         smd.write(material.name + "\n")
                 else:
@@ -108,24 +97,36 @@ class ExportModel(bpy.types.Operator):
                     else:
                         smd.write("%f %f\n" % (0.0, 0.0))
 
-            if reference or bodygroup:
+            if not collision:
                 temp.free_normals_split()
 
             evaluated_obj.to_mesh_clear()
             smd.write("end\n")
 
     def export_meshes(self, context, directory):
-        """Export this model's meshes as SMD"""
+        """Export this model's meshes to SMD files"""
         base = context.scene.BASE
         model = base.model()
 
-        for c in model.collection.children:
-            if c.name.lower().count("reference"):
-                self.export_smd(context, directory, c, 'REFERENCE')
-            elif c.name.lower().count("collision"):
-                self.export_smd(context, directory, c, 'COLLISION')
-            else:
-                self.export_smd(context, directory, c, 'BODYGROUP')
+        #  BUG  Combining objects into one SMD doesn't work yet.
+
+        if model.reference:
+            ref_dir = directory + "reference" + os.sep
+            self.export_smd(context, ref_dir, None, model.reference.objects, False, False)
+            for c in model.reference.children:
+                c_name = common.clean_filename(c.name)
+                self.export_smd(context, ref_dir, c_name, c.all_objects, True, False)
+
+        if model.collision:
+            col_dir = directory + "collision" + os.sep
+            self.export_smd(context, col_dir, "collision", model.collision.all_objects, True, True)
+
+        for bg in model.bodygroups.children:
+            bg_dir = directory + common.clean_filename(bg.name) + os.sep
+            self.export_smd(context, bg_dir, None, bg.objects, False, False)
+            for c in bg.children:
+                c_name = common.clean_filename(c.name)
+                self.export_smd(context, bg_dir, c_name, c.all_objects, True, False)
 
         return True
 
@@ -138,30 +139,42 @@ class ExportModel(bpy.types.Operator):
         modelsrc_path = game.mod + os.sep + "modelsrc" + os.sep + model.name + os.sep
         qc = open(modelsrc_path + "compile.qc", "w")
         qc.write("$modelname \"" + model.name + "\"\n")
+        idle = "AT LEAST ONE REFERENCE MESH REQUIRED"
 
-        reference = "reference"
-        for c in model.collection.children:
-            clean_name = common.clean_filename(c.name)
+        if model.reference:
+            for o in model.reference.objects:
+                o_name = common.clean_filename(o.name)
+                qc.write("$body \"" + o_name + "\" \"")
+                qc.write("reference" + os.sep + o_name + ".smd\"\n")
+                idle = "reference" + os.sep + o_name + ".smd"
 
-            if c.name.lower().count("reference"):
-                for o in c.all_objects:
+            for c in model.reference.children:
+                c_name = common.clean_filename(c.name)
+                qc.write("$body \"" + c_name + "\" \"")
+                qc.write("reference" + os.sep + c_name + ".smd\"\n")
+                idle = "reference" + os.sep + c_name + ".smd"
+
+        if model.collision:
+            qc.write("$collisionmodel \"collision" + os.sep + "collision.smd\"\n")
+            qc.write("{\n    $concave\n    $maxconvexpieces 10000\n}\n")
+
+        if model.bodygroups:
+            for bg in model.bodygroups.children:
+                bg_name = common.clean_filename(bg.name)
+                qc.write("$bodygroup \"" + bg_name + "\"\n{\n")
+
+                for o in bg.objects:
                     o_name = common.clean_filename(o.name)
-                    qc.write("$body \"" + o_name + "\" \"")
-                    qc.write("reference" + os.sep + o_name + ".smd\"\n")
-                    reference = "reference" + os.sep + o_name + ".smd"
+                    qc.write("    studio \"" + bg_name + os.sep + o_name + ".smd\"\n")
 
-            elif c.name.lower().count("collision"):
-                qc.write("$collisionmodel \"" + "collision" + os.sep + clean_name)
-                qc.write(".smd\" { $concave $maxconvexpieces 10000 }\n")
+                for c in bg.children:
+                    c_name = common.clean_filename(c.name)
+                    qc.write("    studio \"" + bg_name + os.sep + c_name + ".smd\"\n")
 
-            else:
-                qc.write("$bodygroup \"" + clean_name + "\"\n{\n")
-                for o in c.all_objects:
-                    o_name = common.clean_filename(o.name)
-                    qc.write("    studio \"" + clean_name + os.sep + o_name + ".smd\"\n")
-                qc.write("}\n")  # qc.write("    blank\n}\n")  # why does this break it??
+                #  BUG  Putting blank at the end of a bodygroup breaks it.
+                qc.write("}\n")  # qc.write("    blank\n}\n")
 
-        qc.write("$sequence idle \"" + reference + "\"\n")
+        qc.write("$sequence idle \"" + idle + "\"\n")
         qc.write("$cdmaterials \"" + os.sep + "\"\n")
         qc.write("$surfaceprop \"" + model.surface_prop + "\"\n")
         qc.write("$staticprop\n")
@@ -190,9 +203,7 @@ class ExportModel(bpy.types.Operator):
 
                 if models and model_index >= 0:
                     model = models[model_index]
-
-                    if model.name and model.collection:
-                        return model.collection.all_objects
+                    return model.name
 
         return False
 
