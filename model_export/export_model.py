@@ -101,14 +101,17 @@ class ExportModel(bpy.types.Operator):
                 temp.free_normals_split()
 
             evaluated_obj.to_mesh_clear()
+
+            if not combine:
+                smd.write("end\n")
+
+        if combine:
             smd.write("end\n")
 
     def export_meshes(self, context, directory):
         """Export this model's meshes to SMD files"""
         base = context.scene.BASE
         model = base.model()
-
-        #  BUG  Combining objects into one SMD doesn't work yet.
 
         if model.reference:
             ref_dir = directory + "reference" + os.sep
@@ -121,12 +124,13 @@ class ExportModel(bpy.types.Operator):
             col_dir = directory + "collision" + os.sep
             self.export_smd(context, col_dir, "collision", model.collision.all_objects, True, True)
 
-        for bg in model.bodygroups.children:
-            bg_dir = directory + common.clean_filename(bg.name) + os.sep
-            self.export_smd(context, bg_dir, None, bg.objects, False, False)
-            for c in bg.children:
-                c_name = common.clean_filename(c.name)
-                self.export_smd(context, bg_dir, c_name, c.all_objects, True, False)
+        if model.bodygroups:
+            for bg in model.bodygroups.children:
+                bg_dir = directory + common.clean_filename(bg.name) + os.sep
+                self.export_smd(context, bg_dir, None, bg.objects, False, False)
+                for c in bg.children:
+                    c_name = common.clean_filename(c.name)
+                    self.export_smd(context, bg_dir, c_name, c.all_objects, True, False)
 
         return True
 
@@ -171,7 +175,7 @@ class ExportModel(bpy.types.Operator):
                     c_name = common.clean_filename(c.name)
                     qc.write("    studio \"" + bg_name + os.sep + c_name + ".smd\"\n")
 
-                #  BUG  Putting blank at the end of a bodygroup breaks it.
+                # BUG Putting blank at the end of a bodygroup breaks it.
                 qc.write("}\n")  # qc.write("    blank\n}\n")
 
         qc.write("$sequence idle \"" + idle + "\"\n")
