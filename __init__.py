@@ -37,7 +37,7 @@ class Props(bpy.types.PropertyGroup):
     model_index: bpy.props.IntProperty(default=0)
 
     def model(self):
-        if self.models:
+        if self.models and self.model_index >= 0:
             return self.models[self.model_index]
         return None
 

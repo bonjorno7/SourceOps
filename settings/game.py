@@ -7,31 +7,38 @@ import bmesh
 import mathutils
 from .. import common
 
-
-def update_path(self, context):
-    path = bpy.path.abspath(self["gameinfo"])
-    gameinfo = Path(path).resolve()
-    mod = gameinfo.parent
-    game = mod.parent
-    studiomdl = game / r"bin/studiomdl.exe"
-    hlmv = game / r"bin/hlmv.exe"
-    name = game.name
-
-    self["gameinfo"] = str(gameinfo)
-    self["mod"] = str(mod)
-    self["game"] = str(game)
-    self["studiomdl"] = str(studiomdl)
-    self["hlmv"] = str(hlmv)
-
-    if studiomdl.is_file():
-        self["name"] = str(name)
-    else:
-        self["name"] = "Invalid Game"
-
-
 class GameProps(bpy.types.PropertyGroup):
     """Properties for a game"""
     bl_idname = "BASE_PG_GameProps"
+
+    def is_valid(self):
+        return self.name != "Invalid Game"
+
+    def verify(self, context):
+        if not os.path.isfile(self.studiomdl):
+            self["name"] = "Invalid Game"
+            return False
+        return True
+
+    def update_path(self, context):
+        path = bpy.path.abspath(self["gameinfo"])
+        gameinfo = Path(path).resolve()
+        mod = gameinfo.parent
+        game = mod.parent
+        studiomdl = game / r"bin/studiomdl.exe"
+        hlmv = game / r"bin/hlmv.exe"
+        name = game.name
+
+        self["gameinfo"] = str(gameinfo)
+        self["mod"] = str(mod)
+        self["game"] = str(game)
+        self["studiomdl"] = str(studiomdl)
+        self["hlmv"] = str(hlmv)
+
+        if studiomdl.is_file():
+            self["name"] = str(name)
+        else:
+            self["name"] = "Invalid Game"
 
     gameinfo: bpy.props.StringProperty(
         name="Mod Path",
