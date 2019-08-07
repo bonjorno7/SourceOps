@@ -1,13 +1,13 @@
 import bpy
 
+from . settings . game import GameProps
 from . settings . settings import SettingsProps
-from . settings . game import GameProps, GameList, AddGame, RemoveGame, MoveGame
-from . settings . panels import SettingsPanel, OptionsPanel, GamesPanel
+from . settings . operators import AddGame, RemoveGame, MoveGame
+from . settings . interface import GameList,  SettingsPanel, OptionsPanel, GamesPanel
 
-from . model_export . model import ModelProps, ModelList, AddModel, RemoveModel, MoveModel
-from . model_export . export_model import ExportModel
-from . model_export . view_model import ViewModel
-from . model_export . panels import ModelExportPanel, ModelPanel, PropertiesPanel
+from . model_export . model import ModelProps
+from . model_export . operators import AddModel, RemoveModel, MoveModel, ExportModel, ViewModel
+from . model_export . interface import ModelList, ModelExportPanel, ModelPanel, PropertiesPanel
 
 from . material_import_export . material_import import ImportMaterial, MaterialImportPanel
 
@@ -21,7 +21,7 @@ bl_info = {
     "name": "BASE",
     "description": "Blender Add-on for Source Engine",
     "author": "bonjorno7 & REDxEYE",
-    "version": (0, 4, 1),
+    "version": (0, 4, 2),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
     "warning": "",

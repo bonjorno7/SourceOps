@@ -71,7 +71,7 @@ class ExportModel(bpy.types.Operator):
             return model and model.name
 
     def execute(self, context):
-        model = common.get_model()
+        model = common.get_model(context)
         if not model.export(context):
             self.report({"WARNING"}, "Failed to export")
         return {'FINISHED'}
@@ -90,7 +90,7 @@ class ViewModel(bpy.types.Operator):
             return model and model.name
 
     def execute(self, context):
-        model = common.get_model()
+        model = common.get_model(context)
         if not model.view(context):
             self.report({"WARNING"}, "Model not found")
         return {'FINISHED'}

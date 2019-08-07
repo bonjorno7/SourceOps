@@ -2,14 +2,19 @@ import bpy
 from .. import common
 
 
+class ModelList(bpy.types.UIList):
+    """List of models"""
+    bl_idname = "BASE_UL_ModelList"
 
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, "name", text="", emboss=False, translate=False)
 
 
 class ModelExportPanel(bpy.types.Panel):
+    """The parent panel for model export"""
     bl_idname = "BASE_PT_ModelExportPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_context = "objectmode"
     bl_category = "BASE"
     bl_label = "Model Export"
 
@@ -21,11 +26,11 @@ class ModelExportPanel(bpy.types.Panel):
 
 
 class ModelPanel(bpy.types.Panel):
+    """The panel for model list and some operators"""
     bl_idname = "BASE_PT_ModelPanel"
     bl_parent_id = "BASE_PT_ModelExportPanel"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_context = "objectmode"
     bl_category = "BASE"
     bl_label = "Models"
 
@@ -33,7 +38,7 @@ class ModelPanel(bpy.types.Panel):
         self.layout.label(icon='CUBE')
 
     def draw(self, context):
-        base = context.scene.BASE
+        base = common.get_globals(context)
         row = self.layout.row()
         row.template_list("BASE_UL_ModelList", "", base, "models", base, "model_index", rows=4)
         col = row.column(align=True)
@@ -57,6 +62,7 @@ class ModelPanel(bpy.types.Panel):
 
 
 class PropertiesPanel(bpy.types.Panel):
+    """The panel for model properties"""
     bl_idname = "BASE_PT_PropertiesPanel"
     bl_parent_id = "BASE_PT_ModelExportPanel"
     bl_space_type = "VIEW_3D"
@@ -67,17 +73,13 @@ class PropertiesPanel(bpy.types.Panel):
 
     @classmethod
     def poll(cls, context):
-        models = context.scene.BASE.models
-        model_index = context.scene.BASE.model_index
-        return models and model_index >= 0
+        return common.get_model(context)
 
     def draw_header(self, context):
         self.layout.label(icon='PROPERTIES')
 
     def draw(self, context):
-        models = context.scene.BASE.models
-        model_index = context.scene.BASE.model_index
-        model = models[model_index]
+        model = common.get_model(context)
 
         common.add_prop(self.layout, "Surface", model, "surface_prop")
         flow = self.layout.grid_flow(even_columns=True)
