@@ -11,6 +11,25 @@ filename_char_limit = 255
 # </variables>
 
 # <functions>
+def get_globals(context):
+    return context.scene.BASE
+
+def get_settings(context):
+    return get_globals(context).settings
+
+def get_game(context):
+    return get_settings(context).game()
+
+def get_scale(context):
+    return get_settings(context).scale
+
+def get_model(context):
+    return get_globals(context).model()
+
+def remove_if_exists(path):
+    if os.path.isfile(path):
+        os.remove(path)
+
 def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_chars_replace, char_limit=filename_char_limit):
     for r in replace:
         filename = filename.replace(r, "_")
