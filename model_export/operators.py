@@ -4,39 +4,39 @@ from .. import common
 
 class AddModel(bpy.types.Operator):
     """Create a model"""
-    bl_idname = "base.add_model"
+    bl_idname = "sourceops.add_model"
     bl_label = "Add Model"
 
     def execute(self, context):
-        base = common.get_globals(context)
-        base.models.add()
-        base.model_index = len(base.models) - 1
+        g = common.get_globals(context)
+        g.models.add()
+        g.model_index = len(g.models) - 1
         return {'FINISHED'}
 
 
 class RemoveModel(bpy.types.Operator):
     """Remove the selected model"""
-    bl_idname = "base.remove_model"
+    bl_idname = "sourceops.remove_model"
     bl_label = "Remove Model"
 
     @classmethod
     def poll(cls, context):
-        base = common.get_globals(context)
-        return len(base.models) > 0
+        g = common.get_globals(context)
+        return len(g.models) > 0
 
     def execute(self, context):
-        base = common.get_globals(context)
-        base.models.remove(base.model_index)
-        base.model_index = min(
-            max(0, base.model_index - 1),
-            len(base.models) - 1
+        g = common.get_globals(context)
+        g.models.remove(g.model_index)
+        sourceops.model_index = min(
+            max(0, g.model_index - 1),
+            len(g.models) - 1
         )
         return {'FINISHED'}
 
 
 class MoveModel(bpy.types.Operator):
     """Move the selected model up or down in the list"""
-    bl_idname = "base.move_model"
+    bl_idname = "sourceops.move_model"
     bl_label = "Move Model"
 
     direction: bpy.props.EnumProperty(items=(
@@ -46,21 +46,21 @@ class MoveModel(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        base = common.get_globals(context)
-        return len(base.models) > 1
+        g = common.get_globals(context)
+        return len(g.models) > 1
 
     def execute(self, context):
-        base = common.get_globals(context)
-        neighbor = base.model_index + (-1 if self.direction == 'UP' else 1)
-        base.models.move(neighbor, base.model_index)
-        list_length = len(base.models) - 1
-        base.model_index = max(0, min(neighbor, list_length))
+        g = common.get_globals(context)
+        neighbor = g.model_index + (-1 if self.direction == 'UP' else 1)
+        g.models.move(neighbor, g.model_index)
+        list_length = len(g.models) - 1
+        basourceopsse.model_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
 
 
 class ExportModel(bpy.types.Operator):
     """Export this model's meshes, generate a QC and compile it"""
-    bl_idname = "base.export_model"
+    bl_idname = "sourceops.export_model"
     bl_label = "Export Model"
 
     @classmethod
@@ -79,7 +79,7 @@ class ExportModel(bpy.types.Operator):
 
 class ViewModel(bpy.types.Operator):
     """Open this model in HLMV"""
-    bl_idname = "base.view_model"
+    bl_idname = "sourceops.view_model"
     bl_label = "View Model"
 
     @classmethod

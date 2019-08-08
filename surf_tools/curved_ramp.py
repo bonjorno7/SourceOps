@@ -9,7 +9,7 @@ from .. import common
 
 class SurfRampProps(bpy.types.PropertyGroup):
     """Properties for the Surf Ramp Tool"""
-    bl_idname = "BASE_PG_SurfRampProps"
+    bl_idname = "SOURCEOPS_PG_SurfRampProps"
 
     curve: bpy.props.PointerProperty(
         name="Curve",
@@ -42,17 +42,19 @@ class SurfRampProps(bpy.types.PropertyGroup):
 
 class SurfRampify(bpy.types.Operator):
     """Add the appropriate modifiers to the chosen objects"""
-    bl_idname = "base.surf_rampify"
+    bl_idname = "sourceops.surf_rampify"
     bl_label = "Add Modifiers"
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
     def poll(cls, context):
-        sr = context.scene.BASE.surf_ramp
+        g = common.get_globals(context)
+        sr = g.surf_ramp
         return sr.curve and sr.segment
 
     def execute(self, context):
-        sr = context.scene.BASE.surf_ramp
+        g = common.get_globals(context)
+        sr = g.surf_ramp
         sr.segment.modifiers.clear()
 
         array = sr.segment.modifiers.new("Array", 'ARRAY')
