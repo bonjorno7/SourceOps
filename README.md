@@ -1,4 +1,4 @@
-# Blender Add-on for Source Engine
+# SourceOps
 Meant to be a more convenient but less powerful alternative to Blender Source Tools.
 <br>
 Only works with blender 2.8 beta.
@@ -8,3 +8,5 @@ Has some tools for surf mapping.
 Currently working on material import / export.
 <br>
 https://discord.gg/N35zhHm
+<br>
+masterxeon1001 said I could put Ops in the name, but it'd better be good, so that's the goal c:
