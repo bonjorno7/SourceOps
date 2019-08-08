@@ -9,7 +9,7 @@ from .. import common
 
 class CollisionProps(bpy.types.PropertyGroup):
     """Properties used by the collision generator"""
-    bl_idname = "BASE_PG_CollisionProps"
+    bl_idname = "SOURCEOPS_PG_CollisionProps"
 
     target: bpy.props.EnumProperty(
         name="Target Object",
@@ -42,7 +42,7 @@ class CollisionProps(bpy.types.PropertyGroup):
 
 class SurfCollision(bpy.types.Operator):
     """Generate flawless but expensive collision meshes for the selected objects"""
-    bl_idname = "base.surf_collision"
+    bl_idname = "sourceops.surf_collision"
     bl_label = "Generate Collision"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -74,8 +74,8 @@ class SurfCollision(bpy.types.Operator):
 
     def execute(self, context):
         """Iterate through all selected objects and make collision meshes for them"""
-        scale = context.scene.BASE.settings.scale
-        colset = context.scene.BASE.collision
+        colset = common.get_globals(context).collision
+        scale = common.get_scale(context)
         apply = colset.modifiers == 'APPLY'
 
         selected_objects = context.selected_objects

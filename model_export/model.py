@@ -9,7 +9,7 @@ from . import surface_props
 
 class ModelProps(bpy.types.PropertyGroup):
     """Holds the variables and functions for a model"""
-    bl_idname = "BASE_PG_ModelProps"
+    bl_idname = "SOURCEOPS_PG_ModelProps"
 
     reference: bpy.props.PointerProperty(type=bpy.types.Collection)
     collision: bpy.props.PointerProperty(type=bpy.types.Collection)

@@ -5,7 +5,7 @@ import bpy
 
 class GameProps(bpy.types.PropertyGroup):
     """Properties for a game"""
-    bl_idname = "BASE_PG_GameProps"
+    bl_idname = "SOURCEOPS_PG_GameProps"
 
     def is_valid(self):
         return self.name != "Invalid Game"

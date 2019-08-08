@@ -12,7 +12,7 @@ filename_char_limit = 255
 
 # <functions>
 def get_globals(context):
-    return context.scene.BASE
+    return context.scene.SOURCEOPS
 
 def get_settings(context):
     return get_globals(context).settings

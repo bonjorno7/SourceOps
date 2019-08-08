@@ -4,7 +4,7 @@ from . game import GameProps
 
 class SettingsProps(bpy.types.PropertyGroup):
     """Properties for the Settings panel"""
-    bl_idname: "BASE_PG_SettingsProps"
+    bl_idname: "SOURCEOPS_PG_SettingsProps"
 
     games: bpy.props.CollectionProperty(type=GameProps)
     game_index: bpy.props.IntProperty(default=0)

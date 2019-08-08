@@ -18,19 +18,19 @@ from . surf_tools . panels import SurfToolsPanel, CollisionPanel, CurvedRampPane
 
 bl_info = {
     "blender": (2, 80, 0),
-    "name": "BASE",
-    "description": "Blender Add-on for Source Engine",
+    "name": "SourceOps",
+    "description": "A more convenient alternative to Blender Source Tools",
     "author": "bonjorno7 & REDxEYE",
-    "version": (0, 4, 2),
+    "version": (0, 4, 3),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
     "warning": "",
 }
 
 
-class Props(bpy.types.PropertyGroup):
+class Globals(bpy.types.PropertyGroup):
     """Global variables for this add-on"""
-    bl_idname = "BASE_PG_Props"
+    bl_idname = "SOURCEOPS_PG_Props"
     settings: bpy.props.PointerProperty(type=SettingsProps)
 
     models: bpy.props.CollectionProperty(type=ModelProps)
@@ -61,7 +61,7 @@ classes = (
 
     ImportMaterial, MaterialImportPanel,
 
-    Props,
+    Globals,
 )
 
 
@@ -70,14 +70,14 @@ register_classes, unregister_classes = bpy.utils.register_classes_factory(classe
 
 def register():
     register_classes()
-    bpy.types.Scene.BASE = bpy.props.PointerProperty(type=Props)
+    bpy.types.Scene.SOURCEOPS = bpy.props.PointerProperty(type=Globals)
 
 
 def unregister():
     from . utils.vtf_wrapper.VTFLib import VTFLib
     del VTFLib.vtflib_cdll
     unregister_classes()
-    del bpy.types.Scene.BASE
+    del bpy.types.Scene.SOURCEOPS
 
 
 if __name__ == "__main__":

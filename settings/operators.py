@@ -1,14 +1,14 @@
 import bpy
+from .. import common
 
 
 class AddGame(bpy.types.Operator):
     """Add a game"""
-    bl_idname = "base.add_game"
+    bl_idname = "sourceops.add_game"
     bl_label = "Add Game"
 
     def execute(self, context):
-        base = context.scene.BASE
-        settings = base.settings
+        settings = common.get_settings(context)
         settings.games.add()
         settings.game_index = len(settings.games) - 1
         return {'FINISHED'}
@@ -16,18 +16,16 @@ class AddGame(bpy.types.Operator):
 
 class RemoveGame(bpy.types.Operator):
     """Remove the selected game from the list"""
-    bl_idname = "base.remove_game"
+    bl_idname = "sourceops.remove_game"
     bl_label = "Remove Game"
 
     @classmethod
     def poll(cls, context):
-        base = context.scene.BASE
-        settings = base.settings
+        settings = common.get_settings(context)
         return len(settings.games) > 0
 
     def execute(self, context):
-        base = context.scene.BASE
-        settings = base.settings
+        settings = common.get_settings(context)
         settings.games.remove(settings.game_index)
         settings.game_index = min(
             max(0, settings.game_index - 1),
@@ -38,7 +36,7 @@ class RemoveGame(bpy.types.Operator):
 
 class MoveGame(bpy.types.Operator):
     """Move the selected game up or down in the list"""
-    bl_idname = "base.move_game"
+    bl_idname = "sourceops.move_game"
     bl_label = "Move Game"
 
     direction: bpy.props.EnumProperty(items=(
@@ -48,13 +46,11 @@ class MoveGame(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        base = context.scene.BASE
-        settings = base.settings
+        settings = common.get_settings(context)
         return len(settings.games) > 1
 
     def execute(self, context):
-        base = context.scene.BASE
-        settings = base.settings
+        settings = common.get_settings(context)
         neighbor = settings.game_index + (-1 if self.direction == 'UP' else 1)
         settings.games.move(neighbor, settings.game_index)
         list_length = len(settings.games) - 1
