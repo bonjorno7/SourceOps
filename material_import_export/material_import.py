@@ -102,7 +102,7 @@ class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             links.new(self.socket(node_output, "Surface"), self.socket(node_principled, "BSDF"))
             links.new(self.socket(node_principled, "Normal"), self.socket(node_normal_map, "Normal"))
 
-            for image in images:
+            for image_type, image in images.items():
                 node_image = self.image_node(nodes, image, -900, -520)
                 links.new(self.socket(node_image, "Color"), self.socket(node_principled, "Base Color"))
 
