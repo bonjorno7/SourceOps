@@ -80,11 +80,11 @@ class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             # all used textures are in valve_mat.textures
             pprint(valve_mat.textures)
 
-            images = []
-            for tex in valve_mat.textures.values():
-                images.append(import_vtf.import_texture(tex))
-                #names = import_vtf.import_texture(tex)
-                #for n in names:
+            images = {}
+            for tex_type, tex in valve_mat.textures.items():
+                images[tex_type] = import_vtf.import_texture(tex)
+                # names = import_vtf.import_texture(tex)
+                # for n in names:
                 #    images.append(bpy.data.images[n])
 
             mats_folder = Path(game.mod + os.sep + "materials" + os.sep)
