@@ -52,7 +52,13 @@ class ModelPanel(bpy.types.Panel):
 
         flow = self.layout.grid_flow(even_columns=True)
         col = flow.column()
-        col.operator("sourceops.export_model")
+        col.operator("sourceops.export_meshes")
+        col = flow.column()
+        col.operator("sourceops.generate_qc")
+
+        flow = self.layout.grid_flow(even_columns=True)
+        col = flow.column()
+        col.operator("sourceops.compile_qc")
         col = flow.column()
         col.operator("sourceops.view_model")
 
