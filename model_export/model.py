@@ -137,8 +137,12 @@ class ModelProps(bpy.types.PropertyGroup):
         if combine:
             smd.write("end\n")
 
-    def export_meshes(self, context, directory):
+    def export_meshes(self, context):
         """Export this model's meshes to SMD files"""
+        game = common.get_game(context)
+        directory = game.mod + os.sep + "modelsrc" + os.sep + self.name + os.sep
+        common.verify_folder(directory)
+
         if self.reference:
             ref_dir = directory + "reference" + os.sep
             self.export_smd(context, ref_dir, None, self.reference.objects, False, False)
@@ -160,8 +164,12 @@ class ModelProps(bpy.types.PropertyGroup):
 
         return True
 
-    def generate_qc(self, context, directory):
+    def generate_qc(self, context):
         """Generate the QC for this model"""
+        game = common.get_game(context)
+        directory = game.mod + os.sep + "modelsrc" + os.sep + self.name + os.sep
+        common.verify_folder(directory)
+
         qc = open(directory + "compile.qc", "w")
         qc.write("$modelname \"" + self.name + "\"\n")
         idle = "AT LEAST ONE REFERENCE MESH REQUIRED"
@@ -212,15 +220,18 @@ class ModelProps(bpy.types.PropertyGroup):
             qc.write("$mostlyopaque\n")
 
         qc.close()
+
         return True
 
-    def export(self, context):
+    def compile_qc(self, context):
+        """Compile this model using the QC"""
         game = common.get_game(context)
         directory = game.mod + os.sep + "modelsrc" + os.sep + self.name + os.sep
         common.verify_folder(directory)
-        self.remove_old(context)
 
-        if self.export_meshes(context, directory) and self.generate_qc(context, directory):
+        if os.path.isfile(directory + "compile.qc"):
+            self.remove_old(context)
+
             args = [game.studiomdl, '-nop4', '-fullcollide', directory + "compile.qc"]
             print(game.studiomdl + "    " + directory + "compile.qc" + "\n")
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

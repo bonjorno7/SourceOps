@@ -6,7 +6,7 @@ from . settings . operators import AddGame, RemoveGame, MoveGame
 from . settings . interface import GameList,  SettingsPanel, OptionsPanel, GamesPanel
 
 from . model_export . model import ModelProps
-from . model_export . operators import AddModel, RemoveModel, MoveModel, ExportModel, ViewModel
+from . model_export . operators import AddModel, RemoveModel, MoveModel, ExportMeshes, GenerateQC, CompileQC, ViewModel
 from . model_export . interface import ModelList, ModelExportPanel, ModelPanel, PropertiesPanel
 
 from . material_import_export . material_import import ImportMaterial, MaterialImportPanel
@@ -21,7 +21,7 @@ bl_info = {
     "name": "SourceOps",
     "description": "A more convenient alternative to Blender Source Tools",
     "author": "bonjorno7 & REDxEYE",
-    "version": (0, 4, 3),
+    "version": (0, 4, 4),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
     "warning": "",
@@ -52,7 +52,7 @@ classes = (
 
     ModelProps, ModelList,
     AddModel, RemoveModel, MoveModel,
-    ExportModel, ViewModel,
+    ExportMeshes, GenerateQC, CompileQC, ViewModel,
     ModelExportPanel, ModelPanel, PropertiesPanel,
 
     CollisionProps, SurfRampProps,

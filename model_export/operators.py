@@ -27,7 +27,7 @@ class RemoveModel(bpy.types.Operator):
     def execute(self, context):
         g = common.get_globals(context)
         g.models.remove(g.model_index)
-        sourceops.model_index = min(
+        g.model_index = min(
             max(0, g.model_index - 1),
             len(g.models) - 1
         )
@@ -54,14 +54,14 @@ class MoveModel(bpy.types.Operator):
         neighbor = g.model_index + (-1 if self.direction == 'UP' else 1)
         g.models.move(neighbor, g.model_index)
         list_length = len(g.models) - 1
-        basourceopsse.model_index = max(0, min(neighbor, list_length))
+        g.model_index = max(0, min(neighbor, list_length))
         return {'FINISHED'}
 
 
-class ExportModel(bpy.types.Operator):
-    """Export this model's meshes, generate a QC and compile it"""
-    bl_idname = "sourceops.export_model"
-    bl_label = "Export Model"
+class ExportMeshes(bpy.types.Operator):
+    """Export this model's meshes"""
+    bl_idname = "sourceops.export_meshes"
+    bl_label = "Export Meshes"
 
     @classmethod
     def poll(cls, context):
@@ -72,8 +72,46 @@ class ExportModel(bpy.types.Operator):
 
     def execute(self, context):
         model = common.get_model(context)
-        if not model.export(context):
-            self.report({"WARNING"}, "Failed to export")
+        if not model.export_meshes(context):
+            self.report({"WARNING"}, "Failed to export meshes")
+        return {'FINISHED'}
+
+
+class GenerateQC(bpy.types.Operator):
+    """Generate the QC file for this model"""
+    bl_idname = "sourceops.generate_qc"
+    bl_label = "Generate QC"
+
+    @classmethod
+    def poll(cls, context):
+        game = common.get_game(context)
+        if game and game.is_valid():
+            model = common.get_model(context)
+            return model and model.name
+
+    def execute(self, context):
+        model = common.get_model(context)
+        if not model.generate_qc(context):
+            self.report({"WARNING"}, "Failed to generate QC")
+        return {'FINISHED'}
+
+
+class CompileQC(bpy.types.Operator):
+    """Compile this model using the QC"""
+    bl_idname = "sourceops.compile_qc"
+    bl_label = "Compile QC"
+
+    @classmethod
+    def poll(cls, context):
+        game = common.get_game(context)
+        if game and game.is_valid():
+            model = common.get_model(context)
+            return model and model.name
+
+    def execute(self, context):
+        model = common.get_model(context)
+        if not model.compile_qc(context):
+            self.report({"WARNING"}, "Failed to compile QC")
         return {'FINISHED'}
 
 
