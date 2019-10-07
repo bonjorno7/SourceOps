@@ -23,8 +23,8 @@ class ModelProps(bpy.types.PropertyGroup):
 
     name: bpy.props.StringProperty(
         name="Model Name",
-        description="Your model's path, eg example" + os.sep + "model",
-        default="example" + os.sep + "model",
+        description="Your model's path, eg example/model",
+        default="example/model",
         update=update_name,
     )
 
@@ -49,7 +49,7 @@ class ModelProps(bpy.types.PropertyGroup):
     def remove_old(self, context):
         """Removing the old model so the model viewer won't load it if you try to view it while it's still compiling"""
         game = common.get_game(context)
-        model_path = game.mod + os.sep + "models" + os.sep + self.name
+        model_path = game.mod + "/" + "models" + "/" + self.name
         common.remove_if_exists(model_path + ".dx90.vtx")
         common.remove_if_exists(model_path + ".dx80.vtx")
         common.remove_if_exists(model_path + ".sw.vtx")
@@ -98,7 +98,7 @@ class ModelProps(bpy.types.PropertyGroup):
                 if poly.material_index < len(o.material_slots):
                     material = o.material_slots[poly.material_index].material
                     if material is not None:
-                        smd.write(material.name + "\n")
+                        smd.write(common.fix_slashes(material.name) + "\n")
                 else:
                     smd.write("no_material" + "\n")
 
@@ -140,23 +140,23 @@ class ModelProps(bpy.types.PropertyGroup):
     def export_meshes(self, context):
         """Export this model's meshes to SMD files"""
         game = common.get_game(context)
-        directory = game.mod + os.sep + "modelsrc" + os.sep + self.name + os.sep
+        directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
 
         if self.reference:
-            ref_dir = directory + "reference" + os.sep
+            ref_dir = directory + "reference" + "/"
             self.export_smd(context, ref_dir, None, self.reference.objects, False, False)
             for c in self.reference.children:
                 c_name = common.clean_filename(c.name)
                 self.export_smd(context, ref_dir, c_name, c.all_objects, True, False)
 
         if self.collision:
-            col_dir = directory + "collision" + os.sep
+            col_dir = directory + "collision" + "/"
             self.export_smd(context, col_dir, "collision", self.collision.all_objects, True, True)
 
         if self.bodygroups:
             for bg in self.bodygroups.children:
-                bg_dir = directory + common.clean_filename(bg.name) + os.sep
+                bg_dir = directory + common.clean_filename(bg.name) + "/"
                 self.export_smd(context, bg_dir, None, bg.objects, False, False)
                 for c in bg.children:
                     c_name = common.clean_filename(c.name)
@@ -167,7 +167,7 @@ class ModelProps(bpy.types.PropertyGroup):
     def generate_qc(self, context):
         """Generate the QC for this model"""
         game = common.get_game(context)
-        directory = game.mod + os.sep + "modelsrc" + os.sep + self.name + os.sep
+        directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
 
         qc = open(directory + "compile.qc", "w")
@@ -178,17 +178,17 @@ class ModelProps(bpy.types.PropertyGroup):
             for o in self.reference.objects:
                 o_name = common.clean_filename(o.name)
                 qc.write("$body \"" + o_name + "\" \"")
-                qc.write("reference" + os.sep + o_name + ".smd\"\n")
-                idle = "reference" + os.sep + o_name + ".smd"
+                qc.write("reference" + "/" + o_name + ".smd\"\n")
+                idle = "reference" + "/" + o_name + ".smd"
 
             for c in self.reference.children:
                 c_name = common.clean_filename(c.name)
                 qc.write("$body \"" + c_name + "\" \"")
-                qc.write("reference" + os.sep + c_name + ".smd\"\n")
-                idle = "reference" + os.sep + c_name + ".smd"
+                qc.write("reference" + "/" + c_name + ".smd\"\n")
+                idle = "reference" + "/" + c_name + ".smd"
 
         if self.collision:
-            qc.write("$collisionmodel \"collision" + os.sep + "collision.smd\"\n")
+            qc.write("$collisionmodel \"collision" + "/" + "collision.smd\"\n")
             qc.write("{\n    $concave\n    $maxconvexpieces 10000\n}\n")
 
         if self.bodygroups:
@@ -198,11 +198,11 @@ class ModelProps(bpy.types.PropertyGroup):
 
                 for o in bg.objects:
                     o_name = common.clean_filename(o.name)
-                    qc.write("    studio \"" + bg_name + os.sep + o_name + ".smd\"\n")
+                    qc.write("    studio \"" + bg_name + "/" + o_name + ".smd\"\n")
 
                 for c in bg.children:
                     c_name = common.clean_filename(c.name)
-                    qc.write("    studio \"" + bg_name + os.sep + c_name + ".smd\"\n")
+                    qc.write("    studio \"" + bg_name + "/" + c_name + ".smd\"\n")
 
                 # BUG Putting blank at the end of a bodygroup breaks it.
                 # qc.write("    blank\n")
@@ -210,7 +210,7 @@ class ModelProps(bpy.types.PropertyGroup):
                 qc.write("}\n")
 
         qc.write("$sequence idle \"" + idle + "\"\n")
-        qc.write("$cdmaterials \"" + os.sep + "\"\n")
+        qc.write("$cdmaterials \"" + "/" + "\"\n")
         qc.write("$surfaceprop \"" + self.surface_prop + "\"\n")
         qc.write("$staticprop\n")
 
@@ -226,7 +226,7 @@ class ModelProps(bpy.types.PropertyGroup):
     def compile_qc(self, context):
         """Compile this model using the QC"""
         game = common.get_game(context)
-        directory = game.mod + os.sep + "modelsrc" + os.sep + self.name + os.sep
+        directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
 
         if os.path.isfile(directory + "compile.qc"):
@@ -249,7 +249,7 @@ class ModelProps(bpy.types.PropertyGroup):
 
     def view(self, context):
         game = common.get_game(context)
-        model_path = game.mod + os.sep + "models" + os.sep + self.name
+        model_path = game.mod + "/" + "models" + "/" + self.name
         mdl_path = model_path + ".mdl"
         dx90_path = model_path + ".dx90.vtx"
 

@@ -30,6 +30,9 @@ def remove_if_exists(path):
     if os.path.isfile(path):
         os.remove(path)
 
+def fix_slashes(path):
+    return path.replace("\\", "/")
+
 def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_chars_replace, char_limit=filename_char_limit):
     for r in replace:
         filename = filename.replace(r, "_")
