@@ -235,7 +235,7 @@ class ModelProps(bpy.types.PropertyGroup):
         if os.path.isfile(directory + "compile.qc"):
             self.remove_old(context)
 
-            args = [game.studiomdl, '-nop4', '-fullcollide', directory + "compile.qc"]
+            args = [game.studiomdl, "-nop4", "-fullcollide", directory + "compile.qc"]
             print(game.studiomdl + "    " + directory + "compile.qc" + "\n")
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

@@ -37,7 +37,7 @@ def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_ch
     for r in replace:
         filename = filename.replace(r, "_")
     cleaned_filename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode()
-    cleaned_filename = ''.join(c for c in cleaned_filename if c in whitelist)
+    cleaned_filename = "".join(c for c in cleaned_filename if c in whitelist)
     return cleaned_filename[:char_limit]   
 
 def verify_folder(path):
