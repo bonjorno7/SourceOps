@@ -14,6 +14,7 @@ class ModelProps(bpy.types.PropertyGroup):
     reference: bpy.props.PointerProperty(type=bpy.types.Collection)
     collision: bpy.props.PointerProperty(type=bpy.types.Collection)
     bodygroups: bpy.props.PointerProperty(type=bpy.types.Collection)
+    stacking: bpy.props.PointerProperty(type=bpy.types.Collection)
 
     def update_name(self, context):
         name = bpy.path.native_pathsep(self["name"])
@@ -146,6 +147,13 @@ class ModelProps(bpy.types.PropertyGroup):
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
 
+        if self.stacking:
+            stk_dir = directory + "stacking" + "/"
+            self.export_smd(context, stk_dir, None, self.stacking.objects, False, False)
+            for c in self.stacking.children:
+                c_name = common.clean_filename(c.name)
+                self.export_smd(context, stk_dir, c_name, c.all_objects, True, False)
+
         if self.reference:
             ref_dir = directory + "reference" + "/"
             self.export_smd(context, ref_dir, None, self.reference.objects, False, False)
@@ -175,7 +183,20 @@ class ModelProps(bpy.types.PropertyGroup):
 
         qc = open(directory + "compile.qc", "w")
         qc.write("$modelname \"" + self.name + "\"\n")
-        idle = "AT LEAST ONE REFERENCE MESH REQUIRED"
+        idle = "AT LEAST ONE VISIBLE MESH REQUIRED"
+
+        if self.stacking:
+            for o in self.stacking.objects:
+                o_name = common.clean_filename(o.name)
+                qc.write("$model \"" + o_name + "\" \"")
+                qc.write("stacking" + "/" + o_name + ".smd\"\n")
+                idle = "stacking" + "/" + o_name + ".smd"
+
+            for c in self.stacking.children:
+                c_name = common.clean_filename(c.name)
+                qc.write("$model \"" + c_name + "\" \"")
+                qc.write("stacking" + "/" + c_name + ".smd\"\n")
+                idle = "stacking" + "/" + c_name + ".smd"
 
         if self.reference:
             for o in self.reference.objects:
@@ -248,6 +269,7 @@ class ModelProps(bpy.types.PropertyGroup):
                     break
 
             return True
+
         return False
 
     def view(self, context):
@@ -262,4 +284,5 @@ class ModelProps(bpy.types.PropertyGroup):
         if os.path.isfile(dx90_path):
             subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             return True
+
         return False

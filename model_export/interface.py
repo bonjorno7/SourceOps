@@ -67,6 +67,7 @@ class ModelPanel(bpy.types.Panel):
             common.add_prop(self.layout, "Reference", model, "reference")
             common.add_prop(self.layout, "Collision", model, "collision")
             common.add_prop(self.layout, "Bodygroups", model, "bodygroups")
+            common.add_prop(self.layout, "Stacking", model, "stacking")
 
 
 class PropertiesPanel(bpy.types.Panel):
