@@ -63,17 +63,16 @@ class ExportMeshes(bpy.types.Operator):
     bl_idname = "sourceops.export_meshes"
     bl_label = "Export Meshes"
 
-    @classmethod
-    def poll(cls, context):
-        game = common.get_game(context)
-        if game and game.is_valid():
-            model = common.get_model(context)
-            return model and model.name
-
     def execute(self, context):
+        game = common.get_game(context)
+        if not game or not game.verify():
+            self.report({"ERROR"}, "Game is invalid")
+            return {'CANCELLED'}
+
         model = common.get_model(context)
         if not model.export_meshes(context):
-            self.report({"WARNING"}, "Failed to export meshes")
+            self.report({"ERROR"}, "Failed to export meshes")
+            return {'CANCELLED'}
         return {'FINISHED'}
 
 
@@ -82,17 +81,16 @@ class GenerateQC(bpy.types.Operator):
     bl_idname = "sourceops.generate_qc"
     bl_label = "Generate QC"
 
-    @classmethod
-    def poll(cls, context):
-        game = common.get_game(context)
-        if game and game.is_valid():
-            model = common.get_model(context)
-            return model and model.name
-
     def execute(self, context):
+        game = common.get_game(context)
+        if not game or not game.verify():
+            self.report({"ERROR"}, "Game is invalid")
+            return {'CANCELLED'}
+
         model = common.get_model(context)
         if not model.generate_qc(context):
-            self.report({"WARNING"}, "Failed to generate QC")
+            self.report({"ERROR"}, "Failed to generate QC")
+            return {'CANCELLED'}
         return {'FINISHED'}
 
 
@@ -101,17 +99,16 @@ class CompileQC(bpy.types.Operator):
     bl_idname = "sourceops.compile_qc"
     bl_label = "Compile QC"
 
-    @classmethod
-    def poll(cls, context):
-        game = common.get_game(context)
-        if game and game.is_valid():
-            model = common.get_model(context)
-            return model and model.name
-
     def execute(self, context):
+        game = common.get_game(context)
+        if not game or not game.verify():
+            self.report({"ERROR"}, "Game is invalid")
+            return {'CANCELLED'}
+
         model = common.get_model(context)
         if not model.compile_qc(context):
-            self.report({"WARNING"}, "Failed to compile QC")
+            self.report({"ERROR"}, "Failed to compile QC")
+            return {'CANCELLED'}
         return {'FINISHED'}
 
 
@@ -120,15 +117,14 @@ class ViewModel(bpy.types.Operator):
     bl_idname = "sourceops.view_model"
     bl_label = "View Model"
 
-    @classmethod
-    def poll(cls, context):
-        game = common.get_game(context)
-        if game and game.is_valid():
-            model = common.get_model(context)
-            return model and model.name
-
     def execute(self, context):
+        game = common.get_game(context)
+        if not game or not game.verify():
+            self.report({"ERROR"}, "Game is invalid")
+            return {'CANCELLED'}
+
         model = common.get_model(context)
         if not model.view(context):
-            self.report({"WARNING"}, "Model not found")
+            self.report({"ERROR"}, "Model not found")
+            return {'CANCELLED'}
         return {'FINISHED'}

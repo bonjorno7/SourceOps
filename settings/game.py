@@ -7,22 +7,13 @@ class GameProps(bpy.types.PropertyGroup):
     """Properties for a game"""
     bl_idname = "SOURCEOPS_PG_GameProps"
 
-    def is_valid(self):
-        return self.name != "Invalid Game"
-
-    def verify(self, context):
-        if not os.path.isfile(self.studiomdl):
-            self["name"] = "Invalid Game"
-            return False
-        return True
-
-    def update_path(self, context):
-        path = bpy.path.abspath(self["gameinfo"])
+    def verify(self):
+        path = bpy.path.abspath(self.gameinfo)
         gameinfo = Path(path).resolve()
         mod = gameinfo.parent
         game = mod.parent
-        studiomdl = game / r"bin/studiomdl.exe"
-        hlmv = game / r"bin/hlmv.exe"
+        studiomdl = game / "bin/studiomdl.exe"
+        hlmv = game / "bin/hlmv.exe"
         name = game.name
 
         self["gameinfo"] = str(gameinfo)
@@ -31,17 +22,22 @@ class GameProps(bpy.types.PropertyGroup):
         self["studiomdl"] = str(studiomdl)
         self["hlmv"] = str(hlmv)
 
-        if studiomdl.is_file():
+        if gameinfo.is_file() and studiomdl.is_file():
             self["name"] = str(name)
+            return True
         else:
             self["name"] = "Invalid Game"
+            return False
+
+    def update(self, context):
+        self.verify()
 
     gameinfo: bpy.props.StringProperty(
         name="Mod Path",
         description="Path to your gameinfo.txt",
-        default="",
+        default="gameinfo.txt",
         subtype='FILE_PATH',
-        update=update_path,
+        update=update,
     )
 
     mod: bpy.props.StringProperty(

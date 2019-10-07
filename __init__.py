@@ -21,10 +21,9 @@ bl_info = {
     "name": "SourceOps",
     "description": "A more convenient alternative to Blender Source Tools",
     "author": "bonjorno7 & REDxEYE",
-    "version": (0, 4, 4),
+    "version": (0, 4, 5),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
-    "warning": "",
 }
 
 

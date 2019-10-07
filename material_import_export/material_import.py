@@ -22,10 +22,14 @@ class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     def execute(self, context):
         game = common.get_game(context)
-        mod_folder = None if not game else Path(game.mod)
+        if not game or not game.verify():
+            self.report({"ERROR"}, "Game is invalid")
+            return {'CANCELLED'}
+
+        mod_folder = Path(game.mod)
         folder = Path(self.properties.filepath).parent
         for f in self.files:
-            print(f'Trying to import {f.name}')
+            print(f"Trying to import {f.name}")
             if not f.name.lower().endswith(".vmt"):
                 continue
 
