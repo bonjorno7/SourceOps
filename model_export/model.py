@@ -97,8 +97,11 @@ class ModelProps(bpy.types.PropertyGroup):
             for poly in temp.polygons:
                 if poly.material_index < len(o.material_slots):
                     material = o.material_slots[poly.material_index].material
-                    if material is not None:
-                        smd.write(common.fix_slashes(material.name) + "\n")
+                else:
+                    material = None
+
+                if material is not None:
+                    smd.write(common.fix_slashes(material.name) + "\n")
                 else:
                     smd.write("no_material" + "\n")
 
