@@ -1,3 +1,4 @@
+import os
 import bpy
 from .. import common
 
@@ -66,13 +67,19 @@ class ExportMeshes(bpy.types.Operator):
     def execute(self, context):
         game = common.get_game(context)
         if not game or not game.verify():
-            self.report({"ERROR"}, "Game is invalid")
+            self.report({'ERROR'}, "Game is invalid")
             return {'CANCELLED'}
 
         model = common.get_model(context)
-        if not model.export_meshes(context):
-            self.report({"ERROR"}, "Failed to export meshes")
+        if not model:
+            self.report({'ERROR'}, "Model is invalid")
             return {'CANCELLED'}
+
+        if not model.export_meshes(context):
+            self.report({'ERROR'}, "Failed to export meshes")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Exported meshes")
         return {'FINISHED'}
 
 
@@ -84,13 +91,19 @@ class GenerateQC(bpy.types.Operator):
     def execute(self, context):
         game = common.get_game(context)
         if not game or not game.verify():
-            self.report({"ERROR"}, "Game is invalid")
+            self.report({'ERROR'}, "Game is invalid")
             return {'CANCELLED'}
 
         model = common.get_model(context)
-        if not model.generate_qc(context):
-            self.report({"ERROR"}, "Failed to generate QC")
+        if not model:
+            self.report({'ERROR'}, "Model is invalid")
             return {'CANCELLED'}
+
+        if not model.generate_qc(context):
+            self.report({'ERROR'}, "Failed to generate QC")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Generated QC")
         return {'FINISHED'}
 
 
@@ -102,13 +115,19 @@ class CompileQC(bpy.types.Operator):
     def execute(self, context):
         game = common.get_game(context)
         if not game or not game.verify():
-            self.report({"ERROR"}, "Game is invalid")
+            self.report({'ERROR'}, "Game is invalid")
             return {'CANCELLED'}
 
         model = common.get_model(context)
-        if not model.compile_qc(context):
-            self.report({"ERROR"}, "Failed to compile QC")
+        if not model:
+            self.report({'ERROR'}, "Model is invalid")
             return {'CANCELLED'}
+
+        if not model.compile_qc(context):
+            self.report({'ERROR'}, "Failed to compile QC")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Compiled QC")
         return {'FINISHED'}
 
 
@@ -120,11 +139,17 @@ class ViewModel(bpy.types.Operator):
     def execute(self, context):
         game = common.get_game(context)
         if not game or not game.verify():
-            self.report({"ERROR"}, "Game is invalid")
+            self.report({'ERROR'}, "Game is invalid")
             return {'CANCELLED'}
 
         model = common.get_model(context)
-        if not model.view(context):
-            self.report({"ERROR"}, "Model not found")
+        if not model:
+            self.report({'ERROR'}, "Model is invalid")
             return {'CANCELLED'}
+
+        if not model.view(context):
+            self.report({'ERROR'}, "Model not found")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Opening HLMV")
         return {'FINISHED'}

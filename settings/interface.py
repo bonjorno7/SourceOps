@@ -64,10 +64,8 @@ class GamesPanel(bpy.types.Panel):
         col.operator("sourceops.add_game", text="", icon='ADD')
         col.operator("sourceops.remove_game", text="", icon='REMOVE')
         col.separator()
-        col.operator("sourceops.move_game", text="",
-                     icon='TRIA_UP').direction = 'UP'
-        col.operator("sourceops.move_game", text="",
-                     icon='TRIA_DOWN').direction = 'DOWN'
+        col.operator("sourceops.move_game", text="", icon='TRIA_UP').direction = 'UP'
+        col.operator("sourceops.move_game", text="", icon='TRIA_DOWN').direction = 'DOWN'
 
         games = settings.games
         game_index = settings.game_index
