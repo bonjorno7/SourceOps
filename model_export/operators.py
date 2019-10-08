@@ -107,6 +107,30 @@ class GenerateQC(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class EditQC(bpy.types.Operator):
+    """Edit the QC file for this model"""
+    bl_idname = "sourceops.edit_qc"
+    bl_label = "Edit QC"
+
+    def execute(self, context):
+        game = common.get_game(context)
+        if not game or not game.verify():
+            self.report({'ERROR'}, "Game is invalid")
+            return {'CANCELLED'}
+
+        model = common.get_model(context)
+        if not model:
+            self.report({'ERROR'}, "Model is invalid")
+            return {'CANCELLED'}
+
+        if not model.edit_qc(context):
+            self.report({'ERROR'}, "Failed to open QC")
+            return {'CANCELLED'}
+
+        self.report({'INFO'}, "Opened QC in blender text editor")
+        return {'FINISHED'}
+
+
 class CompileQC(bpy.types.Operator):
     """Compile this model using the QC"""
     bl_idname = "sourceops.compile_qc"

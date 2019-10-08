@@ -53,6 +53,7 @@ class ModelPanel(bpy.types.Panel):
         if g.models:
             self.layout.operator("sourceops.export_meshes")
             self.layout.operator("sourceops.generate_qc")
+            self.layout.operator("sourceops.edit_qc")
             self.layout.operator("sourceops.compile_qc")
             self.layout.operator("sourceops.view_model")
 
