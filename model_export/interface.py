@@ -50,19 +50,12 @@ class ModelPanel(bpy.types.Panel):
         col.operator("sourceops.move_model", text="", icon='TRIA_UP').direction = 'UP'
         col.operator("sourceops.move_model", text="", icon='TRIA_DOWN').direction = 'DOWN'
 
-        flow = self.layout.grid_flow(even_columns=True)
-        col = flow.column()
-        col.operator("sourceops.export_meshes")
-        col = flow.column()
-        col.operator("sourceops.generate_qc")
-
-        flow = self.layout.grid_flow(even_columns=True)
-        col = flow.column()
-        col.operator("sourceops.compile_qc")
-        col = flow.column()
-        col.operator("sourceops.view_model")
-
         if g.models:
+            self.layout.operator("sourceops.export_meshes")
+            self.layout.operator("sourceops.generate_qc")
+            self.layout.operator("sourceops.compile_qc")
+            self.layout.operator("sourceops.view_model")
+
             model = g.models[g.model_index]
             common.add_prop(self.layout, "Reference", model, "reference")
             common.add_prop(self.layout, "Collision", model, "collision")

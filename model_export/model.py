@@ -17,7 +17,7 @@ class ModelProps(bpy.types.PropertyGroup):
     stacking: bpy.props.PointerProperty(type=bpy.types.Collection)
 
     def update_name(self, context):
-        name = bpy.path.native_pathsep(self["name"])
+        name = common.fix_slashes(self["name"])
         if name.lower().endswith(".mdl"):
             name = name[:-4]
         self["name"] = name
@@ -268,7 +268,8 @@ class ModelProps(bpy.types.PropertyGroup):
                 else:
                     break
 
-            return True
+            if code == 0:
+                return True
 
         return False
 
