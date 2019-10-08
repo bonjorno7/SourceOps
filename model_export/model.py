@@ -247,6 +247,27 @@ class ModelProps(bpy.types.PropertyGroup):
 
         return True
 
+    def edit_qc(self, context):
+        """Open this model's QC in the blender text editor"""
+        game = common.get_game(context)
+        directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
+        qc = directory + "compile.qc"
+
+        if not os.path.isfile(qc):
+            return False
+
+        for t in bpy.data.texts:
+            if t.filepath == qc:
+                return True
+
+        bpy.ops.text.open(filepath=qc)
+
+        for t in bpy.data.texts:
+            if t.filepath == qc:
+                t.name = self.name
+
+        return True
+
     def compile_qc(self, context):
         """Compile this model using the QC"""
         game = common.get_game(context)
