@@ -296,8 +296,3 @@ if __name__ == "__main__":
 
     disp = base_variable.get_variable("1 1 1 1 1 1 1 1 1 1 1 1 1")
     print(disp.string())
-
-    
-
-                
-

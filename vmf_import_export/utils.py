@@ -1,12 +1,10 @@
 from .datatypes import *
 
-
 class brush_utils:
 
     @staticmethod
     def get_normal(v1, v2 = None, v3 = None):
         if v2 is not None and v3 is not None:
-
             return -vec3.cross(v2-v1, v3-v1).n()
         else:
             return -vec3.cross(v1.v2-v1.v1, v1.v3-v1.v1).n()

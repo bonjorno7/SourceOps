@@ -18,6 +18,7 @@ def generate_meshes(filepath):
 
     solids = search_single_class(world, "solid")
 
+
     ents = search_all_classes(parse.classes, "entity")
     
     for i in ents:
@@ -41,8 +42,7 @@ def generate_meshes(filepath):
                 index = tex_num_dict[tex.lower()]
 
             polys.append(([], index))
-
-                
+            
         for i in range(0,len(sides)-2):
             for j in range(i,len(sides)-1):
                 for k in range(j, len(sides)):
@@ -56,7 +56,6 @@ def generate_meshes(filepath):
                         newVertex = brush_utils.get_intersection(p_i, p_j, p_k)
                         if newVertex is None:
                             continue
-
                         for m in sides:
                             
                             if(vec3.dot(m.keyvals["plane"].normal, newVertex) + m.keyvals["plane"].d)>10**-5:

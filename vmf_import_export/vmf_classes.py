@@ -37,6 +37,7 @@ class base_parent_class(base_class):
         _ = self.tread.forw()
         if _ is None:
             raise Exception("Unexpected EOF in class " + self.__name__)
+
         if _[0] != tokens.sp_cBrOpen:
             raise Exception("Malformed class at token " + self.tread.tokens[self.tread.currentPos-1][1])
         
@@ -55,6 +56,7 @@ base_classes = ["versioninfo", "visgroup", "viewsettings", "editor", "normals",
                 "distances", "offsets", "offset_normals", "alphas",
                 "triangle_tags", "allowed_verts", "connections", "camera",
                 "cordon", "quickhide"]
+                
 parent_classes = ["visgroups", "world", "solid", "side", "hidden", "group",
                   "dispinfo", "entity", "cameras", "cordons"]
 
