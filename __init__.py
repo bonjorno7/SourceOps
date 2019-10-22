@@ -13,6 +13,8 @@ from . model_export . interface import ModelList, ModelExportPanel, ModelPanel, 
 
 from . material_import_export . material_import import ImportMaterial, MaterialImportPanel
 
+from . vmf_import_export . vmf_import import ImportVMF, VMFImportPanel
+
 from . surf_tools . surf_collision import CollisionProps, SurfCollision
 from . surf_tools . curved_ramp import SurfRampProps, SurfRampify
 from . surf_tools . panels import SurfToolsPanel, CollisionPanel, CurvedRampPanel
@@ -64,6 +66,8 @@ classes = (
     SurfToolsPanel, CollisionPanel, CurvedRampPanel,
 
     ImportMaterial, MaterialImportPanel,
+
+    ImportVMF, VMFImportPanel,
 
     Globals,
 )
