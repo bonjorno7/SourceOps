@@ -1,5 +1,4 @@
-from .datatypes import *
-
+from datatypes import *
 
 class brush_utils:
 
@@ -37,6 +36,11 @@ class brush_utils:
         d1 = v1.d
         d2 = v2.d
         d3 = v3.d
+
+        
+        print(n1.string(),d1)
+        print(n2.string(),d2)
+        print(n3.string(),d3)
 
 
         denom = vec3.dot(n1, vec3.cross(n2,n3))

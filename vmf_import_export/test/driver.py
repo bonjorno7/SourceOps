@@ -1,9 +1,9 @@
-from .parser_p import *
-from .lexer import *
-from .utils import *
+from parser_p import *
+from lexer import *
+from utils import *
 
-from .datatypes import *
-from .vmf_classes import *
+from datatypes import *
+from vmf_classes import *
 
 def round_to_nearest(val, base):
     return base * round(val/base)

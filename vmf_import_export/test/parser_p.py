@@ -1,8 +1,8 @@
-from .lexer import *
-from .token_reader import tokenReader
+from lexer import *
+from token_reader import tokenReader
 
-from .vmf_classes import *
-from .datatypes import *
+from vmf_classes import *
+from datatypes import *
 
 class parseFile:
 
@@ -104,8 +104,7 @@ def search_single_class(cls, typ):
 def search_all_classes(lst,typ):
     cls_lst = []
     for i in lst:
-        searched_list = search_single_class(i, typ)
-        [cls_lst.append(o) for o in searched_list]
+        search_single_class(i,typ,cls_lst)
     return cls_lst
 
 if __name__ == "__main__":

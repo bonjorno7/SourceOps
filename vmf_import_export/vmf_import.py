@@ -10,7 +10,7 @@ import bpy_extras
 from .. import common
 from . import driver
 
-
+BRUSH_SCALE = 1
 
 class ImportVMF(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     """Imports the VMF given a path"""
@@ -22,17 +22,18 @@ class ImportVMF(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     def create_mesh(mesh):
         bm_faces = []
-        me = bpy.data.meshes.new('myMesh')
-        ob = bpy.data.objects.new('myObject', me)
-        ob.show_name = True
+        me = bpy.data.meshes.new('brush_mesh_PLACEHOLDER')
+        ob = bpy.data.objects.new('brush_id_PLACEHOLDER', me)
+        ob.show_name = False
         bpy.context.collection.objects.link(ob)
 
         bm = bmesh.new()
         bm.from_mesh(me)
         for face in mesh:
             for i, vert in enumerate(face):
-                face[i] = bm.verts.new(vert.value)
+                face[i] = bm.verts.new((vert*BRUSH_SCALE).value)
             bmesh.ops.contextual_create(bm, geom=face)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
         bm.to_mesh(me)
             
 
@@ -47,6 +48,14 @@ class ImportVMF(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             meshes = driver.generate_meshes(file)
             for mesh in meshes:
                 ImportVMF.create_mesh(mesh)
+
+            bpy.ops.view3d.view_all()
+            for a in bpy.context.screen.areas:
+                if a.type == 'VIEW_3D':
+                    for s in a.spaces:
+                        if s.type == 'VIEW_3D':
+                            s.clip_end = 100000 # Placeholder value until I make it work properly
+            
 
         return {"FINISHED"}
 

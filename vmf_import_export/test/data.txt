@@ -1,0 +1,495 @@
+versioninfo
+{
+	"editorversion" "400"
+	"editorbuild" "8357"
+	"mapversion" "1"
+	"formatversion" "100"
+	"prefab" "0"
+}
+visgroups
+{
+}
+viewsettings
+{
+	"bSnapToGrid" "1"
+	"bShowGrid" "1"
+	"bShowLogicalGrid" "0"
+	"nGridSpacing" "64"
+	"bShow3DGrid" "0"
+}
+world
+{
+	"id" "1"
+	"mapversion" "1"
+	"classname" "worldspawn"
+	"skyname" "sky_day01_01"
+	"maxpropscreenwidth" "-1"
+	"detailvbsp" "detail.vbsp"
+	"detailmaterial" "detail/detailsprites"
+	solid
+	{
+		"id" "2"
+		side
+		{
+			"id" "1"
+			"plane" "(-448 320 64) (-192 320 64) (-192 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "2"
+			"plane" "(-448 128 0) (-192 128 0) (-192 320 0)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3"
+			"plane" "(-448 320 64) (-448 128 64) (-448 128 0)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "4"
+			"plane" "(-192 320 0) (-192 128 0) (-192 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "5"
+			"plane" "(-192 320 64) (-448 320 64) (-448 320 0)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "6"
+			"plane" "(-192 128 0) (-448 128 0) (-448 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 110 127"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
+		"id" "3"
+		side
+		{
+			"id" "18"
+			"plane" "(-448 384 256) (-192 384 256) (-192 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 768] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "17"
+			"plane" "(-448 320 64) (-192 320 64) (-192 384 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 768] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "16"
+			"plane" "(-448 384 256) (-448 320 256) (-448 320 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 -768] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "15"
+			"plane" "(-192 384 64) (-192 320 64) (-192 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 -768] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "14"
+			"plane" "(-192 384 256) (-448 384 256) (-448 384 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "13"
+			"plane" "(-192 320 64) (-448 320 64) (-448 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 110 127"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
+		"id" "6"
+		side
+		{
+			"id" "30"
+			"plane" "(-448 128 256) (-192 128 256) (-192 64 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 -256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "29"
+			"plane" "(-448 64 64) (-192 64 64) (-192 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 -256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "28"
+			"plane" "(-448 128 256) (-448 64 256) (-448 64 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 256] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "27"
+			"plane" "(-192 128 64) (-192 64 64) (-192 64 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 256] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "26"
+			"plane" "(-192 128 256) (-448 128 256) (-448 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "25"
+			"plane" "(-192 64 64) (-448 64 64) (-448 64 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 110 127"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
+		"id" "7"
+		side
+		{
+			"id" "48"
+			"plane" "(-448 320 256) (-448 128 256) (-512 128 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[-1 0 0 -512] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "47"
+			"plane" "(-512 320 64) (-512 128 64) (-448 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[-1 0 0 -512] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "46"
+			"plane" "(-448 320 256) (-512 320 256) (-512 320 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 512] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "45"
+			"plane" "(-448 128 64) (-512 128 64) (-512 128 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 512] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "44"
+			"plane" "(-448 128 256) (-448 320 256) (-448 320 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "43"
+			"plane" "(-512 128 64) (-512 320 64) (-512 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 110 127"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
+		"id" "8"
+		side
+		{
+			"id" "54"
+			"plane" "(-128 320 256) (-128 128 256) (-192 128 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[-1 0 0 -1280] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "53"
+			"plane" "(-192 320 64) (-192 128 64) (-128 128 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[-1 0 0 -1280] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "52"
+			"plane" "(-128 320 256) (-192 320 256) (-192 320 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 1280] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "51"
+			"plane" "(-128 128 64) (-192 128 64) (-192 128 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 1280] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "50"
+			"plane" "(-128 128 256) (-128 320 256) (-128 320 64)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "49"
+			"plane" "(-192 128 64) (-192 320 64) (-192 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 -1 0 -512] 0.25"
+			"vaxis" "[0 0 -1 256] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 110 127"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
+		"id" "20"
+		side
+		{
+			"id" "66"
+			"plane" "(-448 320 320) (-192 320 320) (-192 128 320)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "65"
+			"plane" "(-448 128 256) (-192 128 256) (-192 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "64"
+			"plane" "(-448 320 320) (-448 128 320) (-448 128 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 1024] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "63"
+			"plane" "(-192 320 256) (-192 128 256) (-192 128 320)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 1024] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "62"
+			"plane" "(-192 320 320) (-448 320 320) (-448 320 256)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 1024] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "61"
+			"plane" "(-192 128 256) (-448 128 256) (-448 128 320)"
+			"material" "BHOP_ARCANE_REMAKE/ROCK"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 1024] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 110 127"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+}
+cameras
+{
+	"activecamera" "-1"
+}
+cordon
+{
+	"mins" "(-1024 -1024 -1024)"
+	"maxs" "(1024 1024 1024)"
+	"active" "0"
+}

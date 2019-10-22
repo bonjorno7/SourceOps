@@ -1,5 +1,5 @@
 import re
-from .lexer import tokens
+from lexer import tokens
 from math import sqrt
 
 EPSILON = 0.000001
@@ -300,4 +300,3 @@ if __name__ == "__main__":
     
 
                 
-
