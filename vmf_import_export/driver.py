@@ -5,6 +5,9 @@ from .utils import *
 from .datatypes import *
 from .vmf_classes import *
 
+def round_to_nearest(val, base):
+    return base * round(val/base)
+
 def generate_meshes(filepath):
     lex = lexFile(filepath)
     lex.cleanup()
@@ -35,8 +38,13 @@ def generate_meshes(filepath):
 
                         for m in range(0, len(sides)):
                             
-                            if(vec3.dot(sides[m].keyvals["plane"].n, newVertex) - sides[m].keyvals["plane"].d)>10**-10:
+                            if(vec3.dot(sides[m].keyvals["plane"].n, newVertex) - sides[m].keyvals["plane"].d)>10**-5:
                                legal = False
+
+
+                        newVertex.x = round_to_nearest(newVertex.x, 0.01)
+                        newVertex.y = round_to_nearest(newVertex.y, 0.01)
+                        newVertex.z = round_to_nearest(newVertex.z, 0.01)
 
                         if legal is True:
                                polys[i].append(newVertex)

@@ -45,10 +45,6 @@ class ImportVMF(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             #if not f.name.lower().endswith(".vmf"):
             #    continue
             meshes = driver.generate_meshes(file)
-            print(f'Num objects = {len(meshes)}')
-            print(f'Num faces in object 1 = {len(meshes[0])}')
-            print(f'Num verts in object 1 face 1 = {len(meshes[0][0])}')
-
             for mesh in meshes:
                 ImportVMF.create_mesh(mesh)
 
