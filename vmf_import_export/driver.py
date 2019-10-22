@@ -57,7 +57,6 @@ def generate_meshes(filepath):
                         if newVertex is None:
                             continue
                         for m in sides:
-                            
                             if(vec3.dot(m.keyvals["plane"].normal, newVertex) + m.keyvals["plane"].d)>10**-5:
                                legal = False
 
