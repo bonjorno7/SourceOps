@@ -56,6 +56,7 @@ def generate_meshes(filepath):
                         newVertex = brush_utils.get_intersection(p_i, p_j, p_k)
                         if newVertex is None:
                             continue
+
                         for m in sides:
                             if(vec3.dot(m.keyvals["plane"].normal, newVertex) + m.keyvals["plane"].d)>10**-5:
                                legal = False

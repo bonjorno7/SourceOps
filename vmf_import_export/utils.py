@@ -1,5 +1,6 @@
 from .datatypes import *
 
+
 class brush_utils:
 
     @staticmethod
