@@ -66,9 +66,7 @@ class ModelProps(bpy.types.PropertyGroup):
         smd.write("end\n")
         smd.write("skeleton\n")
         smd.write("time 0\n")
-        smd.write("0" + "    ")
-        smd.write("%f %f %f    " % (0.0, 0.0, 0.0))
-        smd.write("%f %f %f\n" % (0.0, 0.0, 0.0))
+        smd.write("0    0.0 0.0 0.0 0.0 0.0 0.0\n")
         smd.write("end\n")
 
     def export_smd(self, context, directory, filename, objects, combine, collision):
@@ -110,25 +108,24 @@ class ModelProps(bpy.types.PropertyGroup):
                     smd.write("0    ")
                     loop_index = poly.loop_indices[index]
                     loop = temp.loops[loop_index]
-                    rot = mathutils.Matrix.Rotation(math.radians(180), 4, 'Z')
 
                     vert_index = loop.vertex_index
                     vert = temp.vertices[vert_index]
-                    vec = rot @ evaluated_obj.matrix_local @ mathutils.Vector(vert.co) * scale
-                    smd.write("%f %f %f    " % (-vec[1], vec[0], vec[2]))
+                    vec = evaluated_obj.matrix_local @ mathutils.Vector(vert.co) * scale
+                    smd.write(f"{vec[1]} {-vec[0]} {vec[2]}    ")
 
                     normal = vert.normal if collision else loop.normal
                     nor = mathutils.Vector([normal[0], normal[1], normal[2], 0.0])
-                    nor = rot @ evaluated_obj.matrix_local @ nor
-                    smd.write("%f %f %f    " % (-nor[1], nor[0], nor[2]))
+                    nor = evaluated_obj.matrix_local @ nor
+                    smd.write(f"{nor[1]} {-nor[0]} {nor[2]}    ")
 
                     if temp.uv_layers:
                         uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
                         uv_loop = uv_layer.data[loop_index]
                         uv = uv_loop.uv
-                        smd.write("%f %f\n" % (uv[0], uv[1]))
+                        smd.write(f"{uv[0]} {uv[1]}\n")
                     else:
-                        smd.write("%f %f\n" % (0.0, 0.0))
+                        smd.write("0.0 0.0\n")
 
             if not collision:
                 temp.free_normals_split()
