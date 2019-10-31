@@ -4,7 +4,8 @@ import math
 import bpy
 import mathutils
 from .. import common
-from . import surface_props
+from . surface_props import surface_props
+from . export_smd import export_smd
 
 
 class ModelProps(bpy.types.PropertyGroup):
@@ -32,7 +33,7 @@ class ModelProps(bpy.types.PropertyGroup):
     surface_prop: bpy.props.EnumProperty(
         name="Surface Property",
         description="Choose the surface property of your model, this affects decals and how it sounds in game",
-        items=surface_props.surface_props,
+        items=surface_props,
     )
 
     autocenter: bpy.props.BoolProperty(
@@ -58,187 +59,104 @@ class ModelProps(bpy.types.PropertyGroup):
         common.remove_if_exists(model_path + ".mdl")
         common.remove_if_exists(model_path + ".phy")
 
-    def write_smd_header(self, smd):
-        """Write the header for this SMD file, including the required dummy skeleton and animation data"""
-        smd.write("version 1\n")
-        smd.write("nodes\n")
-        smd.write("0 \"blender_implicit\" -1\n")
-        smd.write("end\n")
-        smd.write("skeleton\n")
-        smd.write("time 0\n")
-        smd.write("0    0.0 0.0 0.0 0.0 0.0 0.0\n")
-        smd.write("end\n")
+    def get_armatures(self, context):
+        """Get all armatures affecting this model"""
 
-    def export_smd(self, context, directory, filename, objects, combine, collision):
-        """Export objects to one or more SMD files"""
-        scale = common.get_scale(context)
-        common.verify_folder(directory)
+        # List of all objects of this model
+        all_objects = []
+        if self.reference:
+            all_objects += self.reference.all_objects[:]
+        if self.collision:
+            all_objects += self.collision.all_objects[:]
+        if self.bodygroups:
+            all_objects += self.bodygroups.all_objects[:]
+        if self.stacking:
+            all_objects += self.stacking.all_objects[:]
 
-        if combine:
-            smd = open(directory + filename + ".smd", "w")
-            self.write_smd_header(smd)
-            smd.write("triangles\n")
-
-        for o in objects:
-            if not combine:
-                o_name = common.clean_filename(o.name)
-                smd = open(directory + o_name + ".smd", "w")
-                self.write_smd_header(smd)
-                smd.write("triangles\n")
-
-            evaluated_obj = o.evaluated_get(context.view_layer.depsgraph)
-            temp = evaluated_obj.to_mesh()
-            common.triangulate(temp)
-
-            if not collision:
-                temp.calc_normals_split()
-
-            for poly in temp.polygons:
-                if poly.material_index < len(o.material_slots):
-                    material = o.material_slots[poly.material_index].material
-                else:
-                    material = None
-
-                if material is not None:
-                    smd.write(common.fix_slashes(material.name) + "\n")
-                else:
-                    smd.write("no_material" + "\n")
-
-                for index in range(3):
-                    smd.write("0    ")
-                    loop_index = poly.loop_indices[index]
-                    loop = temp.loops[loop_index]
-
-                    vert_index = loop.vertex_index
-                    vert = temp.vertices[vert_index]
-                    vec = evaluated_obj.matrix_local @ mathutils.Vector(vert.co) * scale
-                    smd.write(f"{vec[1]} {-vec[0]} {vec[2]}    ")
-
-                    normal = vert.normal if collision else loop.normal
-                    nor = mathutils.Vector([normal[0], normal[1], normal[2], 0.0])
-                    nor = evaluated_obj.matrix_local @ nor
-                    smd.write(f"{nor[1]} {-nor[0]} {nor[2]}    ")
-
-                    if temp.uv_layers:
-                        uv_layer = [layer for layer in temp.uv_layers if layer.active_render][0]
-                        uv_loop = uv_layer.data[loop_index]
-                        uv = uv_loop.uv
-                        smd.write(f"{uv[0]} {uv[1]}\n")
-                    else:
-                        smd.write("0.0 0.0\n")
-
-            if not collision:
-                temp.free_normals_split()
-
-            evaluated_obj.to_mesh_clear()
-
-            if not combine:
-                smd.write("end\n")
-
-        if combine:
-            smd.write("end\n")
+        # List of armatures affecting this model
+        armatures = []
+        for armature in [obj.find_armature() for obj in all_objects]:
+            if armature and armature not in armatures:
+                armatures.append(armature)
+        return armatures
 
     def export_meshes(self, context):
         """Export this model's meshes to SMD files"""
         game = common.get_game(context)
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
+        armatures = self.get_armatures(context)
 
-        if self.stacking:
-            stk_dir = directory + "stacking" + "/"
-            self.export_smd(context, stk_dir, None, self.stacking.objects, False, False)
-            for c in self.stacking.children:
-                c_name = common.clean_filename(c.name)
-                self.export_smd(context, stk_dir, c_name, c.all_objects, True, False)
+        # Even static props need an idle animation
+        export_smd(context, directory + "animation.smd", [], armatures, 'ANIMATION')
 
         if self.reference:
-            ref_dir = directory + "reference" + "/"
-            self.export_smd(context, ref_dir, None, self.reference.objects, False, False)
-            for c in self.reference.children:
-                c_name = common.clean_filename(c.name)
-                self.export_smd(context, ref_dir, c_name, c.all_objects, True, False)
+            export_smd(context, directory + "reference.smd", self.reference.all_objects, armatures, 'REFERENCE')
 
         if self.collision:
-            col_dir = directory + "collision" + "/"
-            self.export_smd(context, col_dir, "collision", self.collision.all_objects, True, True)
+            export_smd(context, directory + "collision.smd", self.collision.all_objects, armatures, 'REFERENCE')
+
+        if self.stacking:
+            for collection in self.stacking.children:
+                name = common.clean_filename(collection.name)
+                export_smd(context, directory + name + ".smd", collection.all_objects, armatures, 'REFERENCE')
 
         if self.bodygroups:
-            for bg in self.bodygroups.children:
-                bg_dir = directory + common.clean_filename(bg.name) + "/"
-                self.export_smd(context, bg_dir, None, bg.objects, False, False)
-                for c in bg.children:
-                    c_name = common.clean_filename(c.name)
-                    self.export_smd(context, bg_dir, c_name, c.all_objects, True, False)
+            for bodygroup in self.bodygroups.children:
+                bodygroup_name = common.clean_filename(bodygroup.name)
+                for collection in bodygroup.children:
+                    name = bodygroup_name + "." + common.clean_filename(collection.name)
+                    export_smd(context, directory + name  + ".smd", collection.all_objects, armatures, 'REFERENCE')
 
         return True
 
     def generate_qc(self, context):
         """Generate the QC for this model"""
+        if not self.reference and not self.stacking:
+            print("Models need visible meshes")
+            return False
+
         game = common.get_game(context)
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
+        armatures = self.get_armatures(context)
 
         qc = open(directory + "compile.qc", "w")
         qc.write("$modelname \"" + self.name + "\"\n")
-        idle = "AT LEAST ONE VISIBLE MESH REQUIRED"
-
-        if self.stacking:
-            for o in self.stacking.objects:
-                o_name = common.clean_filename(o.name)
-                qc.write("$model \"" + o_name + "\" \"")
-                qc.write("stacking" + "/" + o_name + ".smd\"\n")
-                idle = "stacking" + "/" + o_name + ".smd"
-
-            for c in self.stacking.children:
-                c_name = common.clean_filename(c.name)
-                qc.write("$model \"" + c_name + "\" \"")
-                qc.write("stacking" + "/" + c_name + ".smd\"\n")
-                idle = "stacking" + "/" + c_name + ".smd"
 
         if self.reference:
-            for o in self.reference.objects:
-                o_name = common.clean_filename(o.name)
-                qc.write("$body \"" + o_name + "\" \"")
-                qc.write("reference" + "/" + o_name + ".smd\"\n")
-                idle = "reference" + "/" + o_name + ".smd"
-
-            for c in self.reference.children:
-                c_name = common.clean_filename(c.name)
-                qc.write("$body \"" + c_name + "\" \"")
-                qc.write("reference" + "/" + c_name + ".smd\"\n")
-                idle = "reference" + "/" + c_name + ".smd"
+            qc.write("$body \"reference\" \"reference.smd\"\n")
 
         if self.collision:
-            qc.write("$collisionmodel \"collision" + "/" + "collision.smd\"\n")
-            qc.write("{\n    $concave\n    $maxconvexpieces 10000\n}\n")
+            qc.write("$collisionmodel \"collision.smd\"\n")
+            qc.write("{ $concave $maxconvexpieces 10000 }\n")
+
+        if self.stacking:
+            for collection in self.stacking.children:
+                name = common.clean_filename(collection.name)
+                qc.write(f'$model "{name}" "{name}.smd"\n')
 
         if self.bodygroups:
-            for bg in self.bodygroups.children:
-                bg_name = common.clean_filename(bg.name)
-                qc.write("$bodygroup \"" + bg_name + "\"\n{\n")
-
-                for o in bg.objects:
-                    o_name = common.clean_filename(o.name)
-                    qc.write("    studio \"" + bg_name + "/" + o_name + ".smd\"\n")
-
-                for c in bg.children:
-                    c_name = common.clean_filename(c.name)
-                    qc.write("    studio \"" + bg_name + "/" + c_name + ".smd\"\n")
-
-                # BUG Putting blank at the end of a bodygroup breaks it.
-                # qc.write("    blank\n")
-
+            for bodygroup in self.bodygroups.children:
+                bodygroup_name = common.clean_filename(bodygroup.name)
+                qc.write("$bodygroup \"" + bodygroup_name + "\"\n{\n")
+                for collection in bodygroup.children:
+                    name = bodygroup_name + "." + common.clean_filename(collection.name)
+                    qc.write("    studio \"" + name + ".smd\"\n")
                 qc.write("}\n")
 
-        qc.write("$sequence idle \"" + idle + "\"\n")
         qc.write("$cdmaterials \"" + "/" + "\"\n")
         qc.write("$surfaceprop \"" + self.surface_prop + "\"\n")
-        qc.write("$staticprop\n")
 
+        if not armatures:
+            qc.write("$staticprop\n")
         if self.autocenter:
             qc.write("$autocenter\n")
         if self.mostly_opaque:
             qc.write("$mostlyopaque\n")
+
+        # TODO: Add animation UI that generates sequences
+        qc.write("$sequence idle \"animation.smd\"\n")
 
         qc.close()
 
