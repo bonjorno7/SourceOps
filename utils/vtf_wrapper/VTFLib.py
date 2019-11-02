@@ -4,6 +4,7 @@ import sys
 from ctypes import *
 import ctypes.wintypes
 from pathlib import Path
+import struct
 
 try:
     from VTFLibEnums import ImageFlag
@@ -216,6 +217,15 @@ class VTFLib:
     def image_load(self, filename, header_only=False):
         return self.ImageLoad(create_string_buffer(
             filename.encode('ascii')), header_only)
+
+    ImageLoadFromMem = vtflib_cdll.vlImageLoadLump
+    ImageLoadFromMem.argtypes = [c_void_p, c_uint, c_bool]
+    ImageLoadFromMem.restype = c_bool
+
+    def image_load_from_mem(self, file, header_only=False):
+        data = bytearray(file.read())
+        data_type = c_byte * len(data)
+        return self.ImageLoadFromMem(data_type.from_buffer(data), len(data), header_only)
 
     ImageSave = vtflib_cdll.vlImageSave
     ImageSave.argtypes = [c_char_p]

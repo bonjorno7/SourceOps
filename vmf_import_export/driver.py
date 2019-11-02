@@ -18,10 +18,31 @@ def generate_meshes(filepath):
 
     solids = search_single_class(world, "solid")
 
+    ents = search_all_classes(parse.classes, "entity")
+    
+    for i in ents:
+        ent_solids = search_single_class(i, "solid")
+        for solid in ent_solids:
+            solids.append(solid)
+
     meshes = []
+    tex_num_dict = {}
     for solid in solids:
         sides = search_single_class(solid, "side")
-        polys = [[] for i in range(0, len(sides))]
+        polys = []
+        for side in sides:
+            tex = side.keyvals["material"]
+            index = -1
+            
+            if tex.lower() not in tex_num_dict:
+                index = str(len(tex_num_dict)-1)
+                tex_num_dict[tex.lower()] = index
+            else:
+                index = tex_num_dict[tex.lower()]
+
+            polys.append(([], index))
+
+                
         for i in range(0,len(sides)-2):
             for j in range(i,len(sides)-1):
                 for k in range(j, len(sides)):
@@ -47,11 +68,19 @@ def generate_meshes(filepath):
                         newVertex.z = round_to_nearest(newVertex.z, 0.01)
 
                         if legal is True:
-                               polys[i].append(newVertex)
-                               polys[j].append(newVertex)
-                               polys[k].append(newVertex)
+                               polys[i][0].append(newVertex)
+                               polys[j][0].append(newVertex)
+                               polys[k][0].append(newVertex)
         meshes.append(polys)
-    return meshes
+
+
+    num_tex_dict = {}
+    #Flip tex dictionary
+    for k, v in tex_num_dict.items():
+        num_tex_dict[v] = k
+
+    print(f'Tex: {len(tex_num_dict)}')
+    return meshes, num_tex_dict
 
 if __name__ == "__main__":
 

@@ -16,13 +16,21 @@ class VMT:
         else:
             return self._get_proj_root(path.parent)
 
-    def __init__(self, filepath, game_dir=None):
-        self.filepath = Path(filepath)
-        if not game_dir:
-            game_dir = self._get_proj_root(self.filepath)
-        os.environ['VProject'] = str(game_dir)
-        self.textures = {}
-        self.kv = KeyValueFile(filepath=filepath)
+    def __init__(self, filepath = None, game_dir=None, file = None):
+        if file is not None:
+            if not game_dir:
+                game_dir = self._get_proj_root(self.filepath)
+            os.environ['VProject'] = str(game_dir)
+            self.textures = {}
+            self.kv = KeyValueFile(file=file)
+        else:
+            self.filepath = Path(filepath)
+            if not game_dir:
+                game_dir = self._get_proj_root(self.filepath)
+            os.environ['VProject'] = str(game_dir)
+            self.textures = {}
+            self.kv = KeyValueFile(filepath=filepath)
+            
         self.shader = self.kv.root_chunk.key
         self.material_data = self.kv.as_dict[self.shader]
         gameinfo_path = game_dir / 'gameinfo.txt'
@@ -40,3 +48,6 @@ class VMT:
                 texture = self.gameinfo.find_texture(value)
                 if texture:
                     self.textures[key] = texture
+                else:
+                    if value.find("/") != -1:
+                        self.textures[key] = value

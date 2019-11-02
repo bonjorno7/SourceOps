@@ -356,14 +356,20 @@ class KeyValueFile(object):
 
     def __init__(self, filepath=None, line_parser=parse_line, chunk_class=Chunk, read_callback=None,
                  supports_comments=True,
-                 initial_data=None, string_buffer=None):
+                 initial_data=None, string_buffer=None, file=None):
         """
         line_parser needs to return key,value
         """
-        if isinstance(filepath, Path):
-            self._filepath = filepath
+        if file is not None:
+            self.is_filepath = False
+            self._filepath = None
+            self.file = file
         else:
-            self._filepath = Path(filepath)
+            self.is_filepath = True
+            if isinstance(filepath, Path):
+                self._filepath = filepath
+            else:
+                self._filepath = Path(filepath)
         self.data = self.value = []
         if initial_data is not None:
             self.data.append(initial_data)
@@ -395,7 +401,7 @@ class KeyValueFile(object):
             self.line_parser = simple_line_parse
 
         # if a filepath exists, then read it
-        if filepath and self.filepath.exists():
+        if self.is_filepath is False or filepath and self.filepath.exists():
             self.read()
         if string_buffer:
             self.parse_lines(string_buffer)
@@ -418,12 +424,15 @@ class KeyValueFile(object):
         """
         reads the actual file, and passes the data read over to the parse_lines method
         """
-        if filepath is None:
-            filepath = self.filepath
-        else:
-            filepath = Path(filepath)
+        if self.is_filepath is True:
+            if filepath is None:
+                filepath = self.filepath
+            else:
+                filepath = Path(filepath)
 
-        self.parse_lines(filepath.open('r').readlines())
+            self.parse_lines(filepath.open('r').readlines())
+        else:
+            self.parse_lines(self.file.read().decode('unicode_escape').splitlines())
 
     def parse_lines(self, lines):
         """
@@ -622,6 +631,8 @@ class KeyValueFile(object):
         loaded.  NOTE: deals with perforce should the file be managed by p4
         """
         if filepath is None:
+            if self.is_filepath is False:
+                raise Exception("A path must be given when writing to a material inside a vpk.")
             filepath = self.filepath
         else:
             filepath = Path(filepath)
@@ -845,7 +856,7 @@ class MaterialPathResolver:
     not installed in a Source mod directory
     """
 
-    def __init__(self, filepath):
+    def __init__(self, filepath=None):
         self._filepath = filepath
 
     @property

@@ -35,12 +35,26 @@ class ImportMaterial(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
             material = vmt.VMT(folder / f.name, mod_folder)
             material.parse()
+
+            b_mat = bpy.data.materials.new(name=f.name[:-4])
+            b_mat.use_nodes = True
+
+            bsdf = b_mat.node_tree.nodes["Principled BSDF"]
             # all used textures are in material.textures
             # TODO: implement cycles material builder
-            pprint(material.textures)
-            for tex in material.textures.values():
-                import_vtf.import_texture(tex)
+            #pprint(material.textures)
+            for key, tex in material.textures.items():
+                img=import_vtf.import_texture(tex)
 
+                teximg = b_mat.node_tree.nodes.new('ShaderNodeTexImage')
+                teximg.image = img
+
+                if key.lower() == "$basetexture":
+                    b_mat.node_tree.links.new(bsdf.inputs['Base Color'],
+                                              teximg.outputs['Color'])
+
+                    context.selected_objects[0].data.materials.append(b_mat)
+                    
         return {"FINISHED"}
 
 

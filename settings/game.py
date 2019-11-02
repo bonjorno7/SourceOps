@@ -27,6 +27,7 @@ class GameProps(bpy.types.PropertyGroup):
         else:
             self["name"] = "Invalid Game"
             return False
+                
 
     def update(self, context):
         self.verify()

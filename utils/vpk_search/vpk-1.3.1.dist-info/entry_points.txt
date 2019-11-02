@@ -1,0 +1,3 @@
+[console_scripts]
+vpk = vpk.cli:main
+
