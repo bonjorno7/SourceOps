@@ -56,7 +56,7 @@ base_classes = ["versioninfo", "visgroup", "viewsettings", "editor", "normals",
                 "distances", "offsets", "offset_normals", "alphas",
                 "triangle_tags", "allowed_verts", "connections", "camera",
                 "cordon", "quickhide"]
-                
+
 parent_classes = ["visgroups", "world", "solid", "side", "hidden", "group",
                   "dispinfo", "entity", "cameras", "cordons"]
 

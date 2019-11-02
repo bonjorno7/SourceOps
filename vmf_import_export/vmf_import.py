@@ -29,6 +29,7 @@ def find_file_in_vpks(vpk_lst, filepath):
         except KeyError:
             continue
 
+
 class ImportVMF(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     """Imports the VMF given a path"""
     bl_idname = "sourceops.import_vmf"
@@ -180,13 +181,13 @@ class ImportVMF(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             for mesh in meshes:
                 ImportVMF.create_mesh(mesh, vmf_col, mat_dict)
                 
-
             bpy.ops.view3d.view_all()
             for a in bpy.context.screen.areas:
                 if a.type == 'VIEW_3D':
                     for s in a.spaces:
                         if s.type == 'VIEW_3D':
                             s.clip_end = 100000 # Placeholder value until I make it work properly
+
 
             bpy.ops.view3d.view_all()
             for a in bpy.context.screen.areas:

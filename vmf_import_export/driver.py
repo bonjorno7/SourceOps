@@ -42,7 +42,7 @@ def generate_meshes(filepath):
                 index = tex_num_dict[tex.lower()]
 
             polys.append(([], index))
-            
+
         for i in range(0,len(sides)-2):
             for j in range(i,len(sides)-1):
                 for k in range(j, len(sides)):
