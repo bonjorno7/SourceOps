@@ -6,6 +6,7 @@ import mathutils
 from .. import common
 from . surface_props import surface_props
 from . export_smd import export_smd
+from . sequence import SequenceProps
 
 
 class ModelProps(bpy.types.PropertyGroup):
@@ -16,6 +17,14 @@ class ModelProps(bpy.types.PropertyGroup):
     collision: bpy.props.PointerProperty(type=bpy.types.Collection)
     bodygroups: bpy.props.PointerProperty(type=bpy.types.Collection)
     stacking: bpy.props.PointerProperty(type=bpy.types.Collection)
+
+    sequences: bpy.props.CollectionProperty(type=SequenceProps)
+    sequence_index: bpy.props.IntProperty(default=0)
+
+    def sequence(self):
+        if self.sequences and self.sequence_index >= 0:
+            return self.sequences[self.sequence_index]
+        return None
 
     def update_name(self, context):
         name = common.fix_slashes(self["name"])
@@ -148,18 +157,28 @@ class ModelProps(bpy.types.PropertyGroup):
         qc.write("$cdmaterials \"" + "/" + "\"\n")
         qc.write("$surfaceprop \"" + self.surface_prop + "\"\n")
 
-        if not armatures:
-            qc.write("$staticprop\n")
         if self.autocenter:
             qc.write("$autocenter\n")
         if self.mostly_opaque:
             qc.write("$mostlyopaque\n")
 
-        # TODO: Add animation UI that generates sequences
-        qc.write("$sequence idle \"animation.smd\"\n")
+        if self.sequences:
+            for sequence in self.sequences:
+                qc.write("$sequence \"" + sequence.name + "\" {\n")
+                qc.write("    \"animation.smd\"\n")
+                qc.write("    frames " + str(sequence.start) + " " + str(sequence.end) + "\n")
+                qc.write("    fps " + str(context.scene.render.fps) + "\n")
+                if sequence.loop:
+                    qc.write("    loop\n")
+                qc.write("    activity \"" + sequence.activity + "\" " + str(sequence.weight) + "\n")
+                for event in sequence.events:
+                    qc.write("    { event \"" + event.event + "\" " + str(event.frame) + " \"" + event.value + "\" }\n")
+                qc.write("}\n")
+        else:
+            qc.write("$staticprop\n")
+            qc.write("$sequence \"idle\" \"animation.smd\"\n")
 
         qc.close()
-
         return True
 
     def edit_qc(self, context):
