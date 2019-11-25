@@ -91,31 +91,33 @@ class ModelProps(bpy.types.PropertyGroup):
 
     def export_meshes(self, context):
         """Export this model's meshes to SMD files"""
+        basename = common.clean_filename(os.path.basename(self.name))
         game = common.get_game(context)
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
         armatures = self.get_armatures(context)
 
         # Even static props need an idle animation
-        export_smd(context, directory + "animation.smd", [], armatures, 'ANIMATION')
+        export_smd(context, f'{directory}{basename}_anims.smd', [], armatures, 'ANIMATION')
 
         if self.reference:
-            export_smd(context, directory + "reference.smd", self.reference.all_objects, armatures, 'REFERENCE')
+            name = common.clean_filename(self.reference.name)
+            export_smd(context, f'{directory}{name}.smd', self.reference.all_objects, armatures, 'REFERENCE')
 
         if self.collision:
-            export_smd(context, directory + "collision.smd", self.collision.all_objects, armatures, 'REFERENCE')
+            name = common.clean_filename(self.collision.name)
+            export_smd(context, f'{directory}{name}.smd', self.collision.all_objects, armatures, 'REFERENCE')
 
         if self.stacking:
             for collection in self.stacking.children:
                 name = common.clean_filename(collection.name)
-                export_smd(context, directory + name + ".smd", collection.all_objects, armatures, 'REFERENCE')
+                export_smd(context, f'{directory}{name}.smd', collection.all_objects, armatures, 'REFERENCE')
 
         if self.bodygroups:
             for bodygroup in self.bodygroups.children:
-                bodygroup_name = common.clean_filename(bodygroup.name)
                 for collection in bodygroup.children:
-                    name = bodygroup_name + "." + common.clean_filename(collection.name)
-                    export_smd(context, directory + name  + ".smd", collection.all_objects, armatures, 'REFERENCE')
+                    name = common.clean_filename(collection.name)
+                    export_smd(context, f'{directory}{name}.smd', collection.all_objects, armatures, 'REFERENCE')
 
         return True
 
@@ -125,47 +127,53 @@ class ModelProps(bpy.types.PropertyGroup):
             print("Models need visible meshes")
             return False
 
+        basename = common.clean_filename(os.path.basename(self.name))
         game = common.get_game(context)
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
         common.verify_folder(directory)
         armatures = self.get_armatures(context)
 
-        qc = open(directory + "compile.qc", "w")
-        qc.write("$modelname \"" + self.name + "\"\n")
+        qc = open(f'{directory}{basename}.qc', "w")
+        qc.write("$modelname \"" + self.name + "\"\n\n")
+
+        qc.write("$cdmaterials \"" + "/" + "\"\n")
+        qc.write("$surfaceprop \"" + self.surface_prop + "\"\n")
+        if self.autocenter:
+            qc.write("$autocenter\n")
+        if self.mostly_opaque:
+            qc.write("$mostlyopaque\n")
+        qc.write("\n")
 
         if self.reference:
-            qc.write("$body \"reference\" \"reference.smd\"\n")
+            name = common.clean_filename(self.reference.name)
+            qc.write(f'$body "{name}" "{name}.smd"\n\n')
 
         if self.collision:
-            qc.write("$collisionmodel \"collision.smd\"\n")
-            qc.write("{ $concave $maxconvexpieces 10000 }\n")
+            name = common.clean_filename(self.collision.name)
+            qc.write("$collisionmodel \"" + name + ".smd\" {\n")
+            qc.write("    $concave\n")
+            qc.write("    $maxconvexpieces 10000\n")
+            qc.write("}\n\n")
 
         if self.stacking:
             for collection in self.stacking.children:
                 name = common.clean_filename(collection.name)
                 qc.write(f'$model "{name}" "{name}.smd"\n')
+            qc.write("\n")
 
         if self.bodygroups:
             for bodygroup in self.bodygroups.children:
                 bodygroup_name = common.clean_filename(bodygroup.name)
                 qc.write("$bodygroup \"" + bodygroup_name + "\"\n{\n")
                 for collection in bodygroup.children:
-                    name = bodygroup_name + "." + common.clean_filename(collection.name)
+                    name = common.clean_filename(collection.name)
                     qc.write("    studio \"" + name + ".smd\"\n")
-                qc.write("}\n")
-
-        qc.write("$cdmaterials \"" + "/" + "\"\n")
-        qc.write("$surfaceprop \"" + self.surface_prop + "\"\n")
-
-        if self.autocenter:
-            qc.write("$autocenter\n")
-        if self.mostly_opaque:
-            qc.write("$mostlyopaque\n")
+                qc.write("}\n\n")
 
         if self.sequences:
             for sequence in self.sequences:
                 qc.write("$sequence \"" + sequence.name + "\" {\n")
-                qc.write("    \"animation.smd\"\n")
+                qc.write(f'    "{basename}_anims.smd"\n')
                 qc.write("    frames " + str(sequence.start) + " " + str(sequence.end) + "\n")
                 qc.write("    fps " + str(context.scene.render.fps) + "\n")
                 if sequence.loop:
@@ -173,52 +181,54 @@ class ModelProps(bpy.types.PropertyGroup):
                 qc.write("    activity \"" + sequence.activity + "\" " + str(sequence.weight) + "\n")
                 for event in sequence.events:
                     qc.write("    { event \"" + event.event + "\" " + str(event.frame) + " \"" + event.value + "\" }\n")
-                qc.write("}\n")
+                qc.write("}\n\n")
         else:
-            qc.write("$staticprop\n")
-            qc.write("$sequence \"idle\" \"animation.smd\"\n")
+            qc.write("$staticprop\n\n")
+            qc.write(f'$sequence "idle" "{basename}_anims.smd"\n\n')
 
         qc.close()
         return True
 
     def edit_qc(self, context):
         """Open this model's QC in the blender text editor"""
+        basename = common.clean_filename(os.path.basename(self.name))
         game = common.get_game(context)
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
-        qc = directory + "compile.qc"
+        directory = common.fix_slashes(directory)
 
+        qc = f'{directory}{basename}.qc'
         if not os.path.isfile(qc):
             return False
 
-        for t in bpy.data.texts:
-            if t.filepath == qc:
-                return True
+        for text in bpy.data.texts:
+            if common.fix_slashes(text.filepath) == qc:
+                bpy.data.texts.remove(text)
 
-        bpy.ops.text.open(filepath=qc)
-
-        for t in bpy.data.texts:
-            if t.filepath == qc:
-                t.name = self.name
+        text = bpy.data.texts.load(filepath=qc)
+        text.name = self.name
 
         return True
 
     def compile_qc(self, context):
         """Compile this model using the QC"""
+        basename = common.clean_filename(os.path.basename(self.name))
         game = common.get_game(context)
         directory = game.mod + "/" + "modelsrc" + "/" + self.name + "/"
+        directory = common.fix_slashes(directory)
         common.verify_folder(directory)
 
-        if os.path.isfile(directory + "compile.qc"):
+        qc = f'{directory}{basename}.qc'
+        if os.path.isfile(qc):
             self.remove_old(context)
 
-            args = [game.studiomdl, "-nop4", "-fullcollide", directory + "compile.qc"]
-            print(game.studiomdl + "    " + directory + "compile.qc" + "\n")
+            args = [game.studiomdl, "-nop4", "-fullcollide", qc]
+            print(game.studiomdl + "    " + qc + "\n")
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             while True:
                 code = pipe.returncode
                 if code is None:
-                    with open(directory + "log.txt", "w") as log:
+                    with open(directory + basename + ".log", "w") as log:
                         log.write(pipe.communicate()[0].decode('utf'))
                 else:
                     break
