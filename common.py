@@ -26,6 +26,9 @@ def get_scale(context):
 def get_model(context):
     return get_globals(context).model()
 
+def get_sequence(context):
+    return get_model(context).sequence() if get_model(context) else None
+
 def remove_if_exists(path):
     if os.path.isfile(path):
         os.remove(path)

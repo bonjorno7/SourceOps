@@ -3,8 +3,10 @@ import bpy
 from . settings . game import GameProps
 from . settings . settings import SettingsProps
 from . settings . operators import AddGame, RemoveGame, MoveGame
-from . settings . interface import GameList,  SettingsPanel, OptionsPanel, GamesPanel
+from . settings . interface import GameList, SettingsPanel, OptionsPanel, GamesPanel
 
+from . model_export . event import EventProps, EventList, AddEvent, RemoveEvent, MoveEvent, EventPanel
+from . model_export . sequence import SequenceProps, SequenceList, AddSequence, RemoveSequence, MoveSequence, SequencePanel
 from . model_export . model import ModelProps
 from . model_export . operators import AddModel, RemoveModel, MoveModel, ExportMeshes, GenerateQC, EditQC, CompileQC, ViewModel
 from . model_export . interface import ModelList, ModelExportPanel, ModelPanel, PropertiesPanel
@@ -21,7 +23,7 @@ bl_info = {
     "name": "SourceOps",
     "description": "A more convenient alternative to Blender Source Tools",
     "author": "bonjorno7 & REDxEYE",
-    "version": (0, 4, 6),
+    "version": (0, 4, 7),
     "location": "3D View > Sidebar",
     "category": "Import-Export",
 }
@@ -29,7 +31,7 @@ bl_info = {
 
 class Globals(bpy.types.PropertyGroup):
     """Global variables for this add-on"""
-    bl_idname = "SOURCEOPS_PG_Props"
+    bl_idname = "SOURCEOPS_PG_Globals"
     settings: bpy.props.PointerProperty(type=SettingsProps)
 
     models: bpy.props.CollectionProperty(type=ModelProps)
@@ -49,10 +51,13 @@ classes = (
     GameList, AddGame, RemoveGame, MoveGame,
     SettingsPanel, OptionsPanel, GamesPanel,
 
-    ModelProps, ModelList,
-    AddModel, RemoveModel, MoveModel,
+    EventProps, SequenceProps, ModelProps,
+    ModelList, AddModel, RemoveModel, MoveModel,
+    SequenceList, AddSequence, RemoveSequence, MoveSequence,
+    EventList, AddEvent, RemoveEvent, MoveEvent,
     ExportMeshes, GenerateQC, EditQC, CompileQC, ViewModel,
     ModelExportPanel, ModelPanel, PropertiesPanel,
+    SequencePanel, EventPanel,
 
     CollisionProps, SurfRampProps,
     SurfCollision, SurfRampify,
@@ -77,7 +82,3 @@ def unregister():
     del VTFLib.vtflib_cdll
     unregister_classes()
     del bpy.types.Scene.SOURCEOPS
-
-
-if __name__ == "__main__":
-    register()
