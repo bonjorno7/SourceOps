@@ -20,9 +20,6 @@ def get_settings(context):
 def get_game(context):
     return get_settings(context).game()
 
-def get_scale(context):
-    return get_settings(context).scale
-
 def get_model(context):
     return get_globals(context).model()
 
