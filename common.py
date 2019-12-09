@@ -55,13 +55,13 @@ def is_curve(self, obj):
 
 def add_prop(layout, label, scope, prop):
     """Add a property to a panel with a label before it"""
-    row = layout.row().split(factor=0.5)
+    row = layout.row().split(factor=0.4)
     row.label(text=label)
     row.split().row().prop(scope, prop, text="")
 
 def add_enum(layout, label, scope, prop):
     """Add an expanded emum property to a panel with a label before it"""
-    row = layout.row().split(factor = 0.5)
+    row = layout.row().split(factor = 0.4)
     row.label(text = label)
     row.split().row().prop(scope, prop, expand=True)
 
