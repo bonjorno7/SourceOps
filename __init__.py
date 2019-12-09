@@ -3,7 +3,7 @@ import bpy
 from . settings . game import GameProps
 from . settings . settings import SettingsProps
 from . settings . operators import AddGame, RemoveGame, MoveGame
-from . settings . interface import GameList, SettingsPanel, OptionsPanel, GamesPanel
+from . settings . interface import GameList, SettingsPanel, GamesPanel
 
 from . model_export . event import EventProps, EventList, AddEvent, RemoveEvent, MoveEvent, EventPanel
 from . model_export . sequence import SequenceProps, SequenceList, AddSequence, RemoveSequence, MoveSequence, SequencePanel
@@ -49,7 +49,7 @@ class Globals(bpy.types.PropertyGroup):
 classes = (
     GameProps, SettingsProps,
     GameList, AddGame, RemoveGame, MoveGame,
-    SettingsPanel, OptionsPanel, GamesPanel,
+    SettingsPanel, GamesPanel,
 
     EventProps, SequenceProps, ModelProps,
     ModelList, AddModel, RemoveModel, MoveModel,

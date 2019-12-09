@@ -25,23 +25,6 @@ class SettingsPanel(bpy.types.Panel):
         pass
 
 
-class OptionsPanel(bpy.types.Panel):
-    bl_idname = "SOURCEOPS_PT_OptionsPanel"
-    bl_parent_id = "SOURCEOPS_PT_SettingsPanel"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_context = "objectmode"
-    bl_category = "SourceOps"
-    bl_label = "Options"
-
-    def draw_header(self, context):
-        self.layout.label(icon='SETTINGS')
-
-    def draw(self, context):
-        settings = common.get_settings(context)
-        common.add_prop(self.layout, "Model Scale", settings, "scale")
-
-
 class GamesPanel(bpy.types.Panel):
     bl_idname = "SOURCEOPS_PT_GamesPanel"
     bl_parent_id = "SOURCEOPS_PT_SettingsPanel"

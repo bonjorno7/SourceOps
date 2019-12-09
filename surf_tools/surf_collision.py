@@ -75,7 +75,6 @@ class SurfCollision(bpy.types.Operator):
     def execute(self, context):
         """Iterate through all selected objects and make collision meshes for them"""
         colset = common.get_globals(context).collision
-        scale = common.get_scale(context)
         apply = colset.modifiers == 'APPLY'
 
         selected_objects = context.selected_objects
@@ -92,7 +91,7 @@ class SurfCollision(bpy.types.Operator):
             bm = bmesh.new()
             bm.from_mesh(temp)
             self.generate_collision(
-                bm, obj.matrix_world, colset.thickness / scale)
+                bm, obj.matrix_world, colset.thickness)
 
             if colset.target == 'NEW':
                 mesh = bpy.data.meshes.new(name=obj.data.name + ".col")
