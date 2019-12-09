@@ -18,7 +18,6 @@ class GameProps(bpy.types.PropertyGroup):
 
         self["gameinfo"] = str(gameinfo)
         self["mod"] = str(mod)
-        self["game"] = str(game)
         self["studiomdl"] = str(studiomdl)
         self["hlmv"] = str(hlmv)
 
@@ -43,12 +42,6 @@ class GameProps(bpy.types.PropertyGroup):
     mod: bpy.props.StringProperty(
         name="Mod Path",
         description="Path to your mod folder, eg cstrike for CS:S",
-        default="",
-    )
-
-    game: bpy.props.StringProperty(
-        name="Game Path",
-        description="Path to your game folder, eg Counter-Strike Source for CS:S",
         default="",
     )
 
