@@ -210,11 +210,11 @@ def export_smd(context, path, objects, armatures, kind):
 
                     # Get the coords from the vertex and apply the object's transformation
                     coords = obj.matrix_local @ mathutils.Vector(vertex.co)
-                    smd.write(f'{coords.x} {coords.y} {coords.z}    ')
+                    smd.write(f'{coords.x:.6f} {coords.y:.6f} {coords.z:.6f}    ')
 
                     # Get the normal from the loop and apply the object's transformation
                     normal = obj.matrix_local @ mathutils.Vector(loop.normal)
-                    smd.write(f'{normal.x} {normal.y} {normal.z}    ')
+                    smd.write(f'{normal.x:.6f} {normal.y:.6f} {normal.z:.6f}    ')
 
                     # Get the UV coordinates of the loop from the mesh UV layers
                     if mesh.uv_layers:
@@ -224,7 +224,7 @@ def export_smd(context, path, objects, armatures, kind):
                         uv = [0.0, 0.0]
 
                     # Write the UV coordinates
-                    smd.write(f'{uv[0]} {uv[1]}')
+                    smd.write(f'{uv[0]:.6f} {uv[1]:.6f}')
 
                     # Get this object's armature
                     armature = obj.find_armature()
@@ -241,7 +241,7 @@ def export_smd(context, path, objects, armatures, kind):
                             weight = group.weight
 
                             # Write the index and weight
-                            smd.write(f'  {index} {weight}')
+                            smd.write(f'  {index} {weight:.6f}')
 
                     # End the vertex with a newline
                     smd.write('\n')
