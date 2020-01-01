@@ -31,7 +31,7 @@ def export_smd(context, path, objects, armatures, kind):
     armatures = [arm for arm in armatures if arm.type == 'ARMATURE']
 
     # Dictionary for finding bone indices by name
-    bones = {'Root':0}
+    bones = {'ImplicitRoot':0}
     for armature in armatures:
         for bone in armature.data.bones:
             bones[f'{armature.name}.{bone.name}'] = len(bones)
@@ -43,7 +43,7 @@ def export_smd(context, path, objects, armatures, kind):
     smd.write('nodes\n')
 
     # Write the root bone
-    smd.write('0 "Root" -1\n')
+    smd.write('0 "ImplicitRoot" -1\n')
 
     # Iterate through the armatures and bones
     for armature in armatures:
@@ -91,13 +91,13 @@ def export_smd(context, path, objects, armatures, kind):
 
                 # Get the matrix
                 if bone.parent:
-                    matrix = bone.parent.matrix_local.inverted() @ bone.matrix_local
+                    matrix = bone.parent.matrix_local.inverted_safe() @ bone.matrix_local
                 else:
-                    matrix = bone.matrix_local
+                    matrix = armature.matrix_world @ bone.matrix_local
 
-                # Get the location and write it
-                l = matrix.to_translation()
-                smd.write(f'{l.x:.6f} {l.y:.6f} {l.z:.6f}    ')
+                # Get the translation and write it
+                t = matrix.to_translation()
+                smd.write(f'{t.x:.6f} {t.y:.6f} {t.z:.6f}    ')
 
                 # Get the rotation and write it
                 r = matrix.to_euler()
@@ -132,13 +132,13 @@ def export_smd(context, path, objects, armatures, kind):
 
                     # Get the matrix
                     if bone.parent:
-                        matrix = bone.parent.matrix.inverted() @ bone.matrix
+                        matrix = bone.parent.matrix.inverted_safe() @ bone.matrix
                     else:
-                        matrix = bone.matrix
+                        matrix = armature.matrix_world @ bone.matrix
 
-                    # Get the location and write it
-                    l = matrix.to_translation()
-                    smd.write(f'{l.x:.6f} {l.y:.6f} {l.z:.6f}    ')
+                    # Get the translation and write it
+                    t = matrix.to_translation()
+                    smd.write(f'{t.x:.6f} {t.y:.6f} {t.z:.6f}    ')
 
                     # Get the rotation and write it
                     r = matrix.to_euler()
@@ -158,21 +158,20 @@ def export_smd(context, path, objects, armatures, kind):
 
         # Iterate through the objects
         for obj in objects:
-            
+
+            # Temporarily disable armature modifiers
+            for modifier in obj.modifiers:
+                if modifier.type == 'ARMATURE':
+                    modifier.show_viewport = False
+
             # Duplicate the object
             eva = obj.evaluated_get(context.view_layer.depsgraph)
-
-            # Remove armature modifiers
-            for modifier in eva.modifiers:
-                if modifier.type == 'ARMATURE':
-                    eva.modifiers.remove(modifier)
 
             # Create a mesh with modifiers applied
             mesh = eva.to_mesh()
 
-            # And apply the object's transformation
-            # TODO: Parent's transforms as well, though what about animation?
-            mesh.transform(obj.matrix_local)
+            # And apply the object's world space transformation
+            mesh.transform(obj.matrix_world)
 
             # Triangulate the mesh
             bm = bmesh.new()
@@ -250,13 +249,12 @@ def export_smd(context, path, objects, armatures, kind):
                     # End the vertex with a newline
                     smd.write('\n')
 
-            # Don't bother clearning the split normals, just remove the temporary mesh
+            # Don't bother clearing the split normals, just remove the temporary mesh
             obj.to_mesh_clear()
 
-            # Fix armature modifiers on the object
+            # Restore armature modifiers
             for modifier in obj.modifiers:
                 if modifier.type == 'ARMATURE':
-                    modifier.show_viewport = False
                     modifier.show_viewport = True
 
         # Close the triangles block
