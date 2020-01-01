@@ -170,6 +170,10 @@ def export_smd(context, path, objects, armatures, kind):
             # Create a mesh with modifiers applied
             mesh = eva.to_mesh()
 
+            # And apply the object's transformation
+            # TODO: Parent's transforms as well, though what about animation?
+            mesh.transform(obj.matrix_local)
+
             # Triangulate the mesh
             bm = bmesh.new()
             bm.from_mesh(mesh)
@@ -208,12 +212,12 @@ def export_smd(context, path, objects, armatures, kind):
                     parent = 0
                     smd.write(f'{parent}    ')
 
-                    # Get the coords from the vertex and apply the object's transformation
-                    coords = obj.matrix_local @ mathutils.Vector(vertex.co)
+                    # Get the coords from the vertex
+                    coords = vertex.co
                     smd.write(f'{coords.x:.6f} {coords.y:.6f} {coords.z:.6f}    ')
 
-                    # Get the normal from the loop and apply the object's transformation
-                    normal = obj.matrix_local @ mathutils.Vector(loop.normal)
+                    # Get the normal from the loop
+                    normal = loop.normal
                     smd.write(f'{normal.x:.6f} {normal.y:.6f} {normal.z:.6f}    ')
 
                     # Get the UV coordinates of the loop from the mesh UV layers
@@ -246,10 +250,7 @@ def export_smd(context, path, objects, armatures, kind):
                     # End the vertex with a newline
                     smd.write('\n')
 
-            # Clear split normals
-            mesh.free_normals_split()
-
-            # Remove the temporary mesh
+            # Don't bother clearning the split normals, just remove the temporary mesh
             obj.to_mesh_clear()
 
             # Fix armature modifiers on the object
