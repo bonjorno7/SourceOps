@@ -45,15 +45,21 @@ class ModelProps(bpy.types.PropertyGroup):
         items=surface_props,
     )
 
-    autocenter: bpy.props.BoolProperty(
-        name="Auto Center",
-        description="$autocenter, aligns the model's $origin to the center of its bounding box",
+    staticprop: bpy.props.BoolProperty(
+        name="Static Prop",
+        description="$staticprop, removes animations, does some optimization. Warning: can cause issues such as blank for bodygroups not working",
         default=False,
     )
 
     mostly_opaque: bpy.props.BoolProperty(
         name="Has Glass",
         description="$mostlyopaque, use this if your model has something transparent like glass",
+        default=False,
+    )
+
+    autocenter: bpy.props.BoolProperty(
+        name="Auto Center",
+        description="$autocenter, aligns the model's $origin to the center of its bounding box",
         default=False,
     )
 
@@ -183,8 +189,10 @@ class ModelProps(bpy.types.PropertyGroup):
                     qc.write("    { event \"" + event.event + "\" " + str(event.frame) + " \"" + event.value + "\" }\n")
                 qc.write("}\n\n")
         else:
-            qc.write("$staticprop\n\n")
             qc.write(f'$sequence "idle" "{basename}_anims.smd"\n\n')
+
+        if self.staticprop:
+            qc.write("$staticprop\n\n")
 
         qc.close()
         return True
