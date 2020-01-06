@@ -69,13 +69,17 @@ def export_smd(context, path, objects, armatures, kind):
     # Close the nodes block
     smd.write('end\n')
 
+    # Save the scene's current frame
+    current = context.scene.frame_current
+
     # Open the skeleton block
     smd.write('skeleton\n')
 
     # Rest pose
     if kind == 'REFERENCE':
 
-        # Write frame 0
+        # Go to frame 0 and write it
+        context.scene.frame_set(0)
         smd.write('time 0\n')
 
         # Write the root bone
@@ -106,16 +110,13 @@ def export_smd(context, path, objects, armatures, kind):
     # Animation
     if kind == 'ANIMATION':
 
-        # Save the scene's current frame
-        current = context.scene.frame_current
-
         # Save the scene's start and end frames
         start = context.scene.frame_start
         end = context.scene.frame_end + 1
 
         for frame in range(start, end):
 
-            # Set the frame in the scene write it
+            # Set the frame in the scene and write it
             context.scene.frame_set(frame)
             smd.write(f'time {frame}\n')
 
@@ -143,9 +144,6 @@ def export_smd(context, path, objects, armatures, kind):
                     # Get the rotation and write it
                     r = matrix.to_euler()
                     smd.write(f'{r.x:.6f} {r.y:.6f} {r.z:.6f}\n')
-
-        # Restore the frame to the scene
-        context.scene.frame_set(current)
 
     # Close the skeleton block
     smd.write('end\n')
@@ -259,6 +257,9 @@ def export_smd(context, path, objects, armatures, kind):
 
         # Close the triangles block
         smd.write('end\n')
+
+    # Restore the frame to the scene
+    context.scene.frame_set(current)
 
     # Close the SMD file
     smd.close()
