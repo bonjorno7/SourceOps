@@ -265,7 +265,7 @@ class Triangles:
 
         depsgraph = bpy.context.evaluated_depsgraph_get()
         evaluated = object.evaluated_get(depsgraph)
-        mesh = evaluated.to_mesh()
+        mesh = evaluated.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
 
         bm = bmesh.new()
         bm.from_mesh(mesh)
