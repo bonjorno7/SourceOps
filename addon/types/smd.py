@@ -5,22 +5,23 @@ import mathutils
 
 class Lookup:
     def __init__(self):
-        self.bones = []
+        self.bones = ['Source.Implicit']
 
     def __getitem__(self, key):
         return self.bones.index(key)
 
-    def from_blender(self, armature):
-        for bone in armature.data.bones:
-            name = f'{armature.name}.{bone.name}'
-            self.bones.append(name)
+    def from_blender(self, armatures):
+        for armature in armatures:
+            for bone in armature.data.bones:
+                name = f'{armature.name}.{bone.name}'
+                self.bones.append(name)
 
 
 class Node:
     def __init__(self):
         self.index = 0
-        self.name = ''
-        self.parent = 0
+        self.name = 'Source.Implicit'
+        self.parent = -1
 
     def from_blender(self, lookup, armature, bone):
         name = f'{armature.name}.{bone.name}'
@@ -40,22 +41,18 @@ class Node:
 
 class Nodes:
     def __init__(self):
-        self.nodes = []
+        self.nodes = [Node()]
 
-    def from_blender(self, lookup, armature):
-        for bone in armature.data.bones:
-            node = Node()
-            node.from_blender(lookup, armature, bone)
-            self.nodes.append(node)
+    def from_blender(self, lookup, armatures):
+        for armature in armatures:
+            for bone in armature.data.bones:
+                node = Node()
+                node.from_blender(lookup, armature, bone)
+                self.nodes.append(node)
 
     def to_string(self):
         header = f'nodes\n'
-
-        if self.nodes:
-            nodes = ''.join(bone.to_string() for bone in self.nodes)
-        else:
-            nodes = f'0 "implicit_root" -1\n'
-
+        nodes = ''.join(bone.to_string() for bone in self.nodes)
         footer = f'end\n'
         return f'{header}{nodes}{footer}'
 
@@ -90,13 +87,14 @@ class RestBone:
 
 class RestFrame:
     def __init__(self):
-        self.bones = []
+        self.bones = [RestBone()]
 
-    def from_blender(self, lookup, armature):
-        for bone in armature.data.bones:
-            rest_bone = RestBone()
-            rest_bone.from_blender(lookup, armature, bone)
-            self.bones.append(rest_bone)
+    def from_blender(self, lookup, armatures):
+        for armature in armatures:
+            for bone in armature.data.bones:
+                rest_bone = RestBone()
+                rest_bone.from_blender(lookup, armature, bone)
+                self.bones.append(rest_bone)
 
     def to_string(self):
         time = f'time 0\n'
@@ -135,15 +133,16 @@ class PoseBone:
 class PoseFrame:
     def __init__(self):
         self.time = 0
-        self.bones = []
+        self.bones = [PoseBone()]
 
-    def from_blender(self, lookup, armature, time):
+    def from_blender(self, lookup, armatures, time):
         self.time = time
 
-        for bone in armature.pose.bones:
-            pose_bone = PoseBone()
-            pose_bone.from_blender(lookup, armature, bone)
-            self.bones.append(pose_bone)
+        for armature in armatures:
+            for bone in armature.pose.bones:
+                pose_bone = PoseBone()
+                pose_bone.from_blender(lookup, armature, bone)
+                self.bones.append(pose_bone)
 
     def to_string(self):
         time = f'time {self.time}\n'
@@ -155,10 +154,10 @@ class Skeleton:
     def __init__(self):
         self.frames = []
 
-    def from_blender(self, lookup, armature, type):
+    def from_blender(self, lookup, armatures, type):
         if type == 'REFERENCE':
             frame = RestFrame()
-            frame.from_blender(lookup, armature)
+            frame.from_blender(lookup, armatures)
             self.frames.append(frame)
 
         elif type == 'ANIMATION':
@@ -171,20 +170,14 @@ class Skeleton:
                 bpy.context.scene.frame_set(time)
 
                 frame = PoseFrame()
-                frame.from_blender(lookup, armature, time)
+                frame.from_blender(lookup, armatures, time)
                 self.frames.append(frame)
 
             bpy.context.scene.frame_set(current)
 
     def to_string(self):
         header = f'skeleton\n'
-
-        if self.frames:
-            frames = ''.join(frame.to_string() for frame in self.frames)
-        else:
-            zeroes = ' '.join(f'{0:.6f}' for n in range(3))
-            frames = f'time 0\n0  {zeroes}  {zeroes}\n'
-
+        frames = ''.join(frame.to_string() for frame in self.frames)
         footer = f'end\n'
         return f'{header}{frames}{footer}'
 
@@ -302,41 +295,40 @@ class SMD:
         self.skeleton = Skeleton()
         self.triangles = Triangles()
 
-    def link_and_show(self, object):
-        in_scene = bpy.context.scene.collection in object.users_collection
-        if not in_scene:
-            bpy.context.scene.collection.objects.link(object)
-
-        hide_viewport = True if object.hide_viewport else False
-        object.hide_viewport = False
-
-        return in_scene, hide_viewport
-
-    def unlink_and_hide(self, object, in_scene, hide_viewport):
-        if not in_scene:
-            bpy.context.scene.collection.objects.unlink(object)
-
-        object.hide_viewport = hide_viewport
-
-    def from_blender(self, armatures, objects):
-        type = 'REFERENCE' if objects else 'ANIMATION'
-
-        for armature in armatures:
-            in_scene, hide_viewport = self.link_and_show(armature)
-
-            self.lookup.from_blender(armature)
-            self.nodes.from_blender(self.lookup, armature)
-            self.skeleton.from_blender(self.lookup, armature, type)
-
-            self.unlink_and_hide(armature, in_scene, hide_viewport)
+    def link_and_show(self, objects):
+        settings = {o: {} for o in objects}
 
         for object in objects:
-            in_scene, hide_viewport = self.link_and_show(object)
+            settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
+            if not settings[object]['in_scene']:
+                bpy.context.scene.collection.objects.link(object)
 
+            settings[object]['hide_viewport'] = True if object.hide_viewport else False
+            object.hide_viewport = False
+
+        return settings
+
+    def unlink_and_hide(self, objects, settings):
+        for object in objects:
+            if not settings[object]['in_scene']:
+                bpy.context.scene.collection.objects.unlink(object)
+
+            object.hide_viewport = settings[object]['hide_viewport']
+
+    def from_blender(self, armatures, objects):
+        settings = self.link_and_show(armatures + objects)
+
+        self.lookup.from_blender(armatures)
+        self.nodes.from_blender(self.lookup, armatures)
+
+        type = 'REFERENCE' if objects else 'ANIMATION'
+        self.skeleton.from_blender(self.lookup, armatures, type)
+
+        for object in objects:
             armature = object.find_armature()
             self.triangles.from_blender(self.lookup, armature, object)
 
-            self.unlink_and_hide(object, in_scene, hide_viewport)
+        self.unlink_and_hide(armatures + objects, settings)
 
     def to_string(self):
         version = f'version 1\n'
