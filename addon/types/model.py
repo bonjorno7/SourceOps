@@ -320,7 +320,9 @@ class Model:
 
     def get_studiomdl(self):
         game = os.path.dirname(os.path.dirname(self.gameinfo))
-        return f'{game}/bin/studiomdl.exe'
+        studiomdl = f'{game}/bin/studiomdl.exe'
+        quickmdl = f'{game}/bin/quickmdl.exe'
+        return quickmdl if os.path.isfile(quickmdl) else studiomdl
 
     def get_hlmv(self):
         game = os.path.dirname(os.path.dirname(self.gameinfo))
