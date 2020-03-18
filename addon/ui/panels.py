@@ -64,20 +64,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Bodygroups', model, 'bodygroups')
                 common.add_prop(box, 'Stacking', model, 'stacking')
 
-                box = self.layout.box()
-                row = box.row()
-                row.scale_x = row.scale_y = 1.5
-                row.label(text='Export')
-                row = row.row(align=True)
-                row.alignment = 'RIGHT'
-
-                row.operator('sourceops.export_meshes', text='', icon_value=icons.id('smd'))
-                row.operator('sourceops.generate_qc', text='', icon_value=icons.id('qc'))
-                row.operator('sourceops.open_qc', text='', icon_value=icons.id('edit'))
-                row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
-                row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
-                row.operator('sourceops.open_log', text='', icon_value=icons.id('edit'))
-
         elif sourceops.panel == 'MODEL_OPTIONS' and model:
             box = self.layout.box()
             row = box.row()
@@ -139,6 +125,21 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Event Type', event, 'event')
                 common.add_prop(box, 'Frame', event, 'frame')
                 common.add_prop(box, 'Value', event, 'value')
+
+        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'SEQUENCES', 'EVENTS'}:
+            box = self.layout.box()
+            row = box.row()
+            row.scale_x = row.scale_y = 1.5
+            row.label(text='Export')
+            row = row.row(align=True)
+            row.alignment = 'RIGHT'
+
+            row.operator('sourceops.export_meshes', text='', icon_value=icons.id('smd'))
+            row.operator('sourceops.generate_qc', text='', icon_value=icons.id('qc'))
+            row.operator('sourceops.open_qc', text='', icon_value=icons.id('edit'))
+            row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
+            row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
+            row.operator('sourceops.open_log', text='', icon_value=icons.id('edit'))
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.add_item', text='', icon='ADD')
