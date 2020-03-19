@@ -34,7 +34,6 @@ class SOURCEOPS_OT_MoveItem(bpy.types.Operator):
         game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         sequence = common.get_sequence(model)
-        event = common.get_event(sequence)
 
         if self.item == 'GAMES' and sourceops:
             direction = 1 if self.direction == 'DOWN' else -1

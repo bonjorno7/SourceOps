@@ -25,7 +25,6 @@ class SOURCEOPS_OT_RemoveItem(bpy.types.Operator):
         game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         sequence = common.get_sequence(model)
-        event = common.get_event(sequence)
 
         if self.item == 'GAMES' and sourceops:
             sourceops.game_items.remove(sourceops.game_index)
