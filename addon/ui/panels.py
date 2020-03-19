@@ -8,7 +8,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'SourceOps'
-    bl_label = 'SourceOps Panel'
+    bl_label = f'SourceOps    -    {common.get_version()}'
 
     def draw(self, context):
         sourceops = common.get_globals(context)
