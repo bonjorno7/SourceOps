@@ -341,7 +341,8 @@ class SMD:
         bpy.ops.object.mode_set(mode=modes[settings['mode']])
 
     def from_blender(self, armatures, objects):
-        settings = self.configure_scene(armatures + objects)
+        all_objects = set(armatures + objects)
+        settings = self.configure_scene(all_objects)
 
         self.lookup.from_blender(armatures)
         self.nodes.from_blender(self.lookup, armatures)
@@ -353,7 +354,7 @@ class SMD:
             armature = object.find_armature()
             self.triangles.from_blender(self.lookup, armature, object)
 
-        self.restore_scene(armatures + objects, settings)
+        self.restore_scene(all_objects, settings)
 
     def to_string(self):
         version = f'version 1\n'
