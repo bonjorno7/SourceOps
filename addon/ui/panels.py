@@ -136,10 +136,10 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             row.operator('sourceops.export_meshes', text='', icon_value=icons.id('smd'))
             row.operator('sourceops.generate_qc', text='', icon_value=icons.id('qc'))
-            row.operator('sourceops.open_qc', text='', icon_value=icons.id('edit'))
+            row.operator('sourceops.open_qc', text='', icon='TEXT')
             row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
-            row.operator('sourceops.open_log', text='', icon_value=icons.id('edit'))
+            row.operator('sourceops.open_log', text='', icon='HELP')
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.add_item', text='', icon='ADD')
