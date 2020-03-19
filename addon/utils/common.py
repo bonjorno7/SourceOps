@@ -5,6 +5,11 @@ import os
 from pathlib import Path
 
 
+def get_version():
+    from ... import bl_info
+    return '.'.join(str(n) for n in bl_info['version'])
+
+
 def get_globals(context):
     try:
         return context.scene.sourceops
