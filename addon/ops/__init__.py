@@ -7,6 +7,7 @@ from . view_model import SOURCEOPS_OT_ViewModel
 from . open_log import SOURCEOPS_OT_OpenLog
 from . add_item import SOURCEOPS_OT_AddItem
 from . remove_item import SOURCEOPS_OT_RemoveItem
+from . copy_item import SOURCEOPS_OT_CopyItem
 from . move_item import SOURCEOPS_OT_MoveItem
 from . call_panel import SOURCEOPS_OT_CallPanel
 
@@ -20,6 +21,7 @@ def register():
     bpy.utils.register_class(SOURCEOPS_OT_OpenLog)
     bpy.utils.register_class(SOURCEOPS_OT_AddItem)
     bpy.utils.register_class(SOURCEOPS_OT_RemoveItem)
+    bpy.utils.register_class(SOURCEOPS_OT_CopyItem)
     bpy.utils.register_class(SOURCEOPS_OT_MoveItem)
     bpy.utils.register_class(SOURCEOPS_OT_CallPanel)
 
@@ -28,6 +30,7 @@ def unregister():
     bpy.utils.unregister_class(SOURCEOPS_OT_CallPanel)
     bpy.utils.unregister_class(SOURCEOPS_OT_MoveItem)
     bpy.utils.unregister_class(SOURCEOPS_OT_RemoveItem)
+    bpy.utils.unregister_class(SOURCEOPS_OT_CopyItem)
     bpy.utils.unregister_class(SOURCEOPS_OT_AddItem)
     bpy.utils.unregister_class(SOURCEOPS_OT_OpenLog)
     bpy.utils.unregister_class(SOURCEOPS_OT_ViewModel)

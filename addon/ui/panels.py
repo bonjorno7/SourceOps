@@ -34,7 +34,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.label(text='Games')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_GameList', '', sourceops, 'game_items', sourceops, 'game_index', rows=4)
+            row.template_list('SOURCEOPS_UL_GameList', '', sourceops, 'game_items', sourceops, 'game_index', rows=5)
             col = row.column(align=True)
             self.draw_list_buttons(col, 'GAMES')
 
@@ -50,7 +50,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.label(text='Models')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_ModelList', '', sourceops, 'model_items', sourceops, 'model_index', rows=4)
+            row.template_list('SOURCEOPS_UL_ModelList', '', sourceops, 'model_items', sourceops, 'model_index', rows=5)
             col = row.column(align=True)
             self.draw_list_buttons(col, 'MODELS')
 
@@ -80,7 +80,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.label(text='Material Folders')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_MaterialFolderList', '', model, 'material_folder_items', model, 'material_folder_index', rows=4)
+            row.template_list('SOURCEOPS_UL_MaterialFolderList', '', model, 'material_folder_items', model, 'material_folder_index', rows=5)
             col = row.column(align=True)
             self.draw_list_buttons(col, 'MATERIAL_FOLDERS')
 
@@ -95,7 +95,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.label(text='Sequences')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_SequenceList', '', model, 'sequence_items', model, 'sequence_index', rows=4)
+            row.template_list('SOURCEOPS_UL_SequenceList', '', model, 'sequence_items', model, 'sequence_index', rows=5)
             col = row.column(align=True)
             self.draw_list_buttons(col, 'SEQUENCES')
 
@@ -116,7 +116,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.label(text='Events')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_EventList', '', sequence, 'event_items', sequence, 'event_index', rows=4)
+            row.template_list('SOURCEOPS_UL_EventList', '', sequence, 'event_items', sequence, 'event_index', rows=5)
             col = row.column(align=True)
             self.draw_list_buttons(col, 'EVENTS')
 
@@ -144,14 +144,15 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.add_item', text='', icon='ADD')
         op.item = item
-
         op = layout.operator('sourceops.remove_item', text='', icon='REMOVE')
         op.item = item
 
         layout.separator()
+        op = layout.operator('sourceops.copy_item', text='', icon='DUPLICATE')
+        op.item = item
+        layout.separator()
 
         op = layout.operator('sourceops.move_item', text='', icon='TRIA_UP')
         op.item, op.direction = item, 'UP'
-
         op = layout.operator('sourceops.move_item', text='', icon='TRIA_DOWN')
         op.item, op.direction = item, 'DOWN'
