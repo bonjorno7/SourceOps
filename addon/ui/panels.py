@@ -84,6 +84,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             common.add_prop(box, 'Rotation', model, 'rotation')
             common.add_prop(box, 'Scale', model, 'scale')
 
+        elif sourceops.panel == 'MATERIAL_FOLDERS' and model:
             box = self.layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -136,7 +137,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Frame', event, 'frame')
                 common.add_prop(box, 'Value', event, 'value')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'SEQUENCES', 'EVENTS'}:
+        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'MATERIAL_FOLDERS', 'SEQUENCES', 'EVENTS'}:
             box = self.layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5
