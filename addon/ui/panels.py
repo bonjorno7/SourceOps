@@ -57,8 +57,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if model:
                 common.add_prop(box, 'Display Name', model, 'display')
                 common.add_prop(box, 'Model Name', model, 'name')
-
-                box = self.layout.box()
                 common.add_prop(box, 'Reference', model, 'reference')
                 common.add_prop(box, 'Collision', model, 'collision')
                 common.add_prop(box, 'Bodygroups', model, 'bodygroups')
@@ -69,11 +67,22 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Model Options')
+
             common.add_prop(box, 'Surface Property', model, 'surface')
-            common.add_prop(box, 'Model Scale', model, 'scale')
             common.add_prop(box, 'Static Prop', model, 'static')
             common.add_prop(box, 'Has Glass', model, 'glass')
+
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Transform Options')
+
             common.add_prop(box, 'Ignore Transforms', model, 'ignore_transforms')
+            common.add_prop(box, 'Origin +X', model, 'origin_x')
+            common.add_prop(box, 'Origin +Y', model, 'origin_y')
+            common.add_prop(box, 'Origin -Z', model, 'origin_z')
+            common.add_prop(box, 'Rotation', model, 'rotation')
+            common.add_prop(box, 'Scale', model, 'scale')
 
             box = self.layout.box()
             row = box.row()

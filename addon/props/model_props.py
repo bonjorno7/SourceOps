@@ -53,12 +53,6 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         items=SOURCEOPS_SurfaceProps,
     )
 
-    scale: bpy.props.FloatProperty(
-        name='Scale',
-        description='$scale to put at the top of your QC files',
-        default=1.0,
-    )
-
     static: bpy.props.BoolProperty(
         name='Static Prop',
         description='$staticprop, removes animations, does some optimization. Warning: can cause issues such as blank for bodygroups not working',
@@ -75,4 +69,34 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='Ignore Transforms',
         description='Ignores all transforms of all objects, this includes parenting',
         default=False,
+    )
+
+    origin_x: bpy.props.FloatProperty(
+        name='Origin +X',
+        description='Translation on the positive X axis for $origin in the QC file',
+        default=0.0,
+    )
+
+    origin_y: bpy.props.FloatProperty(
+        name='Origin +Y',
+        description='Translation on the positive Y axis for $origin in the QC file',
+        default=0.0,
+    )
+
+    origin_z: bpy.props.FloatProperty(
+        name='Origin -Z',
+        description='Translation on the negative Z axis for $origin in the QC file, because Source is weird like that',
+        default=0.0,
+    )
+
+    rotation: bpy.props.FloatProperty(
+        name='Rotation',
+        description='Rotation around the up axis for $origin in the QC file, this is applied after the location',
+        default=0.0,
+    )
+
+    scale: bpy.props.FloatProperty(
+        name='Scale',
+        description='$scale to put at the top of your QC files, this does not affect $origin',
+        default=1.0,
     )
