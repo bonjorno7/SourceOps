@@ -3,8 +3,14 @@ import bmesh
 import mathutils
 
 
-class Lookup:
+class Settings:
     def __init__(self):
+        pass
+
+
+class Lookup:
+    def __init__(self, settings):
+        self.settings = settings
         self.bones = ['Source.Implicit']
 
     def __getitem__(self, key):
@@ -18,7 +24,8 @@ class Lookup:
 
 
 class Node:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.index = 0
         self.name = 'Source.Implicit'
         self.parent = -1
@@ -40,13 +47,14 @@ class Node:
 
 
 class Nodes:
-    def __init__(self):
-        self.nodes = [Node()]
+    def __init__(self, settings):
+        self.settings = settings
+        self.nodes = [Node(self.settings)]
 
     def from_blender(self, lookup, armatures):
         for armature in armatures:
             for bone in armature.data.bones:
-                node = Node()
+                node = Node(self.settings)
                 node.from_blender(lookup, armature, bone)
                 self.nodes.append(node)
 
@@ -58,7 +66,8 @@ class Nodes:
 
 
 class RestBone:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.index = 0
         self.translation = [0, 0, 0]
         self.rotation = [0, 0, 0]
@@ -86,13 +95,14 @@ class RestBone:
 
 
 class RestFrame:
-    def __init__(self):
-        self.bones = [RestBone()]
+    def __init__(self, settings):
+        self.settings = settings
+        self.bones = [RestBone(self.settings)]
 
     def from_blender(self, lookup, armatures):
         for armature in armatures:
             for bone in armature.data.bones:
-                rest_bone = RestBone()
+                rest_bone = RestBone(self.settings)
                 rest_bone.from_blender(lookup, armature, bone)
                 self.bones.append(rest_bone)
 
@@ -103,7 +113,8 @@ class RestFrame:
 
 
 class PoseBone:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.index = 0
         self.translation = [0, 0, 0]
         self.rotation = [0, 0, 0]
@@ -131,16 +142,17 @@ class PoseBone:
 
 
 class PoseFrame:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.time = 0
-        self.bones = [PoseBone()]
+        self.bones = [PoseBone(self.settings)]
 
     def from_blender(self, lookup, armatures, time):
         self.time = time
 
         for armature in armatures:
             for bone in armature.pose.bones:
-                pose_bone = PoseBone()
+                pose_bone = PoseBone(self.settings)
                 pose_bone.from_blender(lookup, armature, bone)
                 self.bones.append(pose_bone)
 
@@ -151,12 +163,13 @@ class PoseFrame:
 
 
 class Skeleton:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.frames = []
 
     def from_blender(self, lookup, armatures, type):
         if type == 'REFERENCE':
-            frame = RestFrame()
+            frame = RestFrame(self.settings)
             frame.from_blender(lookup, armatures)
             self.frames.append(frame)
 
@@ -169,7 +182,7 @@ class Skeleton:
             for time in range(start, end):
                 bpy.context.scene.frame_set(time)
 
-                frame = PoseFrame()
+                frame = PoseFrame(self.settings)
                 frame.from_blender(lookup, armatures, time)
                 self.frames.append(frame)
 
@@ -183,7 +196,8 @@ class Skeleton:
 
 
 class Vertex:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.coords = [0, 0, 0]
         self.normal = [0, 0, 0]
         self.uvs = [0, 0]
@@ -224,7 +238,8 @@ class Vertex:
 
 
 class Triangle:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.material = ''
         self.vertices = []
 
@@ -234,7 +249,7 @@ class Triangle:
         self.material = getattr(self.material, 'name', 'no_material')
 
         for loop in [mesh.loops[i] for i in poly.loop_indices]:
-            vertex = Vertex()
+            vertex = Vertex(self.settings)
             vertex.from_blender(lookup, armature, object, mesh, loop)
             self.vertices.append(vertex)
 
@@ -245,7 +260,8 @@ class Triangle:
 
 
 class Triangles:
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.triangles = []
 
     def from_blender(self, lookup, armature, object):
@@ -270,7 +286,7 @@ class Triangles:
         mesh.calc_normals_split()
 
         for poly in mesh.polygons:
-            triangle = Triangle()
+            triangle = Triangle(self.settings)
             triangle.from_blender(lookup, armature, object, mesh, poly)
             self.triangles.append(triangle)
 
@@ -290,10 +306,11 @@ class Triangles:
 
 class SMD:
     def __init__(self):
-        self.lookup = Lookup()
-        self.nodes = Nodes()
-        self.skeleton = Skeleton()
-        self.triangles = Triangles()
+        self.settings = Settings()
+        self.lookup = Lookup(self.settings)
+        self.nodes = Nodes(self.settings)
+        self.skeleton = Skeleton(self.settings)
+        self.triangles = Triangles(self.settings)
 
     def configure_scene(self, objects):
         scene_settings = {o: {} for o in objects}
