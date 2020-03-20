@@ -4,8 +4,8 @@ import mathutils
 
 
 class Settings:
-    def __init__(self):
-        pass
+    def __init__(self, ignore_transforms):
+        self.ignore_transforms = ignore_transforms
 
 
 class Lookup:
@@ -79,9 +79,12 @@ class RestBone:
             parent = bone.parent.matrix_local.inverted_safe()
             matrix = parent @ bone.matrix_local
 
-        else:
+        elif not self.settings.ignore_transforms:
             transforms = armature.matrix_world
             matrix = transforms @ bone.matrix_local
+
+        else:
+            matrix = bone.matrix_local
 
         self.index = lookup[name]
         self.translation = matrix.to_translation()[0:3]
@@ -126,9 +129,12 @@ class PoseBone:
             parent = bone.parent.matrix.inverted_safe()
             matrix = parent @ bone.matrix
 
-        else:
+        elif not self.settings.ignore_transforms:
             transforms = armature.matrix_world
             matrix = transforms @ bone.matrix
+
+        else:
+            matrix = bone.matrix
 
         self.index = lookup[name]
         self.translation = matrix.to_translation()[0:3]
@@ -282,7 +288,8 @@ class Triangles:
         bm.to_mesh(mesh)
         bm.free()
 
-        mesh.transform(object.matrix_world)
+        if not self.settings.ignore_transforms:
+            mesh.transform(object.matrix_world)
         mesh.calc_normals_split()
 
         for poly in mesh.polygons:
@@ -305,8 +312,8 @@ class Triangles:
 
 
 class SMD:
-    def __init__(self):
-        self.settings = Settings()
+    def __init__(self, ignore_transforms):
+        self.settings = Settings(ignore_transforms)
         self.lookup = Lookup(self.settings)
         self.nodes = Nodes(self.settings)
         self.skeleton = Skeleton(self.settings)
