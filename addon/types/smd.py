@@ -296,27 +296,27 @@ class SMD:
         self.triangles = Triangles()
 
     def configure_scene(self, objects):
-        settings = {o: {} for o in objects}
+        scene_settings = {o: {} for o in objects}
 
-        settings['mode'] = bpy.context.mode
+        scene_settings['mode'] = bpy.context.mode
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for object in objects:
-            settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
-            if not settings[object]['in_scene']:
+            scene_settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
+            if not scene_settings[object]['in_scene']:
                 bpy.context.scene.collection.objects.link(object)
 
-            settings[object]['hide_viewport'] = True if object.hide_viewport else False
+            scene_settings[object]['hide_viewport'] = True if object.hide_viewport else False
             object.hide_viewport = False
 
-        return settings
+        return scene_settings
 
-    def restore_scene(self, objects, settings):
+    def restore_scene(self, objects, scene_settings):
         for object in objects:
-            if not settings[object]['in_scene']:
+            if not scene_settings[object]['in_scene']:
                 bpy.context.scene.collection.objects.unlink(object)
 
-            object.hide_viewport = settings[object]['hide_viewport']
+            object.hide_viewport = scene_settings[object]['hide_viewport']
 
         modes = {}
         modes['EDIT_MESH'] = 'EDIT'
@@ -338,11 +338,11 @@ class SMD:
         modes['SCULPT_GPENCIL'] = 'SCULPT_GPENCIL'
         modes['WEIGHT_GPENCIL'] = 'WEIGHT_GPENCIL'
         modes['VERTEX_GPENCIL'] = 'VERTEX_GPENCIL'
-        bpy.ops.object.mode_set(mode=modes[settings['mode']])
+        bpy.ops.object.mode_set(mode=modes[scene_settings['mode']])
 
     def from_blender(self, armatures, objects):
         all_objects = set(armatures + objects)
-        settings = self.configure_scene(all_objects)
+        scene_settings = self.configure_scene(all_objects)
 
         self.lookup.from_blender(armatures)
         self.nodes.from_blender(self.lookup, armatures)
@@ -354,7 +354,7 @@ class SMD:
             armature = object.find_armature()
             self.triangles.from_blender(self.lookup, armature, object)
 
-        self.restore_scene(all_objects, settings)
+        self.restore_scene(all_objects, scene_settings)
 
     def to_string(self):
         version = f'version 1\n'
