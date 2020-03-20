@@ -15,18 +15,23 @@ class Model:
         if self.name.lower().endswith('.mdl'):
             self.name = self.name[0:-4]
 
+        self.material_folder_items = model.material_folder_items
         self.sequence_items = model.sequence_items
         self.reference = model.reference
         self.collision = model.collision
         self.bodygroups = model.bodygroups
         self.stacking = model.stacking
 
-        self.material_folder_items = model.material_folder_items
         self.surface = model.surface
-        self.scale = model.scale
         self.static = model.static
         self.glass = model.glass
+
         self.ignore_transforms = model.ignore_transforms
+        self.origin_x = model.origin_x
+        self.origin_y = model.origin_y
+        self.origin_z = model.origin_z
+        self.rotation = model.rotation
+        self.scale = model.scale
 
     def export_meshes(self):
         directory = self.get_directory()
@@ -133,6 +138,10 @@ class Model:
             qc.write('\n')
             qc.write('$mostlyopaque')
             qc.write('\n')
+
+        qc.write('\n')
+        qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
+        qc.write('\n')
 
         qc.write('\n')
         qc.write(f'$scale {self.scale}')
