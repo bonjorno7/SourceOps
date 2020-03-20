@@ -26,6 +26,7 @@ class Model:
         self.scale = model.scale
         self.static = model.static
         self.glass = model.glass
+        self.ignore_transforms = model.ignore_transforms
 
     def export_meshes(self):
         directory = self.get_directory()
@@ -69,7 +70,7 @@ class Model:
             print(f'Failed to export: {path}')
             return
 
-        smd = SMD()
+        smd = SMD(self.ignore_transforms)
         smd.from_blender(armatures, objects)
 
         smd_file.write(smd.to_string())

@@ -70,3 +70,9 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         description='$mostlyopaque, use this if your model has something transparent like glass',
         default=False,
     )
+
+    ignore_transforms: bpy.props.BoolProperty(
+        name='Ignore Transforms',
+        description='Ignores all transforms of all objects, this includes parenting',
+        default=False,
+    )

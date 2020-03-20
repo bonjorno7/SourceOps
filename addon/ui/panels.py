@@ -73,6 +73,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             common.add_prop(box, 'Model Scale', model, 'scale')
             common.add_prop(box, 'Static Prop', model, 'static')
             common.add_prop(box, 'Has Glass', model, 'glass')
+            common.add_prop(box, 'Ignore Transforms', model, 'ignore_transforms')
 
             box = self.layout.box()
             row = box.row()
