@@ -323,7 +323,8 @@ class SMD:
         scene_settings = {o: {} for o in objects}
 
         scene_settings['mode'] = bpy.context.mode
-        bpy.ops.object.mode_set(mode='OBJECT')
+        if scene_settings['mode'] != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         for object in objects:
             scene_settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
@@ -342,27 +343,28 @@ class SMD:
 
             object.hide_viewport = scene_settings[object]['hide_viewport']
 
-        modes = {}
-        modes['EDIT_MESH'] = 'EDIT'
-        modes['EDIT_CURVE'] = 'EDIT'
-        modes['EDIT_SURFACE'] = 'EDIT'
-        modes['EDIT_TEXT'] = 'EDIT'
-        modes['EDIT_ARMATURE'] = 'EDIT'
-        modes['EDIT_METALBALL'] = 'EDIT'
-        modes['EDIT_LATTICE'] = 'EDIT'
-        modes['POSE'] = 'POSE'
-        modes['SCULPT'] = 'SCULPT'
-        modes['PAINT_WEIGHT'] = 'WEIGHT_PAINT'
-        modes['PAINT_VERTEX'] = 'VERTEX_PAINT'
-        modes['PAINT_TEXTURE'] = 'TEXTURE_PAINT'
-        modes['PARTICLE'] = 'PARTICLE_EDIT'
-        modes['OBJECT'] = 'OBJECT'
-        modes['PAINT_GPENCIL'] = 'PAINT_GPENCIL'
-        modes['EDIT_GPENCIL'] = 'EDIT_GPENCIL'
-        modes['SCULPT_GPENCIL'] = 'SCULPT_GPENCIL'
-        modes['WEIGHT_GPENCIL'] = 'WEIGHT_GPENCIL'
-        modes['VERTEX_GPENCIL'] = 'VERTEX_GPENCIL'
-        bpy.ops.object.mode_set(mode=modes[scene_settings['mode']])
+        if scene_settings['mode'] != 'OBJECT':
+            modes = {}
+            modes['EDIT_MESH'] = 'EDIT'
+            modes['EDIT_CURVE'] = 'EDIT'
+            modes['EDIT_SURFACE'] = 'EDIT'
+            modes['EDIT_TEXT'] = 'EDIT'
+            modes['EDIT_ARMATURE'] = 'EDIT'
+            modes['EDIT_METALBALL'] = 'EDIT'
+            modes['EDIT_LATTICE'] = 'EDIT'
+            modes['POSE'] = 'POSE'
+            modes['SCULPT'] = 'SCULPT'
+            modes['PAINT_WEIGHT'] = 'WEIGHT_PAINT'
+            modes['PAINT_VERTEX'] = 'VERTEX_PAINT'
+            modes['PAINT_TEXTURE'] = 'TEXTURE_PAINT'
+            modes['PARTICLE'] = 'PARTICLE_EDIT'
+            modes['OBJECT'] = 'OBJECT'
+            modes['PAINT_GPENCIL'] = 'PAINT_GPENCIL'
+            modes['EDIT_GPENCIL'] = 'EDIT_GPENCIL'
+            modes['SCULPT_GPENCIL'] = 'SCULPT_GPENCIL'
+            modes['WEIGHT_GPENCIL'] = 'WEIGHT_GPENCIL'
+            modes['VERTEX_GPENCIL'] = 'VERTEX_GPENCIL'
+            bpy.ops.object.mode_set(mode=modes[scene_settings['mode']])
 
     def from_blender(self, armatures, objects):
         all_objects = set(armatures + objects)
