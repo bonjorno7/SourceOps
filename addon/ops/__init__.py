@@ -9,6 +9,7 @@ from . add_item import SOURCEOPS_OT_AddItem
 from . remove_item import SOURCEOPS_OT_RemoveItem
 from . copy_item import SOURCEOPS_OT_CopyItem
 from . move_item import SOURCEOPS_OT_MoveItem
+from . export_vmf import SOURCEOPS_OT_ExportVMF
 
 
 def register():
@@ -22,9 +23,11 @@ def register():
     bpy.utils.register_class(SOURCEOPS_OT_RemoveItem)
     bpy.utils.register_class(SOURCEOPS_OT_CopyItem)
     bpy.utils.register_class(SOURCEOPS_OT_MoveItem)
+    bpy.utils.register_class(SOURCEOPS_OT_ExportVMF)
 
 
 def unregister():
+    bpy.utils.unregister_class(SOURCEOPS_OT_ExportVMF)
     bpy.utils.unregister_class(SOURCEOPS_OT_MoveItem)
     bpy.utils.unregister_class(SOURCEOPS_OT_RemoveItem)
     bpy.utils.unregister_class(SOURCEOPS_OT_CopyItem)
