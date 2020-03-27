@@ -12,7 +12,7 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bpy.data.is_saved()
+        return bpy.data.is_saved
 
     def invoke(self, context, event):
         path = Path(bpy.path.abspath('//vmf/test.vmf')).resolve()
@@ -20,7 +20,8 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         path = str(path)
 
         vertex = pyvmf.Vertex(0, 0, 0)
-        solid = pyvmf.SolidGenerator.cube(vertex, 256, 256, 256, True)
+        solid = pyvmf.SolidGenerator.cube(vertex, 128, 128, 128, True)
+        solid.side[1].dispinfo = pyvmf.DispInfo()
 
         vmf = pyvmf.new_vmf()
         vmf.add_solids(solid)
