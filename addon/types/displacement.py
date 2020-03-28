@@ -31,48 +31,6 @@ class DispFace:
         self.processed = False
         self.neighbors = [None] * 4
 
-    # Rotate this face counter clockwise by the given amount of steps
-    def rotate(self, steps):
-
-        # Rotate the list to put this index at the start
-        self.verts = self.verts[steps:] + self.verts[:steps]
-
-    # Find the faces on the left, top, right, and bottom of this face
-    def find_neighbors(self):
-
-        # If this face has been processed already
-        if self.processed:
-
-            # End the recursion
-            return
-
-        # Make sure this face isn't processed again
-        self.processed = True
-
-        # Iterate through the sides of this face
-        for side in range(4):
-
-            # Get the list of faces that the current vert is in
-            faces = self.verts[side].faces
-
-            # Get both verts that are in the current edge
-            verts = [self.verts[side], self.verts[(side + 1) % 4]]
-
-            # Get the unprocessed face of the current vert that has both edge verts
-            self.neighbors[side] = next((f for f in faces if not f.processed and all(v in f.verts for v in verts)), None)
-
-            # If a face is found on the current side, and it hasn't already been processed
-            if self.neighbors[side] and not self.neighbors[side].processed:
-
-                # Find the current vert in this neighboring face
-                index = self.neighbors[side].verts.index(self.verts[side])
-
-                # Rotate this neighboring face so that the current vert is in the correct corner
-                self.neighbors[side].rotate((index + 3) % 4)
-
-                # Find the neighbors of this neighboring face
-                self.neighbors[side].find_neighbors()
-
 
 class Displacement:
     pass
@@ -173,6 +131,48 @@ class DisplacementGroup:
 
                 # Store the face in the verts
                 self.disp_verts[index].faces.append(self.disp_faces[polygon.index])
+
+    # Rotate this face counter clockwise by the given amount of steps
+    def rotate_face(self, face, steps):
+
+        # Rotate the list to put this index at the start
+        face.verts = face.verts[steps:] + face.verts[:steps]
+
+    # Find the faces on the left, top, right, and bottom of this face
+    def find_neighbors(self, face):
+
+        # If this face has been processed already
+        if face.processed:
+
+            # End the recursion
+            return
+
+        # Make sure this face isn't processed again
+        face.processed = True
+
+        # Iterate through the sides of this face
+        for side in range(4):
+
+            # Get the list of faces that the current vert is in
+            faces = face.verts[side].faces
+
+            # Get both verts that are in the current edge
+            verts = [face.verts[side], face.verts[(side + 1) % 4]]
+
+            # Get the unprocessed face of the current vert that has both edge verts
+            face.neighbors[side] = next((f for f in faces if not f.processed and all(v in f.verts for v in verts)), None)
+
+            # If a face is found on the current side, and it hasn't already been processed
+            if face.neighbors[side] and not face.neighbors[side].processed:
+
+                # Find the current vert in this neighboring face
+                index = face.neighbors[side].verts.index(face.verts[side])
+
+                # Rotate this neighboring face so that the current vert is in the correct corner
+                self.rotate_face(face, (index + 3) % 4)
+
+                # Find the neighbors of this neighboring face
+                self.find_neighbors(face.neighbors[side])
 
 
     def process_faces(self):
