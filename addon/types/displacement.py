@@ -30,7 +30,6 @@ class DispFace:
         self.verts = []
         self.processed = False
         self.neighbors = [None] * 4
-        self.sorted = False
 
     # Rotate this face counter clockwise by the given amount of steps
     def rotate(self, steps):
@@ -82,24 +81,26 @@ class Displacement:
 class DisplacementGroup:
     def __init__(self, mesh):
 
-        # Setup temporary verts, displacement verts and faces, and displacements
+        # Setup mesh, temporary verts, displacement verts and faces, and displacements
+        self.mesh = mesh
         self.temp_verts = [TempVert()] * len(mesh.vertices)
         self.disp_verts = [DispVert()] * len(mesh.loops)
         self.disp_faces = [DispFace()] * len(mesh.faces)
         self.displacements = []
 
-        self.get_connections_and_marked(mesh)
-        self.get_boundaries_and_corners(mesh)
-        self.get_xyz_uv_alpha_boundary_corner(mesh)
-        self.get_faces_and_verts(mesh)
+        self.get_connections_and_marked()
+        self.get_boundaries_and_corners()
+        self.get_xyz_uv_alpha_boundary_corner()
+        self.get_faces_and_verts()
         self.process_faces()
         self.sort_faces()
         self.direction_and_distance()
 
-    def get_connections_and_marked(self, mesh):
+
+    def get_connections_and_marked(self):
 
         # Iterate through mesh edges
-        for edge in mesh.edges:
+        for edge in self.mesh.edges:
 
             # Get edge verts
             vert_a = self.temp_verts[edge.vertices[0]]
@@ -113,7 +114,8 @@ class DisplacementGroup:
             vert_a.boundary |= edge.use_freestyle_mark
             vert_b.boundary |= edge.use_freestyle_mark
 
-    def get_boundaries_and_corners(self, mesh):
+
+    def get_boundaries_and_corners(self):
 
         # Iterate through temporary verts
         for vert in self.temp_verts:
@@ -138,28 +140,30 @@ class DisplacementGroup:
             # If all of, or more than 2, connected verts are boundary, this vert is a corner
             vert.corner |= count > 2 or count == len(vert.connected)
 
-    def get_xyz_uv_alpha_boundary_corner(self, mesh):
+
+    def get_xyz_uv_alpha_boundary_corner(self):
 
         # Iterate through mesh loops
-        for loop in mesh.loops:
+        for loop in self.mesh.loops:
 
             # Get displacement vert and temprary vert
             disp_vert = self.disp_verts[loop.index]
             temp_vert = self.temp_verts[loop.vertex_index]
 
             # Get XYZ, UV, and alpha
-            disp_vert.xyz = mesh.vertices[loop.vertex_index].co[0:3]
-            disp_vert.uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
-            disp_vert.alpha = mesh.vertex_colors.active.data[loop.index].color[0]
+            disp_vert.xyz = self.mesh.vertices[loop.vertex_index].co[0:3]
+            disp_vert.uv = self.mesh.uv_layers.active.data[loop.index].uv[0:2]
+            disp_vert.alpha = self.mesh.vertex_colors.active.data[loop.index].color[0]
 
             # Get boundary and corner
             disp_vert.boundary = temp_vert.boundary
             disp_vert.corner = temp_vert.corner
 
-    def get_faces_and_verts(self, mesh):
+
+    def get_faces_and_verts(self):
 
         # Iterate through mesh polygons
-        for polygon in mesh.polygons:
+        for polygon in self.mesh.polygons:
 
             # Iterate through polygon loop indices
             for index in polygon.loop_indices:
@@ -170,61 +174,73 @@ class DisplacementGroup:
                 # Store the face in the verts
                 self.disp_verts[index].faces.append(self.disp_faces[polygon.index])
 
+
     def process_faces(self):
 
-        # Setup face processing
-        unprocessed = self.disp_faces[:]
-
         # Keep going until all faces are processed
-        while unprocessed:
+        while True:
 
             # Start at any unsorted face
-            face = unprocessed[0]
+            face = next((f for f in self.disp_faces if not f.processed), None)
+
+            # If none are found, we're done
+            if not face:
+                break
 
             # Process the face and its neighbords recursively
-            unprocessed[0].find_neighbors()
+            face.find_neighbors()
 
-            # Iterate through the unprocessed faces
-            for face in unprocessed:
-
-                # If this face has been processed
-                if face.processed:
-
-                    # Remove it from the list
-                    unprocessed.remove(face)
 
     def sort_faces(self):
 
-        # Setup face sorting
-        unsorted = self.disp_faces[:]
+        # Find bottom left corner faces
+        corners = [f for f in self.disp_faces if f.verts[0].corner]
 
-        # Keep going until all faces are sorted
-        while unsorted:
+        # Iterate through those corners
+        for corner in corners:
 
             # Create a displacement
-            disp = Displacement()
+            grid = []
 
-            # Start at any unsorted face
-            face = unsorted[0]
+            # Start in the corner
+            edge = corner
 
-            # TODO: Move to the left until we reach a face whose vert 0 is a boundary
-            # TODO: Move downwards until we reach a face whose vert 0 is a boundary
-            # TODO: From that corner, get rows and columns and sort them into the displacement
+            # Iterate through rows
+            for row in range(16):
 
-            # Iterate through the unsorted faces
-            for face in unsorted:
+                # Add an empty row
+                grid.append([])
 
-                # If this face has been sorted
-                if face.sorted:
+                # Start at the edge
+                face = edge
 
-                    # Remove it from the list
-                    unsorted.remove(face)
+                # Iterate through columns
+                for column in range(16):
+
+                    # Add this face to the grid
+                    grid[row].append(face)
+
+                    # Stop at the end of the row
+                    if face.verts[2].boundary and face.verts[3].boundary:
+                        break
+
+                    # Move to the right
+                    face = face.neighbors[2]
+
+                # Stop at the end of the column
+                if edge.verts[1].boundary and edge.verts[2].boundary:
+                    break
+
+                # Move upwards
+                edge = edge.neighbors[1]
+
 
     def direction_and_distance(self):
 
         pass # Direction and distance
         # TODO: Interpolate the position of the point on the brush face from the corners
         # TODO: Calculate the direction and distance from that point to the new coordinates
+
 
     def from_blender(self, object):
 
