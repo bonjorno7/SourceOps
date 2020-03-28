@@ -4,21 +4,15 @@ import mathutils
 from .. pyvmf import pyvmf
 
 
-class TempVert:
-    def __init__(self):
-        self.connected = []
-        self.boundary = False
-        self.corner = False
-
-
 class DispVert:
     def __init__(self):
         self.xyz = [0, 0, 0]
         self.uv = [0, 0]
         self.alpha = 1.0
 
-        boundary = False
-        corner = False
+        self.connected = []
+        self.boundary = False
+        self.corner = False
         self.faces = []
 
         self.direction = [0, 0, 0]
@@ -41,14 +35,15 @@ class DisplacementGroup:
 
         # Setup mesh, temporary verts, displacement verts and faces, and displacements
         self.mesh = mesh
-        self.temp_verts = [TempVert()] * len(mesh.vertices)
+        self.temp_verts = [DispVert()] * len(mesh.vertices)
         self.disp_verts = [DispVert()] * len(mesh.loops)
         self.disp_faces = [DispFace()] * len(mesh.faces)
         self.displacements = []
 
+        # Populate displacements
         self.get_connections_and_marked()
         self.get_boundaries_and_corners()
-        self.get_xyz_uv_alpha_boundary_corner()
+        self.get_xyz_uv_alpha()
         self.get_faces_and_verts()
         self.process_faces()
         self.sort_faces()
@@ -98,24 +93,26 @@ class DisplacementGroup:
             # If all of, or more than 2, connected verts are boundary, this vert is a corner
             vert.corner |= count > 2 or count == len(vert.connected)
 
+        # Iterate through mesh loops
+        for loop in self.mesh.loops:
 
-    def get_xyz_uv_alpha_boundary_corner(self):
+            # Get boundary and corner
+            disp_vert = self.disp_verts[loop.index]
+            temp_vert = self.temp_verts[loop.vertex_index]
+            disp_vert.boundary = temp_vert.boundary
+            disp_vert.corner = temp_vert.corner
+
+
+    def get_xyz_uv_alpha(self):
 
         # Iterate through mesh loops
         for loop in self.mesh.loops:
 
-            # Get displacement vert and temprary vert
-            disp_vert = self.disp_verts[loop.index]
-            temp_vert = self.temp_verts[loop.vertex_index]
-
             # Get XYZ, UV, and alpha
+            disp_vert = self.disp_verts[loop.index]
             disp_vert.xyz = self.mesh.vertices[loop.vertex_index].co[0:3]
             disp_vert.uv = self.mesh.uv_layers.active.data[loop.index].uv[0:2]
             disp_vert.alpha = self.mesh.vertex_colors.active.data[loop.index].color[0]
-
-            # Get boundary and corner
-            disp_vert.boundary = temp_vert.boundary
-            disp_vert.corner = temp_vert.corner
 
 
     def get_faces_and_verts(self):
