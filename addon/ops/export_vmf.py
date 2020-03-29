@@ -21,13 +21,18 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
 
         #for disp in displacement_group.displacements:
         #    for row in disp:
-        #        print(', '.join(str(col.points[0].alpha) for col in row))
+        #        print(', '.join(str(len(col.vertices[0].connected)) for col in row))
 
         #for face in displacement_group.faces:
         #    print(str(face.index) + ' : ' + ', '.join(f.index for f in face.neighbors if f))
 
-        for vertex in displacement_group.vertices:
-            print(str(vertex.index) + ' : ' + ', '.join(str(p.index) for p in vertex.polygons))
+        #for vertex in displacement_group.vertices:
+            #print(str(vertex.index) + ' : ' + ', '.join(str(p.index) for p in vertex.polygons))
+            #print(str(vertex.index) + ' : ' + ', '.join(str(v.index) for v in vertex.connected))
+            #print(str(vertex.index) + ' : ' + str(vertex.boundary) + ' ' + str(vertex.corner))
+
+        for polygon in displacement_group.polygons:
+            print(str(polygon.index) + ' : ' + ', '.join(str(p.index) if p else 'x' for p in polygon.neighbors))
 
         return {'FINISHED'}
 
