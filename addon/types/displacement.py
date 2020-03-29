@@ -52,24 +52,24 @@ class DispGroup:
         self.get_position_and_direction_and_distance()
 
 
-        def get_xyz_and_uv_and_alpha(self):
+    def get_xyz_and_uv_and_alpha(self):
 
-            # Iterate through mesh loops
-            for mesh_loop in self.mesh.loops:
+        # Iterate through mesh loops
+        for mesh_loop in self.mesh.loops:
 
-                # Get displacement loop
-                loop = self.loops[mesh_loop.index]
+            # Get displacement loop
+            loop = self.loops[mesh_loop.index]
 
-                # Get XYZ
-                loop.xyz = mesh.vertices[mesh_loop.vertex_index].co[0:3]
+            # Get XYZ
+            loop.xyz = self.mesh.vertices[mesh_loop.vertex_index].co[0:3]
 
-                # Get UV
-                if mesh.uv_layers:
-                    loop.uv = mesh.uv_layers.active.data[mesh_loop.index].uv[0:2]
+            # Get UV
+            if self.mesh.uv_layers:
+                loop.uv = self.mesh.uv_layers.active.data[mesh_loop.index].uv[0:2]
 
-                # Get alpha
-                if mesh.vertex_colors:
-                    loop.alpha = mesh.vertex_colors.active.data[mesh_loop.index].color[0]
+            # Get alpha
+            if self.mesh.vertex_colors:
+                loop.alpha = self.mesh.vertex_colors.active.data[mesh_loop.index].color[0]
 
 
     def get_connected_and_marked(self):
@@ -119,13 +119,13 @@ class DispGroup:
     def get_polygons_and_vertices(self):
 
         # Iterate through mesh polygons
-        for polygon in self.mesh.polygons:
+        for mesh_polygon in self.mesh.polygons:
 
             # Get the displacement polygon
-            polygon = self.polygons[polygon.index]
+            polygon = self.polygons[mesh_polygon.index]
 
             # Iterate through polygon loop indices
-            for index in polygon.loop_indices:
+            for index in mesh_polygon.loop_indices:
 
                 # Get the displacement vertex
                 vertex = self.vertices[self.mesh.loops[index].vertex_index]
