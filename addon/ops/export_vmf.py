@@ -16,12 +16,18 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         return bpy.data.is_saved and context.active_object and context.active_object.type == 'MESH'
 
     def invoke(self, context, event):
-        displacement_converter = displacement.DisplacementConverter(context.active_object)
+        displacement_converter = displacement.DispConverter(context.active_object)
         displacement_group = displacement_converter.displacement_group
 
-        for disp in displacement_group.displacements:
-            for row in disp:
-                print(', '.join(str(col.points[0].alpha) for col in row))
+        #for disp in displacement_group.displacements:
+        #    for row in disp:
+        #        print(', '.join(str(col.points[0].alpha) for col in row))
+
+        #for face in displacement_group.faces:
+        #    print(str(face.index) + ' : ' + ', '.join(f.index for f in face.neighbors if f))
+
+        for point in displacement_group.points:
+            print(str(point.index) + ' : ' + ', '.join(str(f.index) for f in point.faces))
 
         return {'FINISHED'}
 
