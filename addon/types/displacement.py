@@ -40,7 +40,7 @@ class DisplacementGroup:
         self.mesh = mesh
         self.vertices = [Vertex()] * len(mesh.vertices)
         self.points = [Point()] * len(mesh.loops)
-        self.faces = [Face()] * len(mesh.faces)
+        self.faces = [Face()] * len(mesh.polygons)
         self.displacements = []
 
         # Populate displacements
@@ -205,7 +205,7 @@ class DisplacementGroup:
                 break
 
             # Process the face and its neighbords recursively
-            face.find_neighbors()
+            self.find_neighbors(face)
 
 
     def sort_faces(self):

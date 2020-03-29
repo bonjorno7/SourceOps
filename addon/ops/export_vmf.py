@@ -2,6 +2,7 @@ import bpy
 from pathlib import Path
 from .. utils import common
 from .. pyvmf import pyvmf
+from .. types import displacement
 
 
 class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
@@ -12,20 +13,25 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bpy.data.is_saved
+        return bpy.data.is_saved and context.active_object and context.active_object.type == 'MESH'
 
     def invoke(self, context, event):
-        path = Path(bpy.path.abspath('//vmf/test.vmf')).resolve()
-        common.verify_folder(str(path.parent))
-        path = str(path)
+        displacement_converter = displacement.DisplacementConverter(context.active_object)
 
-        vertex = pyvmf.Vertex(0, 0, 0)
-        solid = pyvmf.SolidGenerator.cube(vertex, 128, 128, 128, True)
-        solid.side[1].dispinfo = pyvmf.DispInfo()
-
-        vmf = pyvmf.new_vmf()
-        vmf.add_solids(solid)
-        vmf.export(path)
-
-        self.report({'INFO'}, 'Exported VMF')
         return {'FINISHED'}
+
+#    def invoke(self, context, event):
+#        path = Path(bpy.path.abspath('//vmf/test.vmf')).resolve()
+#        common.verify_folder(str(path.parent))
+#        path = str(path)
+#
+#        vertex = pyvmf.Vertex(0, 0, 0)
+#        solid = pyvmf.SolidGenerator.cube(vertex, 128, 128, 128, True)
+#        solid.side[1].dispinfo = pyvmf.DispInfo()
+#
+#        vmf = pyvmf.new_vmf()
+#        vmf.add_solids(solid)
+#        vmf.export(path)
+#
+#        self.report({'INFO'}, 'Exported VMF')
+#        return {'FINISHED'}
