@@ -38,9 +38,9 @@ class DisplacementGroup:
 
         # Setup mesh, vertices, points, faces, and displacements
         self.mesh = mesh
-        self.vertices = [Vertex()] * len(mesh.vertices)
-        self.points = [Point()] * len(mesh.loops)
-        self.faces = [Face()] * len(mesh.polygons)
+        self.vertices = [Vertex() for v in mesh.vertices]
+        self.points = [Point() for l in mesh.loops]
+        self.faces = [Face() for p in mesh.polygons]
         self.displacements = []
 
         # Populate displacements
@@ -118,7 +118,7 @@ class DisplacementGroup:
                 continue
 
             # Count the amount of connected boundary vertices
-            count = len(v for v in vertex.connected if v.boundary)
+            count = len([v for v in vertex.connected if v.boundary])
 
             # If all of, or more than 2, connected vertices are boundary, this vert is a corner
             vertex.corner |= count > 2 or count == len(vertex.connected)
@@ -244,12 +244,25 @@ class DisplacementGroup:
                     # Move to the right
                     face = face.neighbors[2]
 
+                    # Stop at the end of the row??
+                    if not face:
+                        print('no face on the right')
+                        break
+
                 # Stop at the end of the column
                 if edge.points[1].boundary and edge.points[2].boundary:
                     break
 
                 # Move upwards
                 edge = edge.neighbors[1]
+
+                # Stop at the end of the column??
+                if not face:
+                    print('no face above')
+                    break
+
+            # Add the displacement to the list
+            self.displacements.append(grid)
 
 
     def get_position_and_direction_and_distance(self):
