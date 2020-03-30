@@ -22,13 +22,13 @@ class DispVertex:
         self.boundary = False
         self.corner = False
         self.polygons = []
+        self.alpha = 1.0
 
 
 class DispPolygon:
     def __init__(self, index):
         self.index = index
         self.vertices = []
-        self.processed = False
         self.neighbors = [None] * 4
 
 
@@ -47,7 +47,7 @@ class DispGroup:
         self.get_connected_and_marked()
         self.get_boundary_and_corner()
         self.get_polygons_and_vertices()
-        self.process_polygons()
+        self.find_neighbors()
         self.sort_polygons()
         self.get_position_and_direction_and_distance()
 
@@ -70,6 +70,9 @@ class DispGroup:
             # Get alpha
             if self.mesh.vertex_colors:
                 loop.alpha = self.mesh.vertex_colors.active.data[mesh_loop.index].color[0]
+
+            vertex = self.vertices[mesh_loop.vertex_index]
+            vertex.alpha = loop.alpha
 
 
     def get_connected_and_marked(self):
@@ -136,63 +139,18 @@ class DispGroup:
                 # Store the polygon in the vertices
                 vertex.polygons.append(polygon)
 
-    # Rotate this polygon counter clockwise by the given amount of steps
-    def rotate_polygon(self, polygon, steps):
 
-        # Rotate the list to put this index at the start
-        polygon.vertices = polygon.vertices[steps:] + polygon.vertices[:steps]
+    def find_neighbors(self):
+        bm = bmesh.new()
+        bm.from_mesh(self.mesh)
 
-    # Find the polygons on the left, top, right, and bottom of this polygon
-    def find_neighbors(self, polygon):
+        for face in bm.faces:
+            for side, edge in enumerate(face.edges):
+                index = next((f.index for f in edge.link_faces if f != face), None)
+                neighbor = self.polygons[index] if index != None else None
+                self.polygons[face.index].neighbors[side] = neighbor
 
-        # If this polygon has been processed already
-        if polygon.processed:
-
-            # End the recursion
-            return
-
-        # Make sure this polygon isn't processed again
-        polygon.processed = True
-
-        # Iterate through the sides of this polygon
-        for side in range(4):
-
-            # Get the list of polygons that the current vertex is in
-            polygons = polygon.vertices[side].polygons
-
-            # Get both vertices that are in the current edge
-            vertices = [polygon.vertices[side], polygon.vertices[(side + 1) % 4]]
-
-            # Get the unprocessed polygon of the current vertex that has both edge vertices
-            polygon.neighbors[side] = next((f for f in polygons if not f.processed and all(v in f.vertices for v in vertices)), None)
-
-            # If a polygon is found on the current side, and it hasn't already been processed
-            if polygon.neighbors[side] and not polygon.neighbors[side].processed:
-
-                # Find the current vertex in this neighboring polygon
-                index = polygon.neighbors[side].vertices.index(polygon.vertices[side])
-
-                # Rotate this neighboring polygon so that the current vertex is in the correct corner
-                self.rotate_polygon(polygon, (index + 3) % 4)
-
-                # Find the neighbors of this neighboring polygon
-                self.find_neighbors(polygon.neighbors[side])
-
-
-    def process_polygons(self):
-
-        # Keep going until all polygons are processed
-        while True:
-
-            # Start at any unsorted polygon
-            polygon = next((f for f in self.polygons if not f.processed), None)
-
-            # If none are found, we're done
-            if not polygon:
-                break
-
-            # Process the polygon and its neighbords recursively
-            self.find_neighbors(polygon)
+        bm.free()
 
 
     def sort_polygons(self):
@@ -231,22 +189,12 @@ class DispGroup:
                     # Move to the right
                     polygon = polygon.neighbors[2]
 
-                    # Stop at the end of the row??
-                    if not polygon:
-                        print('no polygon on the right')
-                        break
-
                 # Stop at the end of the column
                 if edge.vertices[1].boundary and edge.vertices[2].boundary:
                     break
 
                 # Move upwards
                 edge = edge.neighbors[1]
-
-                # Stop at the end of the column??
-                if not polygon:
-                    print('no polygon above')
-                    break
 
             # Add the displacement to the list
             self.displacements.append(grid)
