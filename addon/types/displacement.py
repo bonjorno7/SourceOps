@@ -5,199 +5,138 @@ from .. pyvmf import pyvmf
 
 
 class DispLoop:
-    def __init__(self, index):
-        self.index = index
-        self.xyz = [0, 0, 0]
-        self.uv = [0, 0]
-        self.alpha = 1.0
+    def __init__(self, mesh, loop):
+        self.index = loop.index
+        self.xyz = mesh.vertices[loop.vertex_index].co[0:3]
+
+        if mesh.uv_layers:
+            self.uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
+        else:
+            self.uv = [0, 0]
+
+        if mesh.vertex_colors:
+            self.alpha = mesh.vertex_colors.active.data[loop.index].color[0]
+        else:
+            self.alpha = 1.0
+
         self.position = [0, 0, 0]
         self.direction = [0, 0, 0]
         self.distance = [0, 0, 0]
 
 
-class DispVertex:
-    def __init__(self, index):
-        self.index = index
-        self.connected = []
-        self.boundary = False
-        self.corner = False
-        self.polygons = []
-        self.alpha = 1.0
+class DispFace:
+    def __init__(self, face):
+        self.index = face.index
+        self.loops = [loop.index for loop in face.loops]
+        self.neighbors = [self.find_neighbor(edge) for edge in face.edges]
+        self.boundaries = [self.find_boundary(edge) for edge in face.edges]
+        self.is_corner = self.boundaries[0] and self.boundaries[3]
+
+    def find_neighbor(self, edge):
+        return next((face.index for face in edge.link_faces if face.index != self.index), -1)
+
+    def find_boundary(self, edge):
+        return edge.is_boundary or not edge.smooth
 
 
-class DispPolygon:
-    def __init__(self, index):
-        self.index = index
-        self.vertices = []
-        self.neighbors = [None] * 4
+class Disp:
+    def __init__(self, corner_face, disp_faces, disp_loops):
+        self.setup_face_grid(corner_face, disp_faces)
+        self.setup_loop_grid(disp_loops)
+
+    def setup_face_grid(self, corner_face, all_faces):
+
+        # Setup face grid
+        self.face_grid = []
+
+        # Start in the corner
+        edge_face = corner_face
+
+        # Iterate through rows
+        for row in range(16):
+
+            # Add an empty row
+            self.face_grid.append([])
+
+            # Start at the edge
+            column_face = edge_face
+
+            # Iterate through columns
+            for column in range(16):
+
+                # Add this polygon to the grid
+                self.face_grid[row].append(column_face)
+
+                # Stop at the end of the row
+                if column_face.boundaries[2]:
+                    break
+
+                # Move to the right
+                column_face = all_faces[column_face.neighbors[2]]
+
+            # Stop at the end of the column
+            if edge_face.boundaries[1]:
+                break
+
+            # Move upwards
+            edge_face = all_faces[edge_face.neighbors[1]]
+
+    def setup_loop_grid(self, all_loops):
+
+        # Setup loop grid
+        self.loop_grid = []
+
+        # Determine the size of the face grid
+        size = len(self.face_grid)
+
+        # Iterate through face rows
+        for row in range(size):
+
+            # Add a new loop row
+            self.loop_grid.append([])
+
+            # Iterate through face columns
+            for column in range(size):
+
+                # Add the bottom left loop of each face
+                self.loop_grid[row].append(all_loops[self.face_grid[row][column].loops[0]])
+
+            # Add the bottom right loop of the last face
+            self.loop_grid[row].append(all_loops[self.face_grid[row][size - 1].loops[3]])
+
+        # Add an extra loop row
+        self.loop_grid.append([])
+
+        # Iterate through columns in the last face row
+        for column in range(size):
+
+            # Add the top left loop of each face
+            self.loop_grid[size].append(all_loops[self.face_grid[size - 1][column].loops[1]])
+
+        # Add the top right loop of the top right face
+        self.loop_grid[size].append(all_loops[self.face_grid[size - 1][size - 1].loops[2]])
 
 
 class DispGroup:
     def __init__(self, mesh):
 
-        # Setup mesh, vertices, loops, polygons, and displacements
-        self.mesh = mesh
-        self.loops = [DispLoop(i) for i in range(len(mesh.loops))]
-        self.vertices = [DispVertex(i) for i in range(len(mesh.vertices))]
-        self.polygons = [DispPolygon(i) for i in range(len(mesh.polygons))]
-        self.displacements = []
+        # Setup bmesh
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+
+        # Setup loops and faces
+        self.loops = [DispLoop(mesh, loop) for loop in mesh.loops]
+        self.faces = [DispFace(face) for face in bm.faces]
+
+        # Setup displacements
+        corners = [face for face in self.faces if face.is_corner]
+        self.displacements = [Disp(face, self.faces, self.loops) for face in corners]
 
         # Populate displacements
-        self.get_xyz_and_uv_and_alpha()
-        self.get_connected_and_marked()
-        self.get_boundary_and_corner()
-        self.get_polygons_and_vertices()
-        self.find_neighbors()
-        self.sort_polygons()
         self.get_position_and_direction_and_distance()
 
-
-    def get_xyz_and_uv_and_alpha(self):
-
-        # Iterate through mesh loops
-        for mesh_loop in self.mesh.loops:
-
-            # Get displacement loop
-            loop = self.loops[mesh_loop.index]
-
-            # Get XYZ
-            loop.xyz = self.mesh.vertices[mesh_loop.vertex_index].co[0:3]
-
-            # Get UV
-            if self.mesh.uv_layers:
-                loop.uv = self.mesh.uv_layers.active.data[mesh_loop.index].uv[0:2]
-
-            # Get alpha
-            if self.mesh.vertex_colors:
-                loop.alpha = self.mesh.vertex_colors.active.data[mesh_loop.index].color[0]
-
-            vertex = self.vertices[mesh_loop.vertex_index]
-            vertex.alpha = loop.alpha
-
-
-    def get_connected_and_marked(self):
-
-        # Iterate through mesh edges
-        for mesh_edge in self.mesh.edges:
-
-            # Get temporary vertices in edge
-            vertex_a = self.vertices[mesh_edge.vertices[0]]
-            vertex_b = self.vertices[mesh_edge.vertices[1]]
-
-            # Add vertices to each other's connected lists
-            vertex_a.connected.append(vertex_b)
-            vertex_b.connected.append(vertex_a)
-
-            # If the edge is freestyle marked, its vertices are boundary
-            vertex_a.boundary |= mesh_edge.use_freestyle_mark
-            vertex_b.boundary |= mesh_edge.use_freestyle_mark
-
-
-    def get_boundary_and_corner(self):
-
-        # Iterate through temporary vertices
-        for vertex in self.vertices:
-
-            # If there are fewer than 4 connected vertices, this is vertex is boundary
-            vertex.boundary |= len(vertex.connected) < 4
-
-            # Skip non-boundary vertices
-            if not vertex.boundary:
-                continue
-
-            # If there are 2 connected vertices, this vertex is a corner
-            vertex.corner |= len(vertex.connected) == 2
-
-            # Skip if we've already determined this is a corner
-            if vertex.corner:
-                continue
-
-            # Count the amount of connected boundary vertices
-            count = len([v for v in vertex.connected if v.boundary])
-
-            # If all of, or more than 2, connected vertices are boundary, this vert is a corner
-            vertex.corner |= count > 2 or count == len(vertex.connected)
-
-
-    def get_polygons_and_vertices(self):
-
-        # Iterate through mesh polygons
-        for mesh_polygon in self.mesh.polygons:
-
-            # Get the displacement polygon
-            polygon = self.polygons[mesh_polygon.index]
-
-            # Iterate through polygon loop indices
-            for index in mesh_polygon.loop_indices:
-
-                # Get the displacement vertex
-                vertex = self.vertices[self.mesh.loops[index].vertex_index]
-
-                # Store the vertices in the polygon
-                polygon.vertices.append(vertex)
-
-                # Store the polygon in the vertices
-                vertex.polygons.append(polygon)
-
-
-    def find_neighbors(self):
-        bm = bmesh.new()
-        bm.from_mesh(self.mesh)
-
-        for face in bm.faces:
-            for side, edge in enumerate(face.edges):
-                index = next((f.index for f in edge.link_faces if f != face), None)
-                neighbor = self.polygons[index] if index != None else None
-                self.polygons[face.index].neighbors[side] = neighbor
-
+        # Free bmesh
         bm.free()
-
-
-    def sort_polygons(self):
-
-        # Find bottom left corner polygons
-        corners = [f for f in self.polygons if f.vertices[0].corner]
-
-        # Iterate through those corners
-        for corner in corners:
-
-            # Create a displacement
-            grid = []
-
-            # Start in the corner
-            edge = corner
-
-            # Iterate through rows
-            for row in range(16):
-
-                # Add an empty row
-                grid.append([])
-
-                # Start at the edge
-                polygon = edge
-
-                # Iterate through columns
-                for column in range(16):
-
-                    # Add this polygon to the grid
-                    grid[row].append(polygon)
-
-                    # Stop at the end of the row
-                    if polygon.vertices[2].boundary and polygon.vertices[3].boundary:
-                        break
-
-                    # Move to the right
-                    polygon = polygon.neighbors[2]
-
-                # Stop at the end of the column
-                if edge.vertices[1].boundary and edge.vertices[2].boundary:
-                    break
-
-                # Move upwards
-                edge = edge.neighbors[1]
-
-            # Add the displacement to the list
-            self.displacements.append(grid)
 
 
     def get_position_and_direction_and_distance(self):

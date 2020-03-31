@@ -25,10 +25,11 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         #        print(', '.join(str(len([p for p in col.neighbors if p])) for col in row))
         #    print('-----')
 
+        print('----------')
         for disp in displacement_group.displacements:
-            for row in disp:
-                print(' '.join('o' if col.vertices[0].alpha < 0.5 else ' ' for col in row))
-            print(' ')
+            for row in disp.loop_grid:
+                print(' '.join('@' if loop.alpha < 0.5 else '*' for loop in row))
+            print('----------')
 
         #for face in displacement_group.faces:
         #    print(str(face.index) + ' : ' + ', '.join(f.index for f in face.neighbors if f))
