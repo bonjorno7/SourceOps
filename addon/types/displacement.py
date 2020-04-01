@@ -28,11 +28,9 @@ class DispFace:
     def __init__(self, face):
         self.index = face.index
         self.loops = [loop.index for loop in face.loops]
-        self.face_above = self.find_face(face.edges[1])
-        self.face_right = self.find_face(face.edges[2])
-        self.edge_above = self.find_edge(face.edges[1])
-        self.edge_right = self.find_edge(face.edges[2])
-        self.is_corner = self.find_edge(face.edges[0]) and self.find_edge(face.edges[3])
+        self.faces = [self.find_face(edge) for edge in face.edges]
+        self.edges = [self.find_edge(edge) for edge in face.edges]
+        self.is_corner = self.edges[0] and self.edges[3]
 
     def find_face(self, edge):
         return next((face.index for face in edge.link_faces if face.index != self.index), -1)
@@ -57,7 +55,7 @@ class DispInfo:
             self.grid.append([])
 
             # If we're on the last row
-            if edge_face.edge_above:
+            if edge_face.edges[1]:
 
                 # Add another row
                 self.grid.append([])
@@ -72,19 +70,19 @@ class DispInfo:
                 self.grid[row].append(disp_loops[current_face.loops[0]])
 
                 # If we're on the last row
-                if current_face.edge_above:
+                if current_face.edges[1]:
 
                     # Add the top left loop of this face to the position above
                     self.grid[row + 1].append(disp_loops[current_face.loops[1]])
 
                     # If we're also on the last column
-                    if current_face.edge_right:
+                    if current_face.edges[2]:
 
                         # Add the top right loop of this face to the position on the above right
                         self.grid[row + 1].append(disp_loops[current_face.loops[2]])
 
                 # If we're on the last column
-                if current_face.edge_right:
+                if current_face.edges[2]:
 
                     # Add the bottom right loop of this face to the position on the right
                     self.grid[row].append(disp_loops[current_face.loops[3]])
@@ -93,16 +91,16 @@ class DispInfo:
                     break
 
                 # Otherwise move to the right
-                current_face = disp_faces[current_face.face_right]
+                current_face = disp_faces[current_face.faces[2]]
 
-            # If we're at the end of the column
-            if edge_face.edge_above:
+            # If we're on the last row
+            if edge_face.edges[1]:
 
                 # Exit the grid
                 break
 
             # Otherwise move upwards
-            edge_face = disp_faces[edge_face.face_above]
+            edge_face = disp_faces[edge_face.faces[1]]
 
 
 class DispGroup:
