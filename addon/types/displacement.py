@@ -28,15 +28,22 @@ class DispFace:
     def __init__(self, face):
         self.index = face.index
         self.loops = [loop.index for loop in face.loops]
-        self.faces = [self.find_face(edge) for edge in face.edges]
         self.edges = [self.find_edge(edge) for edge in face.edges]
-        self.is_corner = self.edges[0] and self.edges[3]
+        self.faces = [self.find_face(edge) for edge in face.edges]
+        self.processed = False
+        self.oriented = False
+
+    def find_edge(self, edge):
+        return edge.is_boundary or not edge.smooth
 
     def find_face(self, edge):
         return next((face.index for face in edge.link_faces if face.index != self.index), -1)
 
-    def find_edge(self, edge):
-        return edge.is_boundary or not edge.smooth
+    def rotate(self, steps):
+        self.loops = self.loops[steps:] + self.loops[:steps]
+        self.edges = self.edges[steps:] + self.edges[:steps]
+        self.faces = self.faces[steps:] + self.faces[:steps]
+        self.oriented = True
 
 
 class DispInfo:
@@ -110,16 +117,77 @@ class DispGroup:
         bm = bmesh.new()
         bm.from_mesh(mesh)
 
-        # Setup loops, faces, and displacements
+        # Setup loops and faces
         self.loops = [DispLoop(mesh, loop) for loop in mesh.loops]
         self.faces = [DispFace(face) for face in bm.faces]
-        self.displacements = [DispInfo(face, self.faces, self.loops) for face in self.faces if face.is_corner]
+        self.orient_faces_loop()
+
+        # Find corners and setup displacements
+        corners = [face for face in self.faces if face.edges[0] and face.edges[3]]
+        self.displacements = [DispInfo(face, self.faces, self.loops) for face in corners]
 
         # Populate displacements
         self.get_position_and_direction_and_distance()
 
         # Free bmesh
         bm.free()
+
+
+    def orient_faces_loop(self):
+
+        # Continue until all faces are oriented
+        while True:
+
+            # Find a face that hasn't yet been oriented
+            face = next((face for face in self.faces if not face.oriented), None)
+
+            # If all faces are oriented, we're done
+            if not face:
+                break
+
+            # Start recursively orienting neighboring faces
+            self.orient_faces_recursive(face)
+
+
+    def orient_faces_recursive(self, face):
+
+        # This face is hereby processed and oriented
+        face.processed = True
+        face.oriented = True
+
+        # Find neighboring faces
+        neighbors = [(self.faces[index] if index != -1 else None) for index in face.faces]
+
+        # Iterate through those neighbors to orient them
+        for index, neighbor in enumerate(neighbors):
+
+            # Make sure it exists and hasn't been oriented yet
+            if not neighbor or neighbor.oriented:
+                continue
+
+            # If this neighbor is on the top, its index is 1
+            # If this neighbor is oriented correctly, this face would be the neighbor's neighbor 3
+            # Subtract these: 3 - 1 = 2
+            # Rotate 180 degrees: 2 + 2 = 4
+            # I go with 6 instead of 2, just to be sure we get a positive number, and then % 4 it to make sure it fits in the list
+            # So if orientation is correct, it will do nothing
+            # But what if this face is the neighbor's neighbor 2?
+            # Subtract: 2 - 1 = 1
+            # Rotate 180: 1 + 2 = 3
+            # So it will rotate 3 steps counter-clockwise
+            # Meaning it goes from 2 to 1 to 0 to 3
+            # Hopefully this makes sense
+            neighbor.rotate((neighbor.faces.index(face.index) - index + 6) % 4)
+
+        # Iterate through the neighbors again
+        for neighbor in neighbors:
+
+            # Make sure it exists and hasn't been processed yet
+            if not neighbor or neighbor.processed:
+                continue
+
+            # Orient its neighbors recursively
+            self.orient_faces_recursive(neighbor)
 
 
     def get_position_and_direction_and_distance(self):
