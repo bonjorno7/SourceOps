@@ -120,7 +120,7 @@ class DispGroup:
         # Setup loops and faces
         self.loops = [DispLoop(mesh, loop) for loop in mesh.loops]
         self.faces = [DispFace(face) for face in bm.faces]
-        self.orient_faces_loop()
+        self.orient_faces()
 
         # Find corners and setup displacements
         corners = [face for face in self.faces if face.edges[0] and face.edges[3]]
@@ -133,7 +133,7 @@ class DispGroup:
         bm.free()
 
 
-    def orient_faces_loop(self):
+    def orient_faces(self):
 
         # Continue until all faces are oriented
         while True:
@@ -145,11 +145,26 @@ class DispGroup:
             if not face:
                 break
 
-            # Start recursively orienting neighboring faces
-            self.orient_faces_recursive(face)
+            # Start with the neighbors of this face
+            layer = self.orient_neighbors(face)
+
+            # Continue until all neighbors are oriented
+            while layer:
+
+                # Create the next set of neighbors
+                neighbors = set()
+
+                # Iterate through faces in this layer
+                for face in layer:
+
+                    # Add the oriented faces to the neighbors
+                    neighbors.update(self.orient_neighbors(face))
+
+                # And prepare for the next round
+                layer = neighbors
 
 
-    def orient_faces_recursive(self, face):
+    def orient_neighbors(self, face):
 
         # This face is hereby processed and oriented
         face.processed = True
@@ -177,17 +192,18 @@ class DispGroup:
             # So it will rotate 3 steps counter-clockwise
             # Meaning it goes from 2 to 1 to 0 to 3
             # Hopefully this makes sense
-            neighbor.rotate((neighbor.faces.index(face.index) - index + 6) % 4)
+            steps = (neighbor.faces.index(face.index) - index + 6) % 4
 
-        # Iterate through the neighbors again
-        for neighbor in neighbors:
+            # If we should rotate, rotate
+            if steps != 0:
+                neighbor.rotate(steps)
 
-            # Make sure it exists and hasn't been processed yet
-            if not neighbor or neighbor.processed:
-                continue
+            # Otherwise just say that we did
+            else:
+                neighbor.oriented = True
 
-            # Orient its neighbors recursively
-            self.orient_faces_recursive(neighbor)
+        # Return all neighbors that exist and haven't been processed yet
+        return set(face for face in neighbors if face and not face.processed)
 
 
     def get_position_and_direction_and_distance(self):
