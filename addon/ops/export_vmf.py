@@ -27,7 +27,7 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
 
         print('----------')
         for disp in displacement_group.displacements:
-            for row in disp.loop_grid:
+            for row in disp.grid:
                 print(' '.join('@' if loop.alpha < 0.5 else '*' for loop in row))
             print('----------')
 
