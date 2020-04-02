@@ -37,7 +37,7 @@ class DispFace:
         return edge.is_boundary or not edge.smooth
 
     def find_face(self, edge):
-        return next((face.index for face in edge.link_faces if face.index != self.index), -1)
+        return next((face.index for face in edge.link_faces if face.index != self.index), -1) if not edge.seam else -1
 
     def rotate(self, steps):
         self.loops = self.loops[steps:] + self.loops[:steps]
@@ -77,7 +77,7 @@ class DispInfo:
                 self.grid[row].append(disp_loops[current_face.loops[0]])
 
                 # If we're on the last row
-                if current_face.edges[1]:
+                if edge_face.edges[1]:
 
                     # Add the top left loop of this face to the position above
                     self.grid[row + 1].append(disp_loops[current_face.loops[1]])
