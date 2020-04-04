@@ -102,6 +102,15 @@ class Common:
         return dic
 
 
+class Child(Common):
+    def __init__(self, name, dic):
+        self.name = name
+        self.dic = dic
+
+    def __str__(self):
+        return self.name
+
+
 class Color:
     """
     Simple RGB color class
