@@ -2,6 +2,8 @@ import bpy
 import bmesh
 import mathutils
 from .. pyvmf import pyvmf
+from .. utils import common
+import pathlib
 
 
 class DispLoop:
@@ -10,7 +12,8 @@ class DispLoop:
         self.xyz = mesh.vertices[loop.vertex_index].co[0:3]
 
         if mesh.uv_layers:
-            self.uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
+            uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
+            self.uv = [uv[0] * 128, uv[1] * 128]
         else:
             self.uv = [0, 0]
 
@@ -19,25 +22,40 @@ class DispLoop:
         else:
             self.alpha = 1.0
 
-        self.position = [0, 0, 0]
-        self.direction = [0, 0, 0]
-        self.distance = [0, 0, 0]
+        self.offset = [self.xyz[0] - self.uv[0], self.xyz[1] - self.uv[1], self.xyz[2]]
+
+        #x = (self.xyz[0] - self.uv[0]) ** 2
+        #y = (self.xyz[1] - self.uv[1]) ** 2
+        #z = (self.xyz[2] - 0) ** 2
+        #self.direction = (x + y + z) ** 0.5
+
+        #self.direction = [0, 0, 0]
+        #self.distance = [0, 0, 0]
+        #self.position = [0, 0, 0]
+        #self.offset = [0, 0, 0]
+
+    #def calculate(self):
+    #    pass
+        # Direction from UV to XYZ
+        # Distance between UV and XYZ
+        # Position interpolated between the UVs of the corners
+        # Offset between Position and UV
 
 
 class DispFace:
     def __init__(self, face):
         self.index = face.index
         self.loops = [loop.index for loop in face.loops]
-        self.edges = [self.find_edge(edge) for edge in face.edges]
-        self.faces = [self.find_face(edge) for edge in face.edges]
+        self.edges = [True] * 4
+        self.faces = [-1] * 4
+
+        for index, edge in enumerate(face.edges):
+            if edge.smooth and not edge.is_boundary:
+                self.edges[index] = False
+                self.faces[index] = next((f.index for f in edge.link_faces if f != face), -1)
+
         self.processed = False
         self.oriented = False
-
-    def find_edge(self, edge):
-        return edge.is_boundary or not edge.smooth
-
-    def find_face(self, edge):
-        return next((face.index for face in edge.link_faces if face.index != self.index), -1) if not edge.seam else -1
 
     def rotate(self, steps):
         self.loops = self.loops[steps:] + self.loops[:steps]
@@ -246,3 +264,52 @@ class DispConverter:
         # Switch back to the original mode
         if mode != 'OBJECT':
             bpy.ops.object.mode_set(mode)
+
+        # --- Export --- #
+
+        # TODO: Flip winding based on dot product or something
+        # TODO: Interpolate UVs from corners so that offsets align on seams
+        # TODO: Flip winding in general because everything is inside out
+
+        vmf = pyvmf.new_vmf()
+
+        for disp in self.displacement_group.displacements:
+            uv1 = disp.grid[0][0].uv
+            uv2 = disp.grid[0][-1].uv
+            uv3 = disp.grid[-1][-1].uv
+            uv4 = disp.grid[-1][0].uv
+
+            #uv1 = [uv1[0] * 256, uv1[1] * 256]
+            #uv2 = [uv2[0] * 256, uv2[1] * 256]
+            #uv3 = [uv3[0] * 256, uv3[1] * 256]
+            #uv4 = [uv4[0] * 256, uv4[1] * 256]
+
+            v1 = pyvmf.Vertex(uv1[0], uv1[1], 0)
+            v2 = pyvmf.Vertex(uv2[0], uv2[1], 0)
+            v3 = pyvmf.Vertex(uv3[0], uv3[1], 0)
+            v4 = pyvmf.Vertex(uv4[0], uv4[1], 0)
+
+            v5 = pyvmf.Vertex(uv1[0], uv1[1], -8)
+            v6 = pyvmf.Vertex(uv2[0], uv2[1], -8)
+            v7 = pyvmf.Vertex(uv3[0], uv3[1], -8)
+            v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
+
+            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})'}) # top
+            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})'}) # bottom
+            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})'}) # front
+            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})'}) # back
+            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # right
+            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # left
+
+            dic = {f'row{index}': ' '.join(f'{vert.offset[0]} {vert.offset[1]} {vert.offset[2]}' for vert in row) for index, row in enumerate(disp.grid)}
+            f1.dispinfo = pyvmf.DispInfo(dic={'power': 2, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}, children=[pyvmf.Child('offsets', dic)])
+
+            solid = pyvmf.Solid()
+            solid.add_sides(f1, f2, f3, f4, f5, f6)
+            solid.editor = pyvmf.Editor()
+            vmf.add_solids(solid)
+
+        path = pathlib.Path(bpy.path.abspath('//vmf/test.vmf')).resolve()
+        common.verify_folder(str(path.parent))
+        path = str(path)
+        vmf.export(path)
