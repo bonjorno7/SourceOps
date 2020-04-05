@@ -24,20 +24,7 @@ class DispLoop:
 
         self.offset = [self.xyz[0] - self.uv[0], self.xyz[1] - self.uv[1], self.xyz[2]]
 
-        #x = (self.xyz[0] - self.uv[0]) ** 2
-        #y = (self.xyz[1] - self.uv[1]) ** 2
-        #z = (self.xyz[2] - 0) ** 2
-        #self.direction = (x + y + z) ** 0.5
-
-        #self.direction = [0, 0, 0]
-        #self.distance = [0, 0, 0]
-        #self.position = [0, 0, 0]
-        #self.offset = [0, 0, 0]
-
     #def calculate(self):
-    #    pass
-        # Direction from UV to XYZ
-        # Distance between UV and XYZ
         # Position interpolated between the UVs of the corners
         # Offset between Position and UV
 
@@ -278,11 +265,6 @@ class DispConverter:
             uv2 = disp.grid[0][-1].uv
             uv3 = disp.grid[-1][-1].uv
             uv4 = disp.grid[-1][0].uv
-
-            #uv1 = [uv1[0] * 256, uv1[1] * 256]
-            #uv2 = [uv2[0] * 256, uv2[1] * 256]
-            #uv3 = [uv3[0] * 256, uv3[1] * 256]
-            #uv4 = [uv4[0] * 256, uv4[1] * 256]
 
             v1 = pyvmf.Vertex(uv1[0], uv1[1], 0)
             v2 = pyvmf.Vertex(uv2[0], uv2[1], 0)
