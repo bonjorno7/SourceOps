@@ -22,11 +22,9 @@ class DispLoop:
         else:
             self.alpha = 1.0
 
+    def calculate_offset(self, uv):
+        self.uv = uv[0:2]
         self.offset = [self.xyz[0] - self.uv[0], self.xyz[1] - self.uv[1], self.xyz[2]]
-
-    #def calculate(self):
-        # Position interpolated between the UVs of the corners
-        # Offset between Position and UV
 
 
 class DispFace:
@@ -172,20 +170,28 @@ class DispInfo:
         top_left = mathutils.Vector(self.grid[-1][0].uv)
 
         # Iterate through rows
-        for row_index, row in enumerate(self.grid):
+        for row, loops in enumerate(self.grid):
 
             # Iterate through columns
-            for column_index, loop in enumerate(row):
-                horizontal = column_index / grid_size
+            for column, loop in enumerate(loops):
+
+                # Interpolate between the left and right
+                horizontal = column / grid_size
                 top = top_left.lerp(top_right, horizontal)
                 bottom = bottom_left.lerp(bottom_right, horizontal)
-                vertical = row_index / grid_size
-                loop.uv = bottom.lerp(top, vertical)
-                loop.offset = [loop.xyz[0] - loop.uv[0], loop.xyz[1] - loop.uv[1], loop.xyz[2]]
 
-                # TODO: Add more comments
-                # TODO: Determine lightmapscale from brush edge lengths
+                # Interpolate between the bottom and top
+                vertical = row / grid_size
+                center = bottom.lerp(top, vertical)
 
+                # Update UV and calculate offset
+                loop.calculate_offset(center)
+
+        # Determine lightmapscale from brush edge lengths
+        horizontal = bottom_right - bottom_left
+        vertical = top_left - bottom_left
+        value = horizontal.length + vertical.length
+        self.lightmapscale = value / 4
 
 class DispGroup:
     def __init__(self, mesh: bpy.types.Mesh):
@@ -316,9 +322,8 @@ class DispConverter:
 
         # --- Export --- #
 
-        # TODO: Interpolate UVs from corners so that offsets align on seams
-        # TODO: Flip winding based on cross product or something
-        # TODO: Allow scaling UV and XYZ by separate values
+        # TODO: Flip winding based on cross product or something? Because mirrored UVs don't work
+        # TODO: Allow scaling UV and XYZ and lightmapscale by separate values
         # TODO: Export loop alphas as well
         # TODO: Read / write existing VMF files
         # TODO: Test how normals behave in game
@@ -341,7 +346,7 @@ class DispConverter:
             v7 = pyvmf.Vertex(uv3[0], uv3[1], -8)
             v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
 
-            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})'}) # top
+            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': disp.lightmapscale}) # top
             f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})'}) # bottom
             f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})'}) # front
             f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})'}) # back
