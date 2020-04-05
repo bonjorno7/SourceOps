@@ -187,11 +187,6 @@ class DispInfo:
                 # Update UV and calculate offset
                 loop.calculate_offset(center)
 
-        # Determine lightmapscale from brush edge lengths
-        horizontal = bottom_right - bottom_left
-        vertical = top_left - bottom_left
-        value = horizontal.length + vertical.length
-        self.lightmapscale = value / 4
 
 class DispGroup:
     def __init__(self, mesh: bpy.types.Mesh):
@@ -346,12 +341,12 @@ class DispConverter:
             v7 = pyvmf.Vertex(uv3[0], uv3[1], -8)
             v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
 
-            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': disp.lightmapscale}) # top
-            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})'}) # bottom
-            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})'}) # front
-            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})'}) # back
-            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # right
-            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # left
+            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})'}) # Top
+            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})'}) # Bottom
+            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})'}) # Front
+            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})'}) # Back
+            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # Right
+            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
 
             dic = {f'row{index}': ' '.join(f'{vert.offset[0]} {vert.offset[1]} {vert.offset[2]}' for vert in row) for index, row in enumerate(disp.grid)}
             f1.dispinfo = pyvmf.DispInfo(dic={'power': 2, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}, children=[pyvmf.Child('offsets', dic)])
