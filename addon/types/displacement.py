@@ -7,13 +7,13 @@ import pathlib
 
 
 class DispLoop:
-    def __init__(self, mesh, loop):
+    def __init__(self, loop: bpy.types.MeshLoop, mesh: bpy.types.Mesh):
         self.index = loop.index
         self.xyz = mesh.vertices[loop.vertex_index].co[0:3]
 
         if mesh.uv_layers:
             uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
-            self.uv = [uv[0] * 128, uv[1] * 128]
+            self.uv = [uv[0] * 256, uv[1] * 256]
         else:
             self.uv = [0, 0]
 
@@ -30,9 +30,9 @@ class DispLoop:
 
 
 class DispFace:
-    def __init__(self, face):
+    def __init__(self, face: bmesh.types.BMFace, disp_loops: list):
         self.index = face.index
-        self.loops = [loop.index for loop in face.loops]
+        self.loops = [disp_loops[loop.index] for loop in face.loops]
         self.edges = [True] * 4
         self.faces = [-1] * 4
 
@@ -44,15 +44,63 @@ class DispFace:
         self.processed = False
         self.oriented = False
 
-    def rotate(self, steps):
+    def rotate(self, steps: int):
         self.loops = self.loops[steps:] + self.loops[:steps]
         self.edges = self.edges[steps:] + self.edges[:steps]
         self.faces = self.faces[steps:] + self.faces[:steps]
         self.oriented = True
 
+    @property
+    def top_left_loop(self):
+        return self.loops[0]
+
+    @property
+    def bottom_left_loop(self):
+        return self.loops[1]
+
+    @property
+    def bottom_right_loop(self):
+        return self.loops[2]
+
+    @property
+    def top_right_loop(self):
+        return self.loops[3]
+
+    @property
+    def left_edge(self):
+        return self.edges[0]
+
+    @property
+    def bottom_edge(self):
+        return self.edges[1]
+
+    @property
+    def right_edge(self):
+        return self.edges[2]
+
+    @property
+    def top_edge(self):
+        return self.edges[3]
+
+    @property
+    def left_face(self):
+        return self.faces[0]
+
+    @property
+    def bottom_face(self):
+        return self.faces[1]
+
+    @property
+    def right_face(self):
+        return self.faces[2]
+
+    @property
+    def top_face(self):
+        return self.faces[3]
+
 
 class DispInfo:
-    def __init__(self, corner_face, disp_faces, disp_loops):
+    def __init__(self, corner_face: DispFace, disp_faces: list):
 
         # Setup the grid
         self.grid = []
@@ -67,7 +115,7 @@ class DispInfo:
             self.grid.append([])
 
             # If we're on the last row
-            if edge_face.edges[1]:
+            if edge_face.top_edge:
 
                 # Add another row
                 self.grid.append([])
@@ -79,60 +127,57 @@ class DispInfo:
             for column in range(16):
 
                 # Add the bottom left loop of this face to this position
-                self.grid[row].append(disp_loops[current_face.loops[0]])
+                self.grid[row].append(current_face.bottom_left_loop)
 
                 # If we're on the last row
-                if edge_face.edges[1]:
+                if current_face.top_edge:
 
                     # Add the top left loop of this face to the position above
-                    self.grid[row + 1].append(disp_loops[current_face.loops[1]])
+                    self.grid[row + 1].append(current_face.top_left_loop)
 
                     # If we're also on the last column
-                    if current_face.edges[2]:
+                    if current_face.right_edge:
 
                         # Add the top right loop of this face to the position on the above right
-                        self.grid[row + 1].append(disp_loops[current_face.loops[2]])
+                        self.grid[row + 1].append(current_face.top_right_loop)
 
                 # If we're on the last column
-                if current_face.edges[2]:
+                if current_face.right_edge:
 
                     # Add the bottom right loop of this face to the position on the right
-                    self.grid[row].append(disp_loops[current_face.loops[3]])
+                    self.grid[row].append(current_face.bottom_right_loop)
 
                     # And exit this row
                     break
 
                 # Otherwise move to the right
-                current_face = disp_faces[current_face.faces[2]]
+                current_face = disp_faces[current_face.right_face]
 
             # If we're on the last row
-            if edge_face.edges[1]:
+            if edge_face.top_edge:
 
                 # Exit the grid
                 break
 
             # Otherwise move upwards
-            edge_face = disp_faces[edge_face.faces[1]]
+            edge_face = disp_faces[edge_face.top_face]
 
 
 class DispGroup:
-    def __init__(self, mesh):
+    def __init__(self, mesh: bpy.types.Mesh):
 
         # Setup bmesh
         bm = bmesh.new()
         bm.from_mesh(mesh)
 
         # Setup loops and faces
-        self.loops = [DispLoop(mesh, loop) for loop in mesh.loops]
-        self.faces = [DispFace(face) for face in bm.faces]
+        self.loops = [DispLoop(loop, mesh) for loop in mesh.loops]
+        self.faces = [DispFace(face, self.loops) for face in bm.faces]
         self.orient_faces()
 
         # Find corners and setup displacements
-        corners = [face for face in self.faces if face.edges[0] and face.edges[3]]
-        self.displacements = [DispInfo(face, self.faces, self.loops) for face in corners]
-
-        # Populate displacements
-        self.get_position_and_direction_and_distance()
+        corners = [face for face in self.faces if face.left_edge and face.bottom_edge]
+        self.displacements = [DispInfo(face, self.faces) for face in corners]
 
         # Free bmesh
         bm.free()
@@ -211,13 +256,6 @@ class DispGroup:
         return set(face for face in neighbors if face and not face.processed)
 
 
-    def get_position_and_direction_and_distance(self):
-
-        pass # Direction and distance
-        # TODO: Interpolate the position of the vertex on the brush polygon from the corners
-        # TODO: Calculate the direction and distance from that vertex to the new coordinates
-
-
 class DispConverter:
     def __init__(self, object):
 
@@ -254,9 +292,11 @@ class DispConverter:
 
         # --- Export --- #
 
-        # TODO: Flip winding based on dot product or something
         # TODO: Interpolate UVs from corners so that offsets align on seams
-        # TODO: Flip winding in general because everything is inside out
+        # TODO: Flip winding based on cross product or something
+        # TODO: Allow scaling UV and XYZ by separate values
+        # TODO: Export loop alphas as well
+        # TODO: Read / write existing VMF files
 
         vmf = pyvmf.new_vmf()
 
