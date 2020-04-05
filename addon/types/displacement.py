@@ -162,6 +162,30 @@ class DispInfo:
             # Otherwise move upwards
             edge_face = disp_faces[edge_face.top_face]
 
+        # Get the size of the loop grid
+        grid_size = len(self.grid) - 1
+
+        # Get the UV coordinates of the grid corners
+        bottom_left = mathutils.Vector(self.grid[0][0].uv)
+        bottom_right = mathutils.Vector(self.grid[0][-1].uv)
+        top_right = mathutils.Vector(self.grid[-1][-1].uv)
+        top_left = mathutils.Vector(self.grid[-1][0].uv)
+
+        # Iterate through rows
+        for row_index, row in enumerate(self.grid):
+
+            # Iterate through columns
+            for column_index, loop in enumerate(row):
+                horizontal = column_index / grid_size
+                top = top_left.lerp(top_right, horizontal)
+                bottom = bottom_left.lerp(bottom_right, horizontal)
+                vertical = row_index / grid_size
+                loop.uv = bottom.lerp(top, vertical)
+                loop.offset = [loop.xyz[0] - loop.uv[0], loop.xyz[1] - loop.uv[1], loop.xyz[2]]
+
+                # TODO: Add more comments
+                # TODO: Determine lightmapscale from brush edge lengths
+
 
 class DispGroup:
     def __init__(self, mesh: bpy.types.Mesh):
@@ -297,6 +321,7 @@ class DispConverter:
         # TODO: Allow scaling UV and XYZ by separate values
         # TODO: Export loop alphas as well
         # TODO: Read / write existing VMF files
+        # TODO: Test how normals behave in game
 
         vmf = pyvmf.new_vmf()
 
