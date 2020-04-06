@@ -18,7 +18,7 @@ class DispLoop:
             self.uv = [0, 0]
 
         if mesh.vertex_colors:
-            self.alpha = int(mesh.vertex_colors.active.data[loop.index].color[0] * 255)
+            self.alpha = round(mesh.vertex_colors.active.data[loop.index].color[0] * 255)
         else:
             self.alpha = 255
 
@@ -356,7 +356,9 @@ class DispConverter:
             f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # Right
             f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
 
-            dic = {'power': 2, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}
+            size = len(disp.grid) - 1
+            power = 4 if size == 16 else 3 if size == 8 else 2
+            dic = {'power': power, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}
             offsets = pyvmf.Child('offsets', disp.offsets)
             alphas = pyvmf.Child('alphas', disp.alphas)
             f1.dispinfo = pyvmf.DispInfo(dic=dic, children=[offsets, alphas])
