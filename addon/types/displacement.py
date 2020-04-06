@@ -18,9 +18,9 @@ class DispLoop:
             self.uv = [0, 0]
 
         if mesh.vertex_colors:
-            self.alpha = mesh.vertex_colors.active.data[loop.index].color[0]
+            self.alpha = int(mesh.vertex_colors.active.data[loop.index].color[0] * 255)
         else:
-            self.alpha = 1.0
+            self.alpha = 255
 
     def calculate_offset(self, uv):
         self.uv = uv[0:2]
@@ -160,6 +160,10 @@ class DispInfo:
             # Otherwise move upwards
             edge_face = disp_faces[edge_face.top_face]
 
+        # Setup offsets and alphas
+        self.offsets = {}
+        self.alphas = {}
+
         # Get the size of the loop grid
         grid_size = len(self.grid) - 1
 
@@ -186,6 +190,10 @@ class DispInfo:
 
                 # Update UV and calculate offset
                 loop.calculate_offset(center)
+
+            # Add this row to offsets and alphas
+            self.offsets[f'row{row}'] = ' '.join(f'{loop.offset[0]} {loop.offset[1]} {loop.offset[2]}' for loop in loops)
+            self.alphas[f'row{row}'] = ' '.join(f'{loop.alpha}' for loop in loops)
 
 
 class DispGroup:
@@ -348,8 +356,10 @@ class DispConverter:
             f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # Right
             f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
 
-            dic = {f'row{index}': ' '.join(f'{vert.offset[0]} {vert.offset[1]} {vert.offset[2]}' for vert in row) for index, row in enumerate(disp.grid)}
-            f1.dispinfo = pyvmf.DispInfo(dic={'power': 2, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}, children=[pyvmf.Child('offsets', dic)])
+            dic = {'power': 2, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}
+            offsets = pyvmf.Child('offsets', disp.offsets)
+            alphas = pyvmf.Child('alphas', disp.alphas)
+            f1.dispinfo = pyvmf.DispInfo(dic=dic, children=[offsets, alphas])
 
             solid = pyvmf.Solid()
             solid.add_sides(f1, f2, f3, f4, f5, f6)
