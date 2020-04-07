@@ -30,7 +30,7 @@ class SOURCEOPS_OT_ExportDisplacements(bpy.types.Operator):
             return {'CANCELLED'}
 
         objects = [o for o in displacement_props.collection.all_objects if o.type == 'MESH']
-        displacement.DispExporter(objects)
+        displacement.DispExporter(displacement_props, objects)
 
         self.report({'INFO'}, 'Exported VMF')
         return {'FINISHED'}

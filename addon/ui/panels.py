@@ -173,7 +173,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row = row.row(align=True)
             row.alignment = 'RIGHT'
 
-            row.operator('sourceops.export_displacements', text='', icon_value=icons.id('smd')) # TODO: Make VMF icon
+            row.operator('sourceops.export_displacements', text='', icon_value=icons.id('vmf'))
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.add_item', text='', icon='ADD')
