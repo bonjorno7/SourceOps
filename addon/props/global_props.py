@@ -1,6 +1,7 @@
 import bpy
 from . game_props import SOURCEOPS_GameProps
 from . model_props import SOURCEOPS_ModelProps
+from . displacement_props import SOURCEOPS_DisplacementProps
 
 
 class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
@@ -9,6 +10,8 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
 
     model_items: bpy.props.CollectionProperty(type=SOURCEOPS_ModelProps)
     model_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+
+    displacement_props: bpy.props.PointerProperty(type=SOURCEOPS_DisplacementProps)
 
     panel: bpy.props.EnumProperty(
         name='Panel',
@@ -20,5 +23,6 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('TEXTURES', 'Textures', 'Display the textures panel', 'TEXTURE', 4),
             ('SEQUENCES', 'Sequences', 'Display the sequences panel', 'SEQUENCE', 5),
             ('EVENTS', 'Events', 'Display the events panel', 'ACTION', 6),
+            ('DISPLACEMENTS', 'Displacements', 'Display the displacements panel', 'MONKEY', 7),
         ],
     )

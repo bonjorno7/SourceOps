@@ -199,37 +199,39 @@ class DispInfo:
 class DispGroup:
     def __init__(self, mesh: bpy.types.Mesh):
 
-        # Setup bmesh
+        # Setup a bmesh
         bm = bmesh.new()
         bm.from_mesh(mesh)
 
         # Setup loops and faces
-        self.loops = [DispLoop(loop, mesh) for loop in mesh.loops]
-        self.faces = [DispFace(face, self.loops) for face in bm.faces]
-        self.orient_faces()
+        disp_loops = [DispLoop(loop, mesh) for loop in mesh.loops]
+        disp_faces = [DispFace(face, disp_loops) for face in bm.faces]
 
-        # Find corners and setup displacements
-        corners = [face for face in self.faces if face.left_edge and face.bottom_edge]
-        self.displacements = [DispInfo(face, self.faces) for face in corners]
-
-        # Free bmesh
+        # Free the bmesh
         bm.free()
 
+        # Orient displacement faces
+        self.orient_faces(disp_faces)
 
-    def orient_faces(self):
+        # Find corners and setup displacements
+        corners = [face for face in disp_faces if face.left_edge and face.bottom_edge]
+        self.displacements = [DispInfo(face, disp_faces) for face in corners]
+
+    # Make sure all displacement faces are oriented correctly
+    def orient_faces(self, disp_faces: list):
 
         # Continue until all faces are oriented
         while True:
 
             # Find a face that hasn't yet been oriented
-            face = next((face for face in self.faces if not face.oriented), None)
+            face = next((face for face in disp_faces if not face.oriented), None)
 
             # If all faces are oriented, we're done
             if not face:
                 break
 
             # Start with the neighbors of this face
-            layer = self.orient_neighbors(face)
+            layer = self.orient_neighbors(face, disp_faces)
 
             # Continue until all neighbors are oriented
             while layer:
@@ -241,20 +243,20 @@ class DispGroup:
                 for face in layer:
 
                     # Add the oriented faces to the neighbors
-                    neighbors.update(self.orient_neighbors(face))
+                    neighbors.update(self.orient_neighbors(face, disp_faces))
 
                 # And prepare for the next round
                 layer = neighbors
 
-
-    def orient_neighbors(self, face):
+    # Make the orientation of the neighbors of this face match its own
+    def orient_neighbors(self, face: DispFace, disp_faces: list):
 
         # This face is hereby processed and oriented
         face.processed = True
         face.oriented = True
 
         # Find neighboring faces
-        neighbors = [(self.faces[index] if index != -1 else None) for index in face.faces]
+        neighbors = [(disp_faces[index] if index != -1 else None) for index in face.faces]
 
         # Iterate through those neighbors to orient them
         for index, neighbor in enumerate(neighbors):
@@ -263,18 +265,7 @@ class DispGroup:
             if not neighbor or neighbor.oriented:
                 continue
 
-            # If this neighbor is on the top, its index is 1
-            # If this neighbor is oriented correctly, this face would be the neighbor's neighbor 3
-            # Subtract these: 3 - 1 = 2
-            # Rotate 180 degrees: 2 + 2 = 4
-            # I go with 6 instead of 2, just to be sure we get a positive number, and then % 4 it to make sure it fits in the list
-            # So if orientation is correct, it will do nothing
-            # But what if this face is the neighbor's neighbor 2?
-            # Subtract: 2 - 1 = 1
-            # Rotate 180: 1 + 2 = 3
-            # So it will rotate 3 steps counter-clockwise
-            # Meaning it goes from 2 to 1 to 0 to 3
-            # Hopefully this makes sense
+            # Determine how much to rotate this neighbor so that it's oriented the same way as this face
             steps = (neighbor.faces.index(face.index) - index + 6) % 4
 
             # If we should rotate, rotate
@@ -289,66 +280,64 @@ class DispGroup:
         return set(face for face in neighbors if face and not face.processed)
 
 
-class DispConverter:
-    def __init__(self, object):
+class DispExporter:
+    def __init__(self, objects):
 
-        # Switch to object mode
-        mode = object.mode
-        if mode != 'OBJECT':
-            bpy.ops.object.mode_set('OBJECT')
+        # Setup a list of displacements
+        self.displacements = []
 
-        # Make sure the mesh is unwrapped
-        if not object.data.uv_layers.active:
-            print('No UV layers found for displacement, unwrapping')
-            bpy.ops.uv.unwrap()
+        # Configure the scene
+        scene_settings = self.configure_scene(objects)
 
-        # Make sure the mesh has vertex colors
-        if not object.data.vertex_colors:
-            print('No vertex colors found for displacement, creating')
-            object.data.vertex_colors.new(do_init=False)
+        # Iterate through our objects
+        for object in objects:
 
-        # Get the evaluated mesh
-        depsgraph = bpy.context.evaluated_depsgraph_get()
-        evaluated = object.evaluated_get(depsgraph)
-        mesh = evaluated.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
-        mesh.transform(object.matrix_world)
+            # Get the evaluated mesh
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            evaluated = object.evaluated_get(depsgraph)
+            mesh = evaluated.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
 
-        # Sort the mesh into displacements
-        self.displacement_group = DispGroup(mesh)
+            # Apply object transforms
+            mesh.transform(object.matrix_world)
 
-        # Clear the evaluated mesh
-        evaluated.to_mesh_clear()
+            # Sort the mesh into displacements
+            self.displacements.extend(DispGroup(mesh).displacements)
 
-        # Switch back to the original mode
-        if mode != 'OBJECT':
-            bpy.ops.object.mode_set(mode)
+            # Clear the evaluated mesh
+            evaluated.to_mesh_clear()
 
-        # --- Export --- #
+        # Restore the scene
+        self.restore_scene(objects, scene_settings)
 
         # TODO: Flip winding based on cross product or something? Because mirrored UVs don't work
         # TODO: Allow scaling UV and XYZ and lightmapscale by separate values
-        # TODO: Export loop alphas as well
-        # TODO: Read / write existing VMF files
-        # TODO: Test how normals behave in game
+        # TODO: Read / write existing VMF files, remove stuff in the given visgroup first
 
+        # Create a new VMF file
         vmf = pyvmf.new_vmf()
 
-        for disp in self.displacement_group.displacements:
+        # Iterate through our displacements
+        for disp in self.displacements:
+
+            # Get the displacement UV corners
             uv1 = disp.grid[0][0].uv
             uv2 = disp.grid[0][-1].uv
             uv3 = disp.grid[-1][-1].uv
             uv4 = disp.grid[-1][0].uv
 
+            # Get the top brush corners
             v1 = pyvmf.Vertex(uv1[0], uv1[1], 0)
             v2 = pyvmf.Vertex(uv2[0], uv2[1], 0)
             v3 = pyvmf.Vertex(uv3[0], uv3[1], 0)
             v4 = pyvmf.Vertex(uv4[0], uv4[1], 0)
 
+            # Get the bottom brush corners
             v5 = pyvmf.Vertex(uv1[0], uv1[1], -8)
             v6 = pyvmf.Vertex(uv2[0], uv2[1], -8)
             v7 = pyvmf.Vertex(uv3[0], uv3[1], -8)
             v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
 
+            # Create brush sides
             f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})'}) # Top
             f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})'}) # Bottom
             f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})'}) # Front
@@ -356,6 +345,7 @@ class DispConverter:
             f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # Right
             f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
 
+            # Setup dispinfo for the top brush side
             size = len(disp.grid) - 1
             power = 4 if size == 16 else 3 if size == 8 else 2
             dic = {'power': power, 'startposition': f'[{v1.x} {v1.y} {v1.z}]'}
@@ -363,12 +353,45 @@ class DispConverter:
             alphas = pyvmf.Child('alphas', disp.alphas)
             f1.dispinfo = pyvmf.DispInfo(dic=dic, children=[offsets, alphas])
 
+            # Create a solid of the sides and add it to the vmf
             solid = pyvmf.Solid()
             solid.add_sides(f1, f2, f3, f4, f5, f6)
             solid.editor = pyvmf.Editor()
             vmf.add_solids(solid)
 
+        # Export the VMF to a file
         path = pathlib.Path(bpy.path.abspath('//vmf/test.vmf')).resolve()
         common.verify_folder(str(path.parent))
         path = str(path)
         vmf.export(path)
+
+    # Make sure all objects are accesible to the code
+    def configure_scene(self, objects):
+        scene_settings = {o: {} for o in objects}
+
+        if bpy.context.active_object:
+            scene_settings['mode'] = bpy.context.active_object.mode
+            bpy.ops.object.mode_set(mode='OBJECT')
+        else:
+            scene_settings['mode'] = 'OBJECT'
+
+        for object in objects:
+            scene_settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
+            if not scene_settings[object]['in_scene']:
+                bpy.context.scene.collection.objects.link(object)
+
+            scene_settings[object]['hide_viewport'] = True if object.hide_viewport else False
+            object.hide_viewport = False
+
+        return scene_settings
+
+    # Restore everything to how it was before export
+    def restore_scene(self, objects, scene_settings):
+        for object in objects:
+            if not scene_settings[object]['in_scene']:
+                bpy.context.scene.collection.objects.unlink(object)
+
+            object.hide_viewport = scene_settings[object]['hide_viewport']
+
+        if scene_settings['mode'] != 'OBJECT':
+            bpy.ops.object.mode_set(mode=scene_settings['mode'])

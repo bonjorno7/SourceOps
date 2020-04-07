@@ -59,6 +59,13 @@ def get_event(sequence):
         return None
 
 
+def get_displacement_props(sourceops):
+    try:
+        return sourceops.displacement_props
+    except:
+        return None
+
+
 def verify_game(game):
     gameinfo = Path(bpy.path.abspath(game.gameinfo)).resolve()
     studiomdl = gameinfo.parent.parent / 'bin/studiomdl.exe'

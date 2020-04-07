@@ -18,6 +18,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
+        displacement_props = common.get_displacement_props(sourceops)
 
         if sourceops:
             box = self.layout.box()
@@ -167,6 +168,28 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.open_log', text='', icon='HELP')
+
+        if sourceops.panel == 'DISPLACEMENTS' and displacement_props:
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Displacements')
+
+            common.add_prop(box, 'Map Path', displacement_props, 'map_path')
+            common.add_prop(box, 'Visgroup', displacement_props, 'visgroup')
+            common.add_prop(box, 'Collection', displacement_props, 'collection')
+            common.add_prop(box, 'Brush Scale', displacement_props, 'brush_scale')
+            common.add_prop(box, 'Geometry Scale', displacement_props, 'geometry_scale')
+            common.add_prop(box, 'Lightmap Scale', displacement_props, 'lightmap_scale')
+
+            box = self.layout.box()
+            row = box.row()
+            row.scale_x = row.scale_y = 1.5
+            row.label(text='Export')
+            row = row.row(align=True)
+            row.alignment = 'RIGHT'
+
+            row.operator('sourceops.export_displacements', text='', icon_value=icons.id('smd')) # TODO: Make VMF icon
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.add_item', text='', icon='ADD')
