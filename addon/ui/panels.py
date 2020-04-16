@@ -113,6 +113,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if sequence:
                 common.add_prop(box, 'Display Name', sequence, 'display')
                 common.add_prop(box, 'Sequence Name', sequence, 'name')
+                common.add_props(box, 'Framerate Override', sequence, ('override', 'framerate'))
                 common.add_prop(box, 'Start Frame', sequence, 'start')
                 common.add_prop(box, 'End Frame', sequence, 'end')
                 common.add_prop(box, 'Activity', sequence, 'activity')
