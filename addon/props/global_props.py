@@ -17,7 +17,7 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('GAMES', 'Games', 'Display the games panel', 'PREFERENCES', 1),
             ('MODELS', 'Models', 'Display the models panel', 'MESH_CUBE', 2),
             ('MODEL_OPTIONS', 'Model Options', 'Display the model options panel', 'MODIFIER', 3),
-            ('MATERIAL_FOLDERS', 'Material Folders', 'Display the materials folders panel', 'FILE_FOLDER', 4),
+            ('MATERIAL_FOLDERS', 'Material Folders', 'Display the materials folders panel', 'TEXTURE', 4),
             ('SEQUENCES', 'Sequences', 'Display the sequences panel', 'SEQUENCE', 5),
             ('EVENTS', 'Events', 'Display the events panel', 'ACTION', 6),
         ],
