@@ -13,12 +13,12 @@ class SOURCEOPS_OT_CopyItem(bpy.types.Operator):
         name='Item Type',
         description='What kind of item to add',
         items=[
-            ('GAMES', 'Game', 'Add a game'),
-            ('MODELS', 'Model', 'Add a model'),
-            ('MATERIAL_FOLDERS', 'Material Folder', 'Add a material folder'),
-            ('SKINS', 'Skin', 'Add a skin'),
-            ('SEQUENCES', 'Sequence', 'Add a sequence'),
-            ('EVENTS', 'Event', 'Add an event'),
+            ('GAMES', 'Game', 'Copy a game'),
+            ('MODELS', 'Model', 'Copy a model'),
+            ('MATERIAL_FOLDERS', 'Material Folder', 'Copy a material folder'),
+            ('SKINS', 'Skin', 'Copy a skin'),
+            ('SEQUENCES', 'Sequence', 'Copy a sequence'),
+            ('EVENTS', 'Event', 'Copy an event'),
         ],
     )
 
