@@ -15,6 +15,7 @@ class SOURCEOPS_OT_RemoveItem(bpy.types.Operator):
             ('GAMES', 'Game', 'Remove a game'),
             ('MODELS', 'Model', 'Remove a model'),
             ('MATERIAL_FOLDERS', 'Material Folder', 'Remove a material folder'),
+            ('SKINS', 'Skins', 'Remove a skin'),
             ('SEQUENCES', 'Sequence', 'Remove a sequence'),
             ('EVENTS', 'Event', 'Remove an event'),
         ],
@@ -45,6 +46,13 @@ class SOURCEOPS_OT_RemoveItem(bpy.types.Operator):
             model.material_folder_index = min(
                 max(0, model.material_folder_index - 1),
                 max(0, len(model.material_folder_items) - 1)
+            )
+
+        elif self.item == 'SKINS' and model:
+            model.skin_items.remove(model.skin_index)
+            model.skin_index = min(
+                max(0, model.skin_index - 1),
+                max(0, len(model.skin_items) - 1)
             )
 
         elif self.item == 'SEQUENCES' and model:
