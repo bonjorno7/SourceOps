@@ -14,7 +14,7 @@ class SOURCEOPS_OT_MoveItem(bpy.types.Operator):
         items=[
             ('GAMES', 'Game', 'Move a game'),
             ('MODELS', 'Model', 'Move a model'),
-            ('MATERIAL_FOLDERS', 'Material Folder', 'Add a material folder'),
+            ('MATERIAL_FOLDERS', 'Material Folder', 'Move a material folder'),
             ('SKINS', 'Skin', 'Move a skin'),
             ('SEQUENCES', 'Sequence', 'Move a sequence'),
             ('EVENTS', 'Event', 'Move an event'),
