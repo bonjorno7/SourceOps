@@ -15,6 +15,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         material_folder = common.get_material_folder(model)
+        skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
 
@@ -98,6 +99,20 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if material_folder:
                 common.add_prop(box, 'Display Name', material_folder, 'display')
                 common.add_prop(box, 'Folder Path', material_folder, 'path')
+
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Skins')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_SkinList', '', model, 'skin_items', model, 'skin_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'SKINS')
+
+            if skin:
+                common.add_prop(box, 'Display Name', skin, 'display')
+                common.add_prop(box, 'VMT Name', skin, 'name')
 
         elif sourceops.panel == 'SEQUENCES' and model:
             box = self.layout.box()
