@@ -73,6 +73,14 @@ def add_prop(layout, label, scope, prop):
     row.split().row().prop(scope, prop, text='')
 
 
+def add_props(layout, label, scope, props):
+    row = layout.row().split(factor=0.4)
+    row.label(text=label)
+    row = row.row()
+    for prop in props:
+        row.prop(scope, prop, text='')
+
+
 filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
 filename_chars_replace = ' '
 filename_char_limit = 255
