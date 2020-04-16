@@ -16,6 +16,7 @@ class SOURCEOPS_OT_CopyItem(bpy.types.Operator):
             ('GAMES', 'Game', 'Add a game'),
             ('MODELS', 'Model', 'Add a model'),
             ('MATERIAL_FOLDERS', 'Material Folder', 'Add a material folder'),
+            ('SKINS', 'Skin', 'Add a skin'),
             ('SEQUENCES', 'Sequence', 'Add a sequence'),
             ('EVENTS', 'Event', 'Add an event'),
         ],
@@ -26,6 +27,7 @@ class SOURCEOPS_OT_CopyItem(bpy.types.Operator):
         game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         material_folder = common.get_material_folder(model)
+        skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
 
@@ -49,6 +51,13 @@ class SOURCEOPS_OT_CopyItem(bpy.types.Operator):
             new_material_folder = common.get_material_folder(model)
             for key, value in material_folder.items():
                 new_material_folder[key] = value
+
+        elif self.item == 'SKINS' and skin:
+            model.skin_items.add()
+            model.skin_index = len(model.skin_items) - 1
+            new_skin = common.get_skin(model)
+            for key, value in skin.items():
+                new_skin[key] = value
 
         elif self.item == 'SEQUENCES' and sequence:
             model.sequence_items.add()
