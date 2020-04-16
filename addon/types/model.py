@@ -193,7 +193,10 @@ class Model:
             qc.write(f'$sequence "{sequence.name}"' + ' {\n')
             qc.write(f'    "{path}"\n')
             qc.write(f'    frames {sequence.start} {sequence.end}\n')
-            qc.write(f'    fps {bpy.context.scene.render.fps}\n')
+            if sequence.override:
+                qc.write(f'    fps {sequence.framerate}\n')
+            else:
+                qc.write(f'    fps {bpy.context.scene.render.fps}\n')
             if sequence.snap:
                 qc.write('    snap\n')
             if sequence.loop:
