@@ -15,6 +15,7 @@ class SOURCEOPS_OT_MoveItem(bpy.types.Operator):
             ('GAMES', 'Game', 'Move a game'),
             ('MODELS', 'Model', 'Move a model'),
             ('MATERIAL_FOLDERS', 'Material Folder', 'Add a material folder'),
+            ('SKINS', 'Skin', 'Move a skin'),
             ('SEQUENCES', 'Sequence', 'Move a sequence'),
             ('EVENTS', 'Event', 'Move an event'),
         ],
@@ -55,6 +56,13 @@ class SOURCEOPS_OT_MoveItem(bpy.types.Operator):
             model.material_folder_items.move(neighbor, model.material_folder_index)
             length = max(0, len(model.material_folder_items) - 1)
             model.material_folder_index = max(0, min(neighbor, length))
+
+        elif self.item == 'SKINS' and model:
+            direction = 1 if self.direction == 'DOWN' else -1
+            neighbor = max(0, model.skin_index + direction)
+            model.skin_items.move(neighbor, model.skin_index)
+            length = max(0, len(model.skin_items) - 1)
+            model.skin_index = max(0, min(neighbor, length))
 
         elif self.item == 'SEQUENCES' and model:
             direction = 1 if self.direction == 'DOWN' else -1
