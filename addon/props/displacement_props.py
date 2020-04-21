@@ -24,17 +24,23 @@ class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
     brush_scale: bpy.props.IntProperty(
         name='Brush Scale',
         description='How much the generated brushes will be scaled, necessary to get around floating point inprecision',
-        default=256,
+        default=128,
+        min=1,
+        max=16384,
     )
 
     geometry_scale: bpy.props.IntProperty(
         name='Geometry Scale',
         description='How much the geometry will be scaled, just to allow more convenient modeling',
-        default=32,
+        default=64,
+        min=1,
+        max=16384,
     )
 
     lightmap_scale: bpy.props.IntProperty(
         name='Lightmap Scale',
         description='Hammer units per lightmap luxel on the generated brushes',
-        default=16,
+        default=32,
+        min=1,
+        max=16384,
     )
