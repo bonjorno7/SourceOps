@@ -31,6 +31,7 @@ class DispLoop:
 class DispFace:
     def __init__(self, props, face: bmesh.types.BMFace, disp_loops: list):
         self.index = face.index
+        self.material = face.material_index
         self.loops = [disp_loops[loop.index] for loop in face.loops]
         self.edges = [True] * 4
         self.faces = [-1] * 4
@@ -99,7 +100,15 @@ class DispFace:
 
 
 class DispInfo:
-    def __init__(self, props, corner_face: DispFace, disp_faces: list):
+    def __init__(self, props, corner_face: DispFace, disp_faces: list, mesh: bpy.types.Mesh):
+
+        # Try to get the material from the mesh
+        try:
+            self.material = mesh.materials[corner_face.material].name.upper()
+
+        # Otherwise just use nodraw
+        except:
+            self.material = 'tools/toolsnodraw'.upper()
 
         # Setup the grid
         self.grid = []
@@ -216,7 +225,7 @@ class DispGroup:
 
         # Find corners and setup displacements
         corners = [face for face in disp_faces if face.left_edge and face.bottom_edge]
-        self.displacements = [DispInfo(props, face, disp_faces) for face in corners]
+        self.displacements = [DispInfo(props, face, disp_faces, mesh) for face in corners]
 
     # Make sure all displacement faces are oriented correctly
     def orient_faces(self, disp_faces: list):
@@ -338,7 +347,7 @@ class DispExporter:
             v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
 
             # Create brush sides
-            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': props.lightmap_scale}) # Top
+            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': props.lightmap_scale, 'material' : disp.material}) # Top
             f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})', 'lightmapscale': props.lightmap_scale}) # Bottom
             f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})', 'lightmapscale': props.lightmap_scale}) # Front
             f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': props.lightmap_scale}) # Back
