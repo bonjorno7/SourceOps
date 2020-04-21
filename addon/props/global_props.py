@@ -23,6 +23,6 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('TEXTURES', 'Textures', 'Display the textures panel', 'TEXTURE', 4),
             ('SEQUENCES', 'Sequences', 'Display the sequences panel', 'SEQUENCE', 5),
             ('EVENTS', 'Events', 'Display the events panel', 'ACTION', 6),
-            ('DISPLACEMENTS', 'Displacements', 'Display the displacements panel', 'MONKEY', 7),
+            ('DISPLACEMENTS', 'Displacements', 'Display the displacements panel', 'MOD_BUILD', 7),
         ],
     )
