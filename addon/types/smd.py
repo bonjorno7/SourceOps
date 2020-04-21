@@ -250,8 +250,8 @@ class Triangle:
         self.vertices = []
 
     def from_blender(self, lookup, armature, object, mesh, poly):
-        if poly.material_index < len(object.material_slots):
-            self.material = object.material_slots[poly.material_index].material
+        if poly.material_index < len(mesh.materials):
+            self.material = mesh.materials[poly.material_index]
         self.material = getattr(self.material, 'name', 'no_material')
 
         for loop in [mesh.loops[i] for i in poly.loop_indices]:
