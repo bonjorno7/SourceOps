@@ -358,6 +358,7 @@ class DispExporter:
             solid.add_sides(f1, f2, f3, f4, f5, f6)
             solid.editor = pyvmf.Editor()
             vmf.add_solids(solid)
+            vmf.add_to_visgroup(props.visgroup, solid)
 
         # Export the VMF to a file
         path = pathlib.Path(props.map_path).resolve()
