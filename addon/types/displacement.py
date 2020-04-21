@@ -2,7 +2,6 @@ import bpy
 import bmesh
 import mathutils
 from .. pyvmf import pyvmf
-from .. utils import common
 import pathlib
 
 
@@ -312,7 +311,6 @@ class DispExporter:
         self.restore_scene(objects, scene_settings)
 
         # TODO: Flip winding based on cross product or something? Because mirrored UVs don't work
-        # TODO: Allow scaling UV and XYZ and lightmapscale by separate values
         # TODO: Read / write existing VMF files, remove stuff in the given visgroup first
 
         # Create a new VMF file
@@ -362,10 +360,9 @@ class DispExporter:
             vmf.add_solids(solid)
 
         # Export the VMF to a file
-        path = common.resolve_path('//vmf/test.vmf')
-        common.verify_folder(str(path.parent))
-        path = str(path)
-        vmf.export(path)
+        path = pathlib.Path(props.map_path).resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        vmf.export(str(path))
 
     # Make sure all objects are accesible to the code
     def configure_scene(self, objects):
