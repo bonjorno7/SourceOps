@@ -15,8 +15,10 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         material_folder = common.get_material_folder(model)
+        skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
+        displacement_props = common.get_displacement_props(sourceops)
 
         if sourceops:
             box = self.layout.box()
@@ -84,7 +86,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             common.add_prop(box, 'Rotation', model, 'rotation')
             common.add_prop(box, 'Scale', model, 'scale')
 
-        elif sourceops.panel == 'MATERIAL_FOLDERS' and model:
+        elif sourceops.panel == 'TEXTURES' and model:
             box = self.layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -98,6 +100,20 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if material_folder:
                 common.add_prop(box, 'Display Name', material_folder, 'display')
                 common.add_prop(box, 'Folder Path', material_folder, 'path')
+
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Skins')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_SkinList', '', model, 'skin_items', model, 'skin_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'SKINS')
+
+            if skin:
+                common.add_prop(box, 'Display Name', skin, 'display')
+                common.add_prop(box, 'VMT Name', skin, 'name')
 
         elif sourceops.panel == 'SEQUENCES' and model:
             box = self.layout.box()
@@ -113,6 +129,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if sequence:
                 common.add_prop(box, 'Display Name', sequence, 'display')
                 common.add_prop(box, 'Sequence Name', sequence, 'name')
+                common.add_props(box, 'Framerate Override', sequence, ('override', 'framerate'))
                 common.add_prop(box, 'Start Frame', sequence, 'start')
                 common.add_prop(box, 'End Frame', sequence, 'end')
                 common.add_prop(box, 'Activity', sequence, 'activity')
@@ -137,7 +154,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Frame', event, 'frame')
                 common.add_prop(box, 'Value', event, 'value')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'MATERIAL_FOLDERS', 'SEQUENCES', 'EVENTS'}:
+        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS'}:
             box = self.layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5
@@ -151,6 +168,28 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.open_log', text='', icon='HELP')
+
+        if sourceops.panel == 'DISPLACEMENTS' and displacement_props:
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Displacements')
+
+            common.add_prop(box, 'Map Path', displacement_props, 'map_path')
+            common.add_prop(box, 'Visgroup', displacement_props, 'visgroup')
+            common.add_prop(box, 'Collection', displacement_props, 'collection')
+            common.add_prop(box, 'Brush Scale', displacement_props, 'brush_scale')
+            common.add_prop(box, 'Geometry Scale', displacement_props, 'geometry_scale')
+            common.add_prop(box, 'Lightmap Scale', displacement_props, 'lightmap_scale')
+
+            box = self.layout.box()
+            row = box.row()
+            row.scale_x = row.scale_y = 1.5
+            row.label(text='Export')
+            row = row.row(align=True)
+            row.alignment = 'RIGHT'
+
+            row.operator('sourceops.export_displacements', text='', icon_value=icons.id('vmf'))
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.add_item', text='', icon='ADD')

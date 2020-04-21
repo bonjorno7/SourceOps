@@ -18,6 +18,18 @@ class SOURCEOPS_SequenceProps(bpy.types.PropertyGroup):
         default='idle',
     )
 
+    override: bpy.props.BoolProperty(
+        name='Override Framerate',
+        description='Whether to use the custom framerate instead of the scene framerate',
+        default=False,
+    )
+
+    framerate: bpy.props.IntProperty(
+        name='Custom Framerate',
+        description='If override is enabled, use this framerate instead of the scene framerate',
+        default=30,
+    )
+
     start: bpy.props.IntProperty(
         name='Start Frame',
         description='First frame of the sequence',

@@ -38,6 +38,13 @@ def get_material_folder(model):
         return None
 
 
+def get_skin(model):
+    try:
+        return model.skin_items[model.skin_index]
+    except:
+        return None
+
+
 def get_sequence(model):
     try:
         return model.sequence_items[model.sequence_index]
@@ -48,6 +55,13 @@ def get_sequence(model):
 def get_event(sequence):
     try:
         return sequence.event_items[sequence.event_index]
+    except:
+        return None
+
+
+def get_displacement_props(sourceops):
+    try:
+        return sourceops.displacement_props
     except:
         return None
 
@@ -73,6 +87,14 @@ def add_prop(layout, label, scope, prop):
     row.split().row().prop(scope, prop, text='')
 
 
+def add_props(layout, label, scope, props):
+    row = layout.row().split(factor=0.4)
+    row.label(text=label)
+    row = row.row()
+    for prop in props:
+        row.prop(scope, prop, text='')
+
+
 filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
 filename_chars_replace = ' '
 filename_char_limit = 255
@@ -84,6 +106,10 @@ def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_ch
     cleaned_filename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode()
     cleaned_filename = ''.join(c for c in cleaned_filename if c in whitelist)
     return cleaned_filename[:char_limit]   
+
+
+def resolve_path(path):
+    return Path(bpy.path.abspath(path)).resolve()
 
 
 def verify_folder(path):

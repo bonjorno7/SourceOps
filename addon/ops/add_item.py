@@ -15,6 +15,7 @@ class SOURCEOPS_OT_AddItem(bpy.types.Operator):
             ('GAMES', 'Game', 'Add a game'),
             ('MODELS', 'Model', 'Add a model'),
             ('MATERIAL_FOLDERS', 'Material Folder', 'Add a material folder'),
+            ('SKINS', 'Skin', 'Add a skin'),
             ('SEQUENCES', 'Sequence', 'Add a sequence'),
             ('EVENTS', 'Event', 'Add an event'),
         ],
@@ -37,6 +38,10 @@ class SOURCEOPS_OT_AddItem(bpy.types.Operator):
         elif self.item == 'MATERIAL_FOLDERS' and model:
             model.material_folder_items.add()
             model.material_folder_index = len(model.material_folder_items) - 1
+
+        elif self.item == 'SKINS' and model:
+            model.skin_items.add()
+            model.skin_index = len(model.skin_items) - 1
 
         elif self.item == 'SEQUENCES' and model:
             model.sequence_items.add()

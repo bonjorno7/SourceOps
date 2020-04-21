@@ -16,6 +16,7 @@ class Model:
             self.name = self.name[0:-4]
 
         self.material_folder_items = model.material_folder_items
+        self.skin_items = model.skin_items
         self.sequence_items = model.sequence_items
         self.reference = model.reference
         self.collision = model.collision
@@ -193,7 +194,10 @@ class Model:
             qc.write(f'$sequence "{sequence.name}"' + ' {\n')
             qc.write(f'    "{path}"\n')
             qc.write(f'    frames {sequence.start} {sequence.end}\n')
-            qc.write(f'    fps {bpy.context.scene.render.fps}\n')
+            if sequence.override:
+                qc.write(f'    fps {sequence.framerate}\n')
+            else:
+                qc.write(f'    fps {bpy.context.scene.render.fps}\n')
             if sequence.snap:
                 qc.write('    snap\n')
             if sequence.loop:
@@ -201,6 +205,20 @@ class Model:
             qc.write(f'    activity "{sequence.activity}" {sequence.weight}\n')
             for event in sequence.event_items:
                 qc.write('    { ' + f'event "{event.event}" {event.frame} "{event.value}"' + ' }\n')
+            qc.write('}')
+            qc.write('\n')
+
+        if self.skin_items:
+            qc.write('\n')
+            qc.write('$texturegroup "skinfamilies"')
+            qc.write('\n')
+            qc.write('{')
+
+            for skin in self.skin_items:
+                qc.write('\n')
+                qc.write(f'    {{ "{skin.name}" }}')
+
+            qc.write('\n')
             qc.write('}')
             qc.write('\n')
 

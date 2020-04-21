@@ -22,6 +22,13 @@ class SOURCEOPS_UL_MaterialFolderList(bpy.types.UIList):
         layout.prop(item, 'display', text='', emboss=False, translate=False)
 
 
+class SOURCEOPS_UL_SkinList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_SkinList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, 'display', text='', emboss=False, translate=False)
+
+
 class SOURCEOPS_UL_SequenceList(bpy.types.UIList):
     bl_idname = 'SOURCEOPS_UL_SequenceList'
 
