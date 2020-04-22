@@ -44,6 +44,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Display Name', game, 'display')
                 common.add_prop(box, 'Gameinfo Path', game, 'gameinfo')
                 common.add_prop(box, 'Additional Path', game, 'additional')
+                common.add_prop(box, 'Maps Path', game, 'maps')
 
         elif sourceops.panel == 'MODELS' and sourceops:
             box = self.layout.box()
@@ -175,8 +176,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.alignment = 'CENTER'
             row.label(text='Displacements')
 
-            common.add_prop(box, 'Map Path', displacement_props, 'map_path')
-            common.add_prop(box, 'Visgroup', displacement_props, 'visgroup')
+            common.add_prop(box, 'Display Name', displacement_props, 'display')
+            common.add_prop(box, 'Map Name', displacement_props, 'name')
             common.add_prop(box, 'Collection', displacement_props, 'collection')
             common.add_prop(box, 'Brush Scale', displacement_props, 'brush_scale')
             common.add_prop(box, 'Geometry Scale', displacement_props, 'geometry_scale')
