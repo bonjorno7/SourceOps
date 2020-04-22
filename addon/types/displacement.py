@@ -379,6 +379,8 @@ class DispExporter:
 
         # Export the VMF to a file
         path = pathlib.Path(settings.path).resolve()
+        if path.suffix.lower() != 'vmf':
+            path = path.with_suffix('vmf')
         path.parent.mkdir(parents=True, exist_ok=True)
         vmf.export(str(path))
 
