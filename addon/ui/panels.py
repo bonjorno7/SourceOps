@@ -18,7 +18,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
-        displacement_props = common.get_displacement_props(sourceops)
+        displacement = common.get_displacement(sourceops)
 
         if sourceops:
             box = self.layout.box()
@@ -170,18 +170,24 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.open_log', text='', icon='HELP')
 
-        if sourceops.panel == 'DISPLACEMENTS' and displacement_props:
+        if sourceops.panel == 'DISPLACEMENTS' and sourceops:
             box = self.layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Displacements')
 
-            common.add_prop(box, 'Display Name', displacement_props, 'display')
-            common.add_prop(box, 'Map Name', displacement_props, 'name')
-            common.add_prop(box, 'Collection', displacement_props, 'collection')
-            common.add_prop(box, 'Brush Scale', displacement_props, 'brush_scale')
-            common.add_prop(box, 'Geometry Scale', displacement_props, 'geometry_scale')
-            common.add_prop(box, 'Lightmap Scale', displacement_props, 'lightmap_scale')
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_DisplacementList', '', sourceops, 'displacement_items', sourceops, 'displacement_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'DISPLACEMENTS')
+
+            if displacement:
+                common.add_prop(box, 'Display Name', displacement, 'display')
+                common.add_prop(box, 'Map Name', displacement, 'name')
+                common.add_prop(box, 'Collection', displacement, 'collection')
+                common.add_prop(box, 'Brush Scale', displacement, 'brush_scale')
+                common.add_prop(box, 'Geometry Scale', displacement, 'geometry_scale')
+                common.add_prop(box, 'Lightmap Scale', displacement, 'lightmap_scale')
 
             box = self.layout.box()
             row = box.row()
