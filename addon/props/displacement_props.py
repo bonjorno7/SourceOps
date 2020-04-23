@@ -2,12 +2,6 @@ import bpy
 
 
 class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
-    display: bpy.props.StringProperty(
-        name='Display Name',
-        description='The name this map has in the list',
-        default='Map Name',
-    )
-
     name: bpy.props.StringProperty(
         name='Map Name',
         description='The of the VMF to overwrite with your displacements',
