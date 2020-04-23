@@ -38,11 +38,12 @@ class SOURCEOPS_OT_ExportDisplacements(bpy.types.Operator):
         path = str(Path(game.maps).joinpath(props.name))
         objects = [o for o in props.collection.all_objects if o.type == 'MESH']
 
+        align_to_grid = props.align_to_grid
         brush_scale = props.brush_scale
         geometry_scale = props.geometry_scale
         lightmap_scale = props.lightmap_scale
 
-        settings = displacement.DispSettings(path, objects, brush_scale, geometry_scale, lightmap_scale)
+        settings = displacement.DispSettings(path, objects, align_to_grid, brush_scale, geometry_scale, lightmap_scale)
         displacement.DispExporter(settings)
 
         self.report({'INFO'}, 'Exported VMF')

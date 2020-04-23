@@ -14,6 +14,12 @@ class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
         type=bpy.types.Collection,
     )
 
+    align_to_grid: bpy.props.BoolProperty(
+        name='Align to Grid',
+        description='Round the scaled UVs to whole numbers so the brushes sit on the hammer grid',
+        default=True,
+    )
+
     brush_scale: bpy.props.IntProperty(
         name='Brush Scale',
         description='How much the generated brushes will be scaled, necessary to get around floating point inprecision',
