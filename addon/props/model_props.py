@@ -18,7 +18,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     display: bpy.props.StringProperty(
         name='Display Name',
         description='The name this model has in the list',
-        default='Model Name',
+        default='Example',
     )
 
     name: bpy.props.StringProperty(
