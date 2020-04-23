@@ -11,7 +11,7 @@ class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
         name='Map Name',
         description='The of the VMF to overwrite with your displacements',
-        default='displacements.vmf',
+        default='example',
     )
 
     collection: bpy.props.PointerProperty(
