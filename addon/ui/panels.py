@@ -193,17 +193,17 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.export_displacements', text='', icon_value=icons.id('vmf'))
 
     def draw_list_buttons(self, layout, item):
-        op = layout.operator('sourceops.add_item', text='', icon='ADD')
-        op.item = item
-        op = layout.operator('sourceops.remove_item', text='', icon='REMOVE')
-        op.item = item
+        op = layout.operator('sourceops.list_operator', text='', icon='ADD')
+        op.mode, op.item = 'ADD', item
+        op = layout.operator('sourceops.list_operator', text='', icon='REMOVE')
+        op.mode, op.item = 'REMOVE', item
 
         layout.separator()
-        op = layout.operator('sourceops.copy_item', text='', icon='DUPLICATE')
-        op.item = item
+        op = layout.operator('sourceops.list_operator', text='', icon='DUPLICATE')
+        op.mode, op.item = 'COPY', item
         layout.separator()
 
-        op = layout.operator('sourceops.move_item', text='', icon='TRIA_UP')
-        op.item, op.direction = item, 'UP'
-        op = layout.operator('sourceops.move_item', text='', icon='TRIA_DOWN')
-        op.item, op.direction = item, 'DOWN'
+        op = layout.operator('sourceops.list_operator', text='', icon='TRIA_UP')
+        op.mode, op.item = 'MOVE_UP', item
+        op = layout.operator('sourceops.list_operator', text='', icon='TRIA_DOWN')
+        op.mode, op.item = 'MOVE_DOWN', item
