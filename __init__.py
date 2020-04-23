@@ -3,7 +3,7 @@ bl_info = {
     'author': 'bonjorno7, Gorange, RED_EYE, SethTooQuick, Cabbage McGravel, Almaas',
     'description': 'A more convenient alternative to Blender Source Tools',
     'blender': (2, 80, 0),
-    'version': (0, 5, 1, 5),
+    'version': (0, 5, 1, 6),
     'location': '3D View > Sidebar',
     'category': 'Import-Export'
 }
