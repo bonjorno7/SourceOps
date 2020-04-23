@@ -18,7 +18,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
-        displacement_props = common.get_displacement_props(sourceops)
+        displacement = common.get_displacement(sourceops)
 
         if sourceops:
             box = self.layout.box()
@@ -44,6 +44,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Display Name', game, 'display')
                 common.add_prop(box, 'Gameinfo Path', game, 'gameinfo')
                 common.add_prop(box, 'Additional Path', game, 'additional')
+                common.add_prop(box, 'Maps Path', game, 'maps')
 
         elif sourceops.panel == 'MODELS' and sourceops:
             box = self.layout.box()
@@ -169,18 +170,24 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.open_log', text='', icon='HELP')
 
-        if sourceops.panel == 'DISPLACEMENTS' and displacement_props:
+        if sourceops.panel == 'DISPLACEMENTS' and sourceops:
             box = self.layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Displacements')
 
-            common.add_prop(box, 'Map Path', displacement_props, 'map_path')
-            common.add_prop(box, 'Visgroup', displacement_props, 'visgroup')
-            common.add_prop(box, 'Collection', displacement_props, 'collection')
-            common.add_prop(box, 'Brush Scale', displacement_props, 'brush_scale')
-            common.add_prop(box, 'Geometry Scale', displacement_props, 'geometry_scale')
-            common.add_prop(box, 'Lightmap Scale', displacement_props, 'lightmap_scale')
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_DisplacementList', '', sourceops, 'displacement_items', sourceops, 'displacement_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'DISPLACEMENTS')
+
+            if displacement:
+                common.add_prop(box, 'Display Name', displacement, 'display')
+                common.add_prop(box, 'Map Name', displacement, 'name')
+                common.add_prop(box, 'Collection', displacement, 'collection')
+                common.add_prop(box, 'Brush Scale', displacement, 'brush_scale')
+                common.add_prop(box, 'Geometry Scale', displacement, 'geometry_scale')
+                common.add_prop(box, 'Lightmap Scale', displacement, 'lightmap_scale')
 
             box = self.layout.box()
             row = box.row()
@@ -192,17 +199,17 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.export_displacements', text='', icon_value=icons.id('vmf'))
 
     def draw_list_buttons(self, layout, item):
-        op = layout.operator('sourceops.add_item', text='', icon='ADD')
-        op.item = item
-        op = layout.operator('sourceops.remove_item', text='', icon='REMOVE')
-        op.item = item
+        op = layout.operator('sourceops.list_operator', text='', icon='ADD')
+        op.mode, op.item = 'ADD', item
+        op = layout.operator('sourceops.list_operator', text='', icon='REMOVE')
+        op.mode, op.item = 'REMOVE', item
 
         layout.separator()
-        op = layout.operator('sourceops.copy_item', text='', icon='DUPLICATE')
-        op.item = item
+        op = layout.operator('sourceops.list_operator', text='', icon='DUPLICATE')
+        op.mode, op.item = 'COPY', item
         layout.separator()
 
-        op = layout.operator('sourceops.move_item', text='', icon='TRIA_UP')
-        op.item, op.direction = item, 'UP'
-        op = layout.operator('sourceops.move_item', text='', icon='TRIA_DOWN')
-        op.item, op.direction = item, 'DOWN'
+        op = layout.operator('sourceops.list_operator', text='', icon='TRIA_UP')
+        op.mode, op.item = 'MOVE_UP', item
+        op = layout.operator('sourceops.list_operator', text='', icon='TRIA_DOWN')
+        op.mode, op.item = 'MOVE_DOWN', item

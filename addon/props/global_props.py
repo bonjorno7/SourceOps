@@ -11,7 +11,8 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
     model_items: bpy.props.CollectionProperty(type=SOURCEOPS_ModelProps)
     model_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
-    displacement_props: bpy.props.PointerProperty(type=SOURCEOPS_DisplacementProps)
+    displacement_items: bpy.props.CollectionProperty(type=SOURCEOPS_DisplacementProps)
+    displacement_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
     panel: bpy.props.EnumProperty(
         name='Panel',

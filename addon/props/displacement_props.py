@@ -2,17 +2,16 @@ import bpy
 
 
 class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
-    map_path: bpy.props.StringProperty(
-        name='Map Path',
-        description='The path to the VMF to integrate these displacements into',
-        default='mapsrc/example.vmf',
-        subtype='FILE_PATH',
+    display: bpy.props.StringProperty(
+        name='Display Name',
+        description='The name this map has in the list',
+        default='Map Name',
     )
 
-    visgroup: bpy.props.StringProperty(
-        name='Visgroup Name',
-        description='The name of the visgroup these displacements will be put into',
-        default='displacements',
+    name: bpy.props.StringProperty(
+        name='Map Name',
+        description='The of the VMF to overwrite with your displacements',
+        default='example',
     )
 
     collection: bpy.props.PointerProperty(

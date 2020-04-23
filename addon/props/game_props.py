@@ -21,3 +21,10 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         default='',
         subtype='FILE_PATH',
     )
+
+    maps: bpy.props.StringProperty(
+        name='Maps Path',
+        description='Maps will be exported to this folder',
+        default='',
+        subtype='FILE_PATH',
+    )

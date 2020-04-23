@@ -59,9 +59,9 @@ def get_event(sequence):
         return None
 
 
-def get_displacement_props(sourceops):
+def get_displacement(sourceops):
     try:
-        return sourceops.displacement_props
+        return sourceops.displacement_items[sourceops.displacement_index]
     except:
         return None
 

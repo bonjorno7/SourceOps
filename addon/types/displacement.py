@@ -5,16 +5,25 @@ from .. pyvmf import pyvmf
 import pathlib
 
 
+class DispSettings:
+    def __init__(self, path, objects, brush_scale, geometry_scale, lightmap_scale):
+        self.path = path
+        self.objects = objects
+        self.brush_scale = brush_scale
+        self.geometry_scale = geometry_scale
+        self.lightmap_scale = lightmap_scale
+
+
 class DispLoop:
-    def __init__(self, props, loop: bpy.types.MeshLoop, mesh: bpy.types.Mesh):
+    def __init__(self, settings: DispSettings, loop: bpy.types.MeshLoop, mesh: bpy.types.Mesh):
         self.index = loop.index
 
         xyz = mesh.vertices[loop.vertex_index].co[0:3]
-        self.xyz = [number * props.geometry_scale for number in xyz]
+        self.xyz = [number * settings.geometry_scale for number in xyz]
 
         if mesh.uv_layers:
             uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
-            self.uv = [number * props.brush_scale for number in uv]
+            self.uv = [number * settings.brush_scale for number in uv]
         else:
             self.uv = [0, 0]
 
@@ -29,7 +38,7 @@ class DispLoop:
 
 
 class DispFace:
-    def __init__(self, props, face: bmesh.types.BMFace, disp_loops: list):
+    def __init__(self, settings: DispSettings, face: bmesh.types.BMFace, disp_loops: list):
         self.index = face.index
         self.material = face.material_index
         self.loops = [disp_loops[loop.index] for loop in face.loops]
@@ -100,7 +109,7 @@ class DispFace:
 
 
 class DispInfo:
-    def __init__(self, props, corner_face: DispFace, disp_faces: list, mesh: bpy.types.Mesh):
+    def __init__(self, settings: DispSettings, corner_face: DispFace, disp_faces: list, mesh: bpy.types.Mesh):
 
         # Try to get the material from the mesh
         try:
@@ -207,15 +216,15 @@ class DispInfo:
 
 
 class DispGroup:
-    def __init__(self, props, mesh: bpy.types.Mesh):
+    def __init__(self, settings: DispSettings, mesh: bpy.types.Mesh):
 
         # Setup a bmesh
         bm = bmesh.new()
         bm.from_mesh(mesh)
 
         # Setup loops and faces
-        disp_loops = [DispLoop(props, loop, mesh) for loop in mesh.loops]
-        disp_faces = [DispFace(props, face, disp_loops) for face in bm.faces]
+        disp_loops = [DispLoop(settings, loop, mesh) for loop in mesh.loops]
+        disp_faces = [DispFace(settings, face, disp_loops) for face in bm.faces]
 
         # Free the bmesh
         bm.free()
@@ -225,7 +234,7 @@ class DispGroup:
 
         # Find corners and setup displacements
         corners = [face for face in disp_faces if face.left_edge and face.bottom_edge]
-        self.displacements = [DispInfo(props, face, disp_faces, mesh) for face in corners]
+        self.displacements = [DispInfo(settings, face, disp_faces, mesh) for face in corners]
 
     # Make sure all displacement faces are oriented correctly
     def orient_faces(self, disp_faces: list):
@@ -291,16 +300,16 @@ class DispGroup:
 
 
 class DispExporter:
-    def __init__(self, props, objects):
+    def __init__(self, settings: DispSettings):
 
         # Setup a list of displacements
         self.displacements = []
 
         # Configure the scene
-        scene_settings = self.configure_scene(objects)
+        scene_settings = self.configure_scene(settings.objects)
 
         # Iterate through our objects
-        for object in objects:
+        for object in settings.objects:
 
             # Get the evaluated mesh
             depsgraph = bpy.context.evaluated_depsgraph_get()
@@ -311,13 +320,13 @@ class DispExporter:
             mesh.transform(object.matrix_world)
 
             # Sort the mesh into displacements
-            self.displacements.extend(DispGroup(props, mesh).displacements)
+            self.displacements.extend(DispGroup(settings, mesh).displacements)
 
             # Clear the evaluated mesh
             evaluated.to_mesh_clear()
 
         # Restore the scene
-        self.restore_scene(objects, scene_settings)
+        self.restore_scene(settings.objects, scene_settings)
 
         # TODO: Flip winding based on cross product or something? Because mirrored UVs don't work
         # TODO: Read / write existing VMF files, remove stuff in the given visgroup first
@@ -347,12 +356,12 @@ class DispExporter:
             v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
 
             # Create brush sides
-            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': props.lightmap_scale, 'material' : disp.material}) # Top
-            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})', 'lightmapscale': props.lightmap_scale}) # Bottom
-            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})', 'lightmapscale': props.lightmap_scale}) # Front
-            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': props.lightmap_scale}) # Back
-            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': props.lightmap_scale}) # Right
-            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})', 'lightmapscale': props.lightmap_scale}) # Left
+            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': settings.lightmap_scale, 'material' : disp.material}) # Top
+            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})', 'lightmapscale': settings.lightmap_scale}) # Bottom
+            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})', 'lightmapscale': settings.lightmap_scale}) # Front
+            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': settings.lightmap_scale}) # Back
+            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': settings.lightmap_scale}) # Right
+            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})', 'lightmapscale': settings.lightmap_scale}) # Left
 
             # Setup dispinfo for the top brush side
             size = len(disp.grid) - 1
@@ -362,15 +371,16 @@ class DispExporter:
             alphas = pyvmf.Child('alphas', disp.alphas)
             f1.dispinfo = pyvmf.DispInfo(dic=dic, children=[offsets, alphas])
 
-            # Create a solid of the sides and add it to the vmf
+            # Create a solid of the sides and add it to the VMF
             solid = pyvmf.Solid()
             solid.add_sides(f1, f2, f3, f4, f5, f6)
             solid.editor = pyvmf.Editor()
             vmf.add_solids(solid)
-            vmf.add_to_visgroup(props.visgroup, solid)
 
         # Export the VMF to a file
-        path = pathlib.Path(props.map_path).resolve()
+        path = pathlib.Path(settings.path).resolve()
+        if path.suffix.lower() != '.vmf':
+            path = path.with_suffix('.vmf')
         path.parent.mkdir(parents=True, exist_ok=True)
         vmf.export(str(path))
 

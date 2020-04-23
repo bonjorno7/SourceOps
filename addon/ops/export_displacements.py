@@ -14,23 +14,36 @@ class SOURCEOPS_OT_ExportDisplacements(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         sourceops = common.get_globals(context)
-        displacement_props = common.get_displacement_props(sourceops)
-        return sourceops and displacement_props
+        game = common.get_game(sourceops)
+        props = common.get_displacement(sourceops)
+        return sourceops and game and props
 
     def invoke(self, context, event):
         sourceops = common.get_globals(context)
-        displacement_props = common.get_displacement_props(sourceops)
+        game = common.get_game(sourceops)
+        props = common.get_displacement(sourceops)
 
-        if not displacement_props.map_path:
-            self.report({'INFO'}, 'Please enter a file path')
+        if not game.maps:
+            self.report({'INFO'}, 'Please enter a maps folder')
             return {'CANCELLED'}
 
-        if not displacement_props.collection:
+        if not props.name:
+            self.report({'INFO'}, 'Please enter a map name')
+            return {'CANCELLED'}
+
+        if not props.collection:
             self.report({'INFO'}, 'Please choose a collection')
             return {'CANCELLED'}
 
-        objects = [o for o in displacement_props.collection.all_objects if o.type == 'MESH']
-        displacement.DispExporter(displacement_props, objects)
+        path = str(Path(game.maps).joinpath(props.name))
+        objects = [o for o in props.collection.all_objects if o.type == 'MESH']
+
+        brush_scale = props.brush_scale
+        geometry_scale = props.geometry_scale
+        lightmap_scale = props.lightmap_scale
+
+        settings = displacement.DispSettings(path, objects, brush_scale, geometry_scale, lightmap_scale)
+        displacement.DispExporter(settings)
 
         self.report({'INFO'}, 'Exported VMF')
         return {'FINISHED'}
