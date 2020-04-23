@@ -41,3 +41,10 @@ class SOURCEOPS_UL_EventList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         layout.prop(item, 'display', text='', emboss=False, translate=False)
+
+
+class SOURCEOPS_UL_DisplacementList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_DisplacementList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, 'display', text='', emboss=False, translate=False)
