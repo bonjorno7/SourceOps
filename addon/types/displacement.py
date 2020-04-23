@@ -6,9 +6,10 @@ import pathlib
 
 
 class DispSettings:
-    def __init__(self, path, objects, brush_scale, geometry_scale, lightmap_scale):
+    def __init__(self, path, objects, align_to_grid, brush_scale, geometry_scale, lightmap_scale):
         self.path = path
         self.objects = objects
+        self.align_to_grid = align_to_grid
         self.brush_scale = brush_scale
         self.geometry_scale = geometry_scale
         self.lightmap_scale = lightmap_scale
@@ -22,8 +23,12 @@ class DispLoop:
         self.xyz = [number * settings.geometry_scale for number in xyz]
 
         if mesh.uv_layers:
-            uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
-            self.uv = [number * settings.brush_scale for number in uv]
+            self.uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
+            self.uv = [number * settings.brush_scale for number in self.uv]
+
+            if settings.align_to_grid:
+                self.uv = [round(number) for number in self.uv]
+
         else:
             self.uv = [0, 0]
 
