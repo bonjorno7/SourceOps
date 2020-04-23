@@ -181,6 +181,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if displacement:
                 common.add_prop(box, 'Map Name', displacement, 'name')
                 common.add_prop(box, 'Collection', displacement, 'collection')
+                common.add_prop(box, 'Align to Grid', displacement, 'align_to_grid')
                 common.add_prop(box, 'Brush Scale', displacement, 'brush_scale')
                 common.add_prop(box, 'Geometry Scale', displacement, 'geometry_scale')
                 common.add_prop(box, 'Lightmap Scale', displacement, 'lightmap_scale')
