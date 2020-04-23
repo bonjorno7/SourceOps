@@ -99,7 +99,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MATERIAL_FOLDERS')
 
             if material_folder:
-                common.add_prop(box, 'Display Name', material_folder, 'display')
                 common.add_prop(box, 'Folder Path', material_folder, 'path')
 
             box = self.layout.box()
@@ -113,7 +112,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'SKINS')
 
             if skin:
-                common.add_prop(box, 'Display Name', skin, 'display')
                 common.add_prop(box, 'VMT Name', skin, 'name')
 
         elif sourceops.panel == 'SEQUENCES' and model:
@@ -128,7 +126,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'SEQUENCES')
 
             if sequence:
-                common.add_prop(box, 'Display Name', sequence, 'display')
                 common.add_prop(box, 'Sequence Name', sequence, 'name')
                 common.add_props(box, 'Framerate Override', sequence, ('override', 'framerate'))
                 common.add_prop(box, 'Start Frame', sequence, 'start')
@@ -182,7 +179,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'DISPLACEMENTS')
 
             if displacement:
-                common.add_prop(box, 'Display Name', displacement, 'display')
                 common.add_prop(box, 'Map Name', displacement, 'name')
                 common.add_prop(box, 'Collection', displacement, 'collection')
                 common.add_prop(box, 'Brush Scale', displacement, 'brush_scale')
