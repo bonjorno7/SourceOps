@@ -195,6 +195,16 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             row.operator('sourceops.export_displacements', text='', icon_value=icons.id('vmf'))
 
+        if sourceops.panel == 'SIMULATION' and sourceops:
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Simulation')
+
+            common.add_prop(box, 'Simulation Input', sourceops, 'simulation_input')
+            common.add_prop(box, 'Simulation Output', sourceops, 'simulation_output')
+            box.operator('sourceops.rig_simulation', text='Rig Simulation')
+
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.list_operator', text='', icon='ADD')
         op.mode, op.item = 'ADD', item
