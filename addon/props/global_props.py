@@ -14,6 +14,18 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
     displacement_items: bpy.props.CollectionProperty(type=SOURCEOPS_DisplacementProps)
     displacement_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
+    simulation_input: bpy.props.PointerProperty(
+        name='Simulation Input',
+        description='The collection containing your rigid body objects',
+        type=bpy.types.Collection,
+    )
+
+    simulation_output: bpy.props.PointerProperty(
+        name='Simulation Output',
+        description='The collection your rigged objects will go',
+        type=bpy.types.Collection,
+    )
+
     panel: bpy.props.EnumProperty(
         name='Panel',
         description='Which panel to display',
@@ -25,5 +37,6 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('SEQUENCES', 'Sequences', 'Display the sequences panel', 'SEQUENCE', 5),
             ('EVENTS', 'Events', 'Display the events panel', 'ACTION', 6),
             ('DISPLACEMENTS', 'Displacements', 'Display the displacements panel', 'MOD_BUILD', 7),
+            ('SIMULATION', 'Simulation', 'Display the simulation panel', 'MONKEY', 8),
         ],
     )
