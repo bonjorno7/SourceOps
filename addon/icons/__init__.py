@@ -8,7 +8,12 @@ pcoll = None
 
 def id(identifier):
     global pcoll
-    return pcoll[identifier.lower()].icon_id
+
+    try:
+        return pcoll[identifier.lower()].icon_id
+
+    except:
+        return pcoll['missing'].icon_id
 
 
 def register():
