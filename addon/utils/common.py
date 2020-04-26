@@ -59,9 +59,9 @@ def get_event(sequence):
         return None
 
 
-def get_displacement(sourceops):
+def get_map(sourceops):
     try:
-        return sourceops.displacement_items[sourceops.displacement_index]
+        return sourceops.map_items[sourceops.map_index]
     except:
         return None
 
