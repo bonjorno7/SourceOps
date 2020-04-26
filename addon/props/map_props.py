@@ -1,27 +1,27 @@
 import bpy
 
 
-class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
+class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
         name='Map Name',
-        description='The of the VMF to overwrite with your displacements',
+        description='The name of the VMF to overwrite with your displacements',
         default='example',
     )
 
-    collection: bpy.props.PointerProperty(
-        name='Collection',
+    brush_collection: bpy.props.PointerProperty(
+        name='Brushes',
+        description='The collection containing your brush objects',
+        type=bpy.types.Collection,
+    )
+
+    disp_collection: bpy.props.PointerProperty(
+        name='Displacements',
         description='The collection containing your displacement objects',
         type=bpy.types.Collection,
     )
 
-    align_to_grid: bpy.props.BoolProperty(
-        name='Align to Grid',
-        description='Round the scaled UVs to whole numbers so the brushes sit on the hammer grid',
-        default=True,
-    )
-
-    brush_scale: bpy.props.IntProperty(
-        name='Brush Scale',
+    uv_scale: bpy.props.IntProperty(
+        name='UV Scale',
         description='How much the generated brushes will be scaled, necessary to get around floating point inprecision',
         default=128,
         min=1,
@@ -42,4 +42,10 @@ class SOURCEOPS_DisplacementProps(bpy.types.PropertyGroup):
         default=32,
         min=1,
         max=16384,
+    )
+
+    align_to_grid: bpy.props.BoolProperty(
+        name='Align to Grid',
+        description='Round the scaled UVs to whole numbers so the brushes sit on the hammer grid',
+        default=True,
     )
