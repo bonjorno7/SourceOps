@@ -1,9 +1,3 @@
-import bpy
-
-
-def register():
-    pass
-
-
-def unregister():
-    pass
+from . import pyvmf
+from . import model_export
+from . import map_export
