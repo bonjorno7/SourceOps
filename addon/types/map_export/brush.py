@@ -15,17 +15,29 @@ class Converter:
             for polygon in mesh.polygons:
                 side = pyvmf.Side()
 
-                for index, vertex in enumerate(polygon.vertices[0:3]):
-                    v = mathutils.Vector(mesh.vertices[vertex].co)
-                    v *= settings.geometry_scale
+                polygon.flip()
+
+                side.plane.clear()
+
+                for vertex_index in polygon.vertices[0:3]:
+                    vertex = mesh.vertices[vertex_index]
+                    vertex = pyvmf.Vertex(*vertex.co)
+
+                    vertex.multiply(settings.geometry_scale)
 
                     if settings.align_to_grid:
-                        v.x = round(v.x)
-                        v.y = round(v.y)
-                        v.z = round(v.z)
+                        vertex.align_to_grid()
 
-                    side.plane[2 - index] = pyvmf.Vertex(v.x, v.y, v.z)
-                    side.lightmapscale = settings.lightmap_scale
+                    side.plane.append(vertex)
+
+                tangent, bitangent = self.calc_tangents(mesh, polygon)
+                tx, ty, tz = tangent
+                bx, by, bz = bitangent
+
+                side.uaxis = pyvmf.Convert.string_to_uvaxis(f'[{tx} {ty} {tz} 0] 0.5')
+                side.vaxis = pyvmf.Convert.string_to_uvaxis(f'[{bx} {by} {bz} 0] 0.5')
+
+                side.lightmapscale = settings.lightmap_scale
 
                 solid.add_sides(side)
 
