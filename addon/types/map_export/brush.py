@@ -32,3 +32,35 @@ class Converter:
             solid.editor = pyvmf.Editor()
 
             self.solids.append(solid)
+
+
+    def calc_tangents(self, mesh, polygon):
+        points = []
+        u_vals = []
+        v_vals = []
+
+        for loop_index in range(polygon.loop_start, polygon.loop_start + 3):
+            loop = mesh.loops[loop_index]
+
+            point = mesh.vertices[loop.vertex_index].co
+            points.append(mathutils.Vector(point))
+
+            uv = mesh.uv_layers.active.data[loop_index].uv
+            u_vals.append(uv[0])
+            v_vals.append(uv[1])
+
+        p1, p2, p3 = points
+        u1, u2, u3 = u_vals
+        v1, v2, v3 = v_vals
+
+        tangent = mathutils.Vector((p2 - p1) * (v3 - v1) - (p3 - p1) * (v2 - v1))
+        bitangent = mathutils.Vector((p3 - p1) * (u2 - u1) - (p2 - p1) * (u3 - u1))
+
+        tangent.negate()
+
+        # TODO: Calculate scale and offset
+
+        tangent.normalize()
+        bitangent.normalize()
+
+        return tangent, bitangent
