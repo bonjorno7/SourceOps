@@ -111,7 +111,6 @@ class Map:
                             p_i = Plane(sides[i].get_vertices())
                             p_j = Plane(sides[j].get_vertices())
                             p_k = Plane(sides[k].get_vertices())
-                                
                         
                             curVertex = self.get_intersection(p_i, p_j, p_k)
                             if curVertex is None:
@@ -179,7 +178,6 @@ class MapToMesh:
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.01*self.brush_scale)
         
         bm.to_mesh(me)
-
         return me
         
     def import_meshes(self):
@@ -193,6 +191,7 @@ class MapToMesh:
         
         for mesh in self.map.meshes:
             self.create_mesh(mesh, vmf_col, b_mat)
+
             
         bpy.ops.view3d.view_all()
         for a in bpy.context.screen.areas:

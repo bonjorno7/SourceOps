@@ -70,6 +70,12 @@ def get_vmf(sourceops):
         return sourceops.vmf_items[sourceops.vmf_index]
     except:
         return None
+        
+def get_vmf(sourceops):
+    try:
+        return sourceops.vmf_items[sourceops.vmf_index]
+    except:
+        return None
 
 
 def verify_game(game):
