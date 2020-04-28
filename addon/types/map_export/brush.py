@@ -122,7 +122,7 @@ class Converter:
         tangent.normalize()
         bitangent.normalize()
 
-        u_axis = f'[{tangent[0]} {tangent[1]} {tangent[2]} 0] 1'
-        v_axis = f'[{bitangent[0]} {bitangent[1]} {bitangent[2]} 0] 1'
+        u_axis = f'[{tangent[0]} {tangent[1]} {tangent[2]} 0] {settings.texture_scale}'
+        v_axis = f'[{bitangent[0]} {bitangent[1]} {bitangent[2]} 0] {settings.texture_scale}'
 
         return u_axis, v_axis
