@@ -1,6 +1,6 @@
 import bpy
 from .. utils import common
-from .. types . model import Model
+from .. types . model_export . model import Model
 
 
 class SOURCEOPS_OT_GenerateQC(bpy.types.Operator):

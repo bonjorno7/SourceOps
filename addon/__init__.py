@@ -1,4 +1,3 @@
-from . import types
 from . import utils
 from . import props
 from . import icons
@@ -7,7 +6,6 @@ from . import ui
 
 
 def register():
-    types.register()
     utils.register()
     props.register()
     icons.register()
@@ -21,4 +19,3 @@ def unregister():
     props.unregister()
     icons.unregister()
     utils.unregister()
-    types.unregister()

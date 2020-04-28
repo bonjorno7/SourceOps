@@ -2,7 +2,7 @@ import bpy
 import os
 import shutil
 import subprocess
-from .. utils import common
+from ... utils import common
 from . smd import SMD
 
 

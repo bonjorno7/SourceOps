@@ -1,5 +1,5 @@
 import bpy
-from . displacement_props import SOURCEOPS_DisplacementProps
+from . map_props import SOURCEOPS_MapProps
 from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . skin_props import SOURCEOPS_SkinProps
@@ -10,7 +10,7 @@ from . global_props import SOURCEOPS_GlobalProps
 
 
 def register():
-    bpy.utils.register_class(SOURCEOPS_DisplacementProps)
+    bpy.utils.register_class(SOURCEOPS_MapProps)
     bpy.utils.register_class(SOURCEOPS_EventProps)
     bpy.utils.register_class(SOURCEOPS_SequenceProps)
     bpy.utils.register_class(SOURCEOPS_SkinProps)
@@ -30,4 +30,4 @@ def unregister():
     bpy.utils.unregister_class(SOURCEOPS_SkinProps)
     bpy.utils.unregister_class(SOURCEOPS_SequenceProps)
     bpy.utils.unregister_class(SOURCEOPS_EventProps)
-    bpy.utils.unregister_class(SOURCEOPS_DisplacementProps)
+    bpy.utils.unregister_class(SOURCEOPS_MapProps)

@@ -18,7 +18,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
-        displacement = common.get_displacement(sourceops)
+        map_props = common.get_map(sourceops)
 
         if sourceops:
             box = self.layout.box()
@@ -167,24 +167,26 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.open_log', text='', icon='HELP')
 
-        if sourceops.panel == 'DISPLACEMENTS' and sourceops:
+        if sourceops.panel == 'MAPS' and sourceops:
             box = self.layout.box()
             row = box.row()
             row.alignment = 'CENTER'
-            row.label(text='Displacements')
+            row.label(text='Maps')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_DisplacementList', '', sourceops, 'displacement_items', sourceops, 'displacement_index', rows=5)
+            row.template_list('SOURCEOPS_UL_MapList', '', sourceops, 'map_items', sourceops, 'map_index', rows=5)
             col = row.column(align=True)
-            self.draw_list_buttons(col, 'DISPLACEMENTS')
+            self.draw_list_buttons(col, 'MAPS')
 
-            if displacement:
-                common.add_prop(box, 'Map Name', displacement, 'name')
-                common.add_prop(box, 'Collection', displacement, 'collection')
-                common.add_prop(box, 'Align to Grid', displacement, 'align_to_grid')
-                common.add_prop(box, 'Brush Scale', displacement, 'brush_scale')
-                common.add_prop(box, 'Geometry Scale', displacement, 'geometry_scale')
-                common.add_prop(box, 'Lightmap Scale', displacement, 'lightmap_scale')
+            if map_props:
+                common.add_prop(box, 'Map Name', map_props, 'name')
+                common.add_prop(box, 'Brushes', map_props, 'brush_collection')
+                common.add_prop(box, 'Displacements', map_props, 'disp_collection')
+                common.add_prop(box, 'UV Scale', map_props, 'uv_scale')
+                common.add_prop(box, 'Geometry Scale', map_props, 'geometry_scale')
+                common.add_prop(box, 'Texture Scale', map_props, 'texture_scale')
+                common.add_prop(box, 'Lightmap Scale', map_props, 'lightmap_scale')
+                common.add_prop(box, 'Align to Grid', map_props, 'align_to_grid')
 
             box = self.layout.box()
             row = box.row()
@@ -193,7 +195,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row = row.row(align=True)
             row.alignment = 'RIGHT'
 
-            row.operator('sourceops.export_displacements', text='', icon_value=icons.id('vmf'))
+            row.operator('sourceops.export_vmf', text='', icon_value=icons.id('vmf'))
 
         if sourceops.panel == 'SIMULATION' and sourceops:
             box = self.layout.box()

@@ -1,22 +1,12 @@
 import bpy
 import bmesh
 import mathutils
-from .. pyvmf import pyvmf
 import pathlib
+from .. pyvmf import pyvmf
 
 
-class DispSettings:
-    def __init__(self, path, objects, align_to_grid, brush_scale, geometry_scale, lightmap_scale):
-        self.path = path
-        self.objects = objects
-        self.align_to_grid = align_to_grid
-        self.brush_scale = brush_scale
-        self.geometry_scale = geometry_scale
-        self.lightmap_scale = lightmap_scale
-
-
-class DispLoop:
-    def __init__(self, settings: DispSettings, loop: bpy.types.MeshLoop, mesh: bpy.types.Mesh):
+class Loop:
+    def __init__(self, settings, loop: bpy.types.MeshLoop, mesh: bpy.types.Mesh):
         self.index = loop.index
 
         xyz = mesh.vertices[loop.vertex_index].co[0:3]
@@ -24,7 +14,7 @@ class DispLoop:
 
         if mesh.uv_layers:
             self.uv = mesh.uv_layers.active.data[loop.index].uv[0:2]
-            self.uv = [number * settings.brush_scale for number in self.uv]
+            self.uv = [number * settings.uv_scale for number in self.uv]
 
             if settings.align_to_grid:
                 self.uv = [round(number) for number in self.uv]
@@ -42,8 +32,8 @@ class DispLoop:
         self.offset = [self.xyz[0] - self.uv[0], self.xyz[1] - self.uv[1], self.xyz[2]]
 
 
-class DispFace:
-    def __init__(self, settings: DispSettings, face: bmesh.types.BMFace, disp_loops: list):
+class Face:
+    def __init__(self, settings, face: bmesh.types.BMFace, disp_loops: list):
         self.index = face.index
         self.material = face.material_index
         self.loops = [disp_loops[loop.index] for loop in face.loops]
@@ -113,8 +103,8 @@ class DispFace:
         return self.faces[3]
 
 
-class DispInfo:
-    def __init__(self, settings: DispSettings, corner_face: DispFace, disp_faces: list, mesh: bpy.types.Mesh):
+class Disp:
+    def __init__(self, settings, corner_face: Face, disp_faces: list, mesh: bpy.types.Mesh):
 
         # Try to get the material from the mesh
         try:
@@ -192,10 +182,10 @@ class DispInfo:
         grid_size = len(self.grid) - 1
 
         # Get the UV coordinates of the grid corners
-        bottom_left = mathutils.Vector(self.grid[0][0].uv)
-        bottom_right = mathutils.Vector(self.grid[0][-1].uv)
-        top_right = mathutils.Vector(self.grid[-1][-1].uv)
-        top_left = mathutils.Vector(self.grid[-1][0].uv)
+        self.bottom_left = mathutils.Vector(self.grid[0][0].uv)
+        self.bottom_right = mathutils.Vector(self.grid[0][-1].uv)
+        self.top_right = mathutils.Vector(self.grid[-1][-1].uv)
+        self.top_left = mathutils.Vector(self.grid[-1][0].uv)
 
         # Iterate through rows
         for row, loops in enumerate(self.grid):
@@ -205,8 +195,8 @@ class DispInfo:
 
                 # Interpolate between the left and right
                 horizontal = column / grid_size
-                top = top_left.lerp(top_right, horizontal)
-                bottom = bottom_left.lerp(bottom_right, horizontal)
+                top = self.top_left.lerp(self.top_right, horizontal)
+                bottom = self.bottom_left.lerp(self.bottom_right, horizontal)
 
                 # Interpolate between the bottom and top
                 vertical = row / grid_size
@@ -220,16 +210,16 @@ class DispInfo:
             self.alphas[f'row{row}'] = ' '.join(f'{loop.alpha}' for loop in loops)
 
 
-class DispGroup:
-    def __init__(self, settings: DispSettings, mesh: bpy.types.Mesh):
+class Group:
+    def __init__(self, settings, mesh: bpy.types.Mesh):
 
         # Setup a bmesh
         bm = bmesh.new()
         bm.from_mesh(mesh)
 
         # Setup loops and faces
-        disp_loops = [DispLoop(settings, loop, mesh) for loop in mesh.loops]
-        disp_faces = [DispFace(settings, face, disp_loops) for face in bm.faces]
+        disp_loops = [Loop(settings, loop, mesh) for loop in mesh.loops]
+        disp_faces = [Face(settings, face, disp_loops) for face in bm.faces]
 
         # Free the bmesh
         bm.free()
@@ -239,7 +229,7 @@ class DispGroup:
 
         # Find corners and setup displacements
         corners = [face for face in disp_faces if face.left_edge and face.bottom_edge]
-        self.displacements = [DispInfo(settings, face, disp_faces, mesh) for face in corners]
+        self.disps = [Disp(settings, face, disp_faces, mesh) for face in corners]
 
     # Make sure all displacement faces are oriented correctly
     def orient_faces(self, disp_faces: list):
@@ -273,7 +263,7 @@ class DispGroup:
                 layer = neighbors
 
     # Make the orientation of the neighbors of this face match its own
-    def orient_neighbors(self, face: DispFace, disp_faces: list):
+    def orient_neighbors(self, face: Face, disp_faces: list):
 
         # This face is hereby processed and oriented
         face.processed = True
@@ -304,69 +294,58 @@ class DispGroup:
         return set(face for face in neighbors if face and not face.processed)
 
 
-class DispExporter:
-    def __init__(self, settings: DispSettings):
+class Converter:
+    def __init__(self, settings, meshes: list):
 
         # Setup a list of displacements
-        self.displacements = []
+        self.disps = []
 
-        # Configure the scene
-        scene_settings = self.configure_scene(settings.objects)
-
-        # Iterate through our objects
-        for object in settings.objects:
-
-            # Get the evaluated mesh
-            depsgraph = bpy.context.evaluated_depsgraph_get()
-            evaluated = object.evaluated_get(depsgraph)
-            mesh = evaluated.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
-
-            # Apply object transforms
-            mesh.transform(object.matrix_world)
+        # Iterate through our meshes
+        for mesh in meshes:
 
             # Sort the mesh into displacements
-            self.displacements.extend(DispGroup(settings, mesh).displacements)
+            self.disps.extend(Group(settings, mesh).disps)
 
-            # Clear the evaluated mesh
-            evaluated.to_mesh_clear()
-
-        # Restore the scene
-        self.restore_scene(settings.objects, scene_settings)
-
-        # TODO: Flip winding based on cross product or something? Because mirrored UVs don't work
-        # TODO: Read / write existing VMF files, remove stuff in the given visgroup first
-
-        # Create a new VMF file
-        vmf = pyvmf.new_vmf()
+        # Setup a list of solids
+        self.solids = []
 
         # Iterate through our displacements
-        for disp in self.displacements:
+        for disp in self.disps:
 
             # Get the displacement UV corners
-            uv1 = disp.grid[0][0].uv
-            uv2 = disp.grid[0][-1].uv
-            uv3 = disp.grid[-1][-1].uv
-            uv4 = disp.grid[-1][0].uv
+            uv1 = disp.bottom_left
+            uv2 = disp.bottom_right
+            uv3 = disp.top_right
+            uv4 = disp.top_left
 
             # Get the top brush corners
-            v1 = pyvmf.Vertex(uv1[0], uv1[1], 0)
-            v2 = pyvmf.Vertex(uv2[0], uv2[1], 0)
-            v3 = pyvmf.Vertex(uv3[0], uv3[1], 0)
-            v4 = pyvmf.Vertex(uv4[0], uv4[1], 0)
+            v1 = pyvmf.Vertex(uv1.x, uv1.y, 0)
+            v2 = pyvmf.Vertex(uv2.x, uv2.y, 0)
+            v3 = pyvmf.Vertex(uv3.x, uv3.y, 0)
+            v4 = pyvmf.Vertex(uv4.x, uv4.y, 0)
 
             # Get the bottom brush corners
-            v5 = pyvmf.Vertex(uv1[0], uv1[1], -8)
-            v6 = pyvmf.Vertex(uv2[0], uv2[1], -8)
-            v7 = pyvmf.Vertex(uv3[0], uv3[1], -8)
-            v8 = pyvmf.Vertex(uv4[0], uv4[1], -8)
+            v5 = pyvmf.Vertex(uv1.x, uv1.y, -8)
+            v6 = pyvmf.Vertex(uv2.x, uv2.y, -8)
+            v7 = pyvmf.Vertex(uv3.x, uv3.y, -8)
+            v8 = pyvmf.Vertex(uv4.x, uv4.y, -8)
 
             # Create brush sides
-            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': settings.lightmap_scale, 'material' : disp.material}) # Top
-            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})', 'lightmapscale': settings.lightmap_scale}) # Bottom
-            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})', 'lightmapscale': settings.lightmap_scale}) # Front
-            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': settings.lightmap_scale}) # Back
-            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})', 'lightmapscale': settings.lightmap_scale}) # Right
-            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})', 'lightmapscale': settings.lightmap_scale}) # Left
+            f1 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v3.x} {v3.y} {v3.z}) ({v2.x} {v2.y} {v2.z})'}) # Top
+            f2 = pyvmf.Side(dic={'plane': f'({v7.x} {v7.y} {v7.z}) ({v5.x} {v5.y} {v5.z}) ({v6.x} {v6.y} {v6.z})'}) # Bottom
+            f3 = pyvmf.Side(dic={'plane': f'({v4.x} {v4.y} {v4.z}) ({v7.x} {v7.y} {v7.z}) ({v3.x} {v3.y} {v3.z})'}) # Front
+            f4 = pyvmf.Side(dic={'plane': f'({v6.x} {v6.y} {v6.z}) ({v1.x} {v1.y} {v1.z}) ({v2.x} {v2.y} {v2.z})'}) # Back
+            f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # Right
+            f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
+
+            # Set texture and lightmap scales
+            for side in [f1, f2, f3, f4, f5, f6]:
+                side.uaxis.scale = settings.texture_scale
+                side.vaxis.scale = settings.texture_scale
+                side.lightmapscale = settings.lightmap_scale
+
+            # Add material to top face
+            f1.material = disp.material
 
             # Setup dispinfo for the top brush side
             size = len(disp.grid) - 1
@@ -376,46 +355,8 @@ class DispExporter:
             alphas = pyvmf.Child('alphas', disp.alphas)
             f1.dispinfo = pyvmf.DispInfo(dic=dic, children=[offsets, alphas])
 
-            # Create a solid of the sides and add it to the VMF
+            # Create a solid of the sides and append it
             solid = pyvmf.Solid()
             solid.add_sides(f1, f2, f3, f4, f5, f6)
             solid.editor = pyvmf.Editor()
-            vmf.add_solids(solid)
-
-        # Export the VMF to a file
-        path = pathlib.Path(settings.path).resolve()
-        if path.suffix.lower() != '.vmf':
-            path = path.with_suffix('.vmf')
-        path.parent.mkdir(parents=True, exist_ok=True)
-        vmf.export(str(path))
-
-    # Make sure all objects are accesible to the code
-    def configure_scene(self, objects):
-        scene_settings = {o: {} for o in objects}
-
-        if bpy.context.active_object:
-            scene_settings['mode'] = bpy.context.active_object.mode
-            bpy.ops.object.mode_set(mode='OBJECT')
-        else:
-            scene_settings['mode'] = 'OBJECT'
-
-        for object in objects:
-            scene_settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
-            if not scene_settings[object]['in_scene']:
-                bpy.context.scene.collection.objects.link(object)
-
-            scene_settings[object]['hide_viewport'] = True if object.hide_viewport else False
-            object.hide_viewport = False
-
-        return scene_settings
-
-    # Restore everything to how it was before export
-    def restore_scene(self, objects, scene_settings):
-        for object in objects:
-            if not scene_settings[object]['in_scene']:
-                bpy.context.scene.collection.objects.unlink(object)
-
-            object.hide_viewport = scene_settings[object]['hide_viewport']
-
-        if scene_settings['mode'] != 'OBJECT':
-            bpy.ops.object.mode_set(mode=scene_settings['mode'])
+            self.solids.append(solid)
