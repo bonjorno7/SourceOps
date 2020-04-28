@@ -1,7 +1,7 @@
 import bpy
 import bmesh
 import mathutils
-import pathlib
+import math
 from .. pyvmf import pyvmf
 
 
@@ -110,7 +110,15 @@ class Converter:
         v1, v2, v3 = v_vals
 
         tangent = mathutils.Vector((p2 - p1) * (v3 - v1) - (p3 - p1) * (v2 - v1))
-        bitangent = mathutils.Vector((p3 - p1) * (u2 - u1) - (p2 - p1) * (u3 - u1))
+
+        if mesh.uv_layers:
+            bitangent = mathutils.Vector((p3 - p1) * (u2 - u1) - (p2 - p1) * (u3 - u1))
+
+        else:
+            bitangent = tangent.copy()
+            normal = mathutils.Vector(polygon.normal)
+            rotation = mathutils.Quaternion(normal, math.radians(-90))
+            bitangent.rotate(rotation)
 
         tangent.negate()
 
