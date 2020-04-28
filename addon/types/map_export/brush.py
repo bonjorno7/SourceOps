@@ -43,6 +43,45 @@ class Converter:
             self.solids.append(solid)
 
 
+    def sort_into_parts(self, mesh):
+        parts = []
+
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+
+        bm.select_mode = {'FACE'}
+
+        for face in bm.faces:
+            face.hide_set(False)
+
+        while True:
+            face = next((f for f in bm.faces if not f.hide), None)
+
+            if not face:
+                break
+
+            faces = set([face])
+
+            while True:
+                temp_faces = faces.copy()
+
+                for face in temp_faces:
+                    for edge in face.edges:
+                        faces.update(set(edge.link_faces))
+
+                if len(temp_faces) == len(faces):
+                    break
+
+            for face in faces:
+                face.hide_set(True)
+
+            parts.append([mesh.polygons[f.index] for f in faces])
+
+        bm.free()
+
+        return parts
+
+
     def calc_uv_axes(self, settings, mesh, polygon):
         points = []
         u_vals = []
