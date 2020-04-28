@@ -64,6 +64,12 @@ def get_map(sourceops):
         return sourceops.map_items[sourceops.map_index]
     except:
         return None
+        
+def get_vmf(sourceops):
+    try:
+        return sourceops.vmf_items[sourceops.vmf_index]
+    except:
+        return None
 
 
 def verify_game(game):

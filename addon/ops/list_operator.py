@@ -31,6 +31,8 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             ('SEQUENCES', 'Sequences', 'Operate on sequences'),
             ('EVENTS', 'Events', 'Operate on events'),
             ('MAPS', 'Maps', 'Operate on maps'),
+            ('DISPLACEMENTS', 'Displacements', 'Operate on displacements'),
+            ('VMF', 'VMF', 'Operate on VMF'),
         ],
     )
 
@@ -90,6 +92,8 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             'SEQUENCES': (model, 'sequence_items', 'sequence_index'),
             'EVENTS': (sequence, 'event_items', 'event_index'),
             'MAPS': (sourceops, 'map_items', 'map_index'),
+            'DISPLACEMENTS': (sourceops, 'displacement_items', 'displacement_index'),
+            'VMF': (sourceops, 'vmf_items', 'vmf_index'),
         }
 
         function = mode_dict[self.mode]

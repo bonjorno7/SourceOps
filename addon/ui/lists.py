@@ -48,3 +48,9 @@ class SOURCEOPS_UL_MapList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         layout.prop(item, 'name', text='', emboss=False, translate=False)
+        
+class SOURCEOPS_UL_VMFList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_VMFList'
+    
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, 'name', text='', emboss=False, translate=False)

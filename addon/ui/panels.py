@@ -19,6 +19,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
         map_props = common.get_map(sourceops)
+        displacement = common.get_displacement(sourceops)
+        vmf = common.get_vmf(sourceops)
 
         if sourceops:
             box = self.layout.box()
@@ -205,6 +207,31 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             common.add_prop(box, 'Simulation Input', sourceops, 'simulation_input')
             common.add_prop(box, 'Simulation Output', sourceops, 'simulation_output')
             box.operator('sourceops.rig_simulation', text='Rig Simulation')
+            
+        if sourceops.panel == 'VMF' and sourceops:
+            box = self.layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='VMF')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_VMFList', '', sourceops, 'vmf_items', sourceops, 'vmf_index', rows=3)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'VMF')
+            
+            if vmf:
+                common.add_prop(box, 'Map Name', vmf, 'name')
+                common.add_prop(box, 'Map Scale', vmf, 'scale')
+                common.add_prop(box, 'Epsilon', vmf, 'epsilon')
+            
+            box = self.layout.box()
+            row = box.row()
+            row.scale_x = row.scale_y = 1.5
+            row.label(text='Import')
+            row = row.row(align=True)
+            row.alignment = 'RIGHT'
+            
+            box.operator('sourceops.import_vmf', text='', icon_value=icons.id('vmf'))
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.list_operator', text='', icon='ADD')

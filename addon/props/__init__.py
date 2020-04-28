@@ -1,5 +1,7 @@
 import bpy
 from . map_props import SOURCEOPS_MapProps
+from . displacement_props import SOURCEOPS_DisplacementProps
+from . vmf_props import SOURCEOPS_VMFProps
 from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . skin_props import SOURCEOPS_SkinProps
@@ -17,6 +19,7 @@ def register():
     bpy.utils.register_class(SOURCEOPS_MaterialFolderProps)
     bpy.utils.register_class(SOURCEOPS_ModelProps)
     bpy.utils.register_class(SOURCEOPS_GameProps)
+    bpy.utils.register_class(SOURCEOPS_VMFProps)
     bpy.utils.register_class(SOURCEOPS_GlobalProps)
     bpy.types.Scene.sourceops = bpy.props.PointerProperty(type=SOURCEOPS_GlobalProps)
 
@@ -31,3 +34,5 @@ def unregister():
     bpy.utils.unregister_class(SOURCEOPS_SequenceProps)
     bpy.utils.unregister_class(SOURCEOPS_EventProps)
     bpy.utils.unregister_class(SOURCEOPS_MapProps)
+    bpy.utils.unregister_class(SOURCEOPS_VMFProps)
+    bpy.utils.unregister_class(SOURCEOPS_DisplacementProps)
