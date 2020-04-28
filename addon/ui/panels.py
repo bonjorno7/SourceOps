@@ -184,6 +184,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Displacements', map_props, 'disp_collection')
                 common.add_prop(box, 'UV Scale', map_props, 'uv_scale')
                 common.add_prop(box, 'Geometry Scale', map_props, 'geometry_scale')
+                common.add_prop(box, 'Texture Scale', map_props, 'texture_scale')
                 common.add_prop(box, 'Lightmap Scale', map_props, 'lightmap_scale')
                 common.add_prop(box, 'Align to Grid', map_props, 'align_to_grid')
 
