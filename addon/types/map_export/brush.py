@@ -30,12 +30,9 @@ class Converter:
 
                     side.plane.append(vertex)
 
-                tangent, bitangent = self.calc_tangents(mesh, polygon)
-                tx, ty, tz = tangent
-                bx, by, bz = bitangent
-
-                side.uaxis = pyvmf.Convert.string_to_uvaxis(f'[{tx} {ty} {tz} 0] 0.5')
-                side.vaxis = pyvmf.Convert.string_to_uvaxis(f'[{bx} {by} {bz} 0] 0.5')
+                u_axis, v_axis = self.calc_uv_axes(settings, mesh, polygon)
+                side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
+                side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
 
                 side.lightmapscale = settings.lightmap_scale
 
@@ -46,7 +43,7 @@ class Converter:
             self.solids.append(solid)
 
 
-    def calc_tangents(self, mesh, polygon):
+    def calc_uv_axes(self, settings, mesh, polygon):
         points = []
         u_vals = []
         v_vals = []
@@ -75,4 +72,7 @@ class Converter:
         tangent.normalize()
         bitangent.normalize()
 
-        return tangent, bitangent
+        u_axis = f'[{tangent[0]} {tangent[1]} {tangent[2]} 0] 1'
+        v_axis = f'[{bitangent[0]} {bitangent[1]} {bitangent[2]} 0] 1'
+
+        return u_axis, v_axis
