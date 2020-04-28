@@ -54,9 +54,14 @@ class Converter:
             point = mesh.vertices[loop.vertex_index].co
             points.append(mathutils.Vector(point))
 
-            uv = mesh.uv_layers.active.data[loop_index].uv
-            u_vals.append(uv[0])
-            v_vals.append(uv[1])
+            if mesh.uv_layers:
+                uv = mesh.uv_layers.active.data[loop_index].uv
+                u_vals.append(uv[0])
+                v_vals.append(uv[1])
+
+        if not mesh.uv_layers:
+            u_vals = [0, 0, 1]
+            v_vals = [0, 1, 1]
 
         p1, p2, p3 = points
         u1, u2, u3 = u_vals
