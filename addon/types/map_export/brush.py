@@ -39,6 +39,11 @@ class Converter:
 
                     side.lightmapscale = settings.lightmap_scale
 
+                    try:
+                        side.material = mesh.materials[polygon.material_index].name.upper()
+                    except:
+                        side.material = 'tools/toolsnodraw'.upper()
+
                     solid.add_sides(side)
 
                 solid.editor = pyvmf.Editor()
