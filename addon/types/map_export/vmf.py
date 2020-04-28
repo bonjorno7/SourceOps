@@ -8,11 +8,12 @@ from . import disp
 
 
 class Settings:
-    def __init__(self, brush_objects, disp_objects, uv_scale, geometry_scale, lightmap_scale, align_to_grid):
+    def __init__(self, brush_objects, disp_objects, uv_scale, geometry_scale, texture_scale, lightmap_scale, align_to_grid):
         self.brush_objects = brush_objects
         self.disp_objects = disp_objects
         self.uv_scale = uv_scale
         self.geometry_scale = geometry_scale
+        self.texture_scale = texture_scale
         self.lightmap_scale = lightmap_scale
         self.align_to_grid = align_to_grid
 
