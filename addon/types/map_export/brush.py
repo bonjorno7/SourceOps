@@ -10,37 +10,40 @@ class Converter:
         self.solids = []
 
         for mesh in meshes:
-            solid = pyvmf.Solid()
+            parts = self.sort_into_parts(mesh)
 
-            for polygon in mesh.polygons:
-                side = pyvmf.Side()
+            for part in parts:
+                solid = pyvmf.Solid()
 
-                polygon.flip()
+                for polygon in part:
+                    side = pyvmf.Side()
 
-                side.plane.clear()
+                    polygon.flip()
 
-                for vertex_index in polygon.vertices[0:3]:
-                    vertex = mesh.vertices[vertex_index]
-                    vertex = pyvmf.Vertex(*vertex.co)
+                    side.plane.clear()
 
-                    vertex.multiply(settings.geometry_scale)
+                    for vertex_index in polygon.vertices[0:3]:
+                        vertex = mesh.vertices[vertex_index]
+                        vertex = pyvmf.Vertex(*vertex.co)
 
-                    if settings.align_to_grid:
-                        vertex.align_to_grid()
+                        vertex.multiply(settings.geometry_scale)
 
-                    side.plane.append(vertex)
+                        if settings.align_to_grid:
+                            vertex.align_to_grid()
 
-                u_axis, v_axis = self.calc_uv_axes(settings, mesh, polygon)
-                side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
-                side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
+                        side.plane.append(vertex)
 
-                side.lightmapscale = settings.lightmap_scale
+                    u_axis, v_axis = self.calc_uv_axes(settings, mesh, polygon)
+                    side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
+                    side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
 
-                solid.add_sides(side)
+                    side.lightmapscale = settings.lightmap_scale
 
-            solid.editor = pyvmf.Editor()
+                    solid.add_sides(side)
 
-            self.solids.append(solid)
+                solid.editor = pyvmf.Editor()
+
+                self.solids.append(solid)
 
 
     def sort_into_parts(self, mesh):
