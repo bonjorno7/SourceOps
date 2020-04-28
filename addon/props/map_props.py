@@ -36,6 +36,16 @@ class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
         max=16384,
     )
 
+    texture_scale: bpy.props.FloatProperty(
+        name='Texture Scale',
+        description='Size of one texel in hammer units',
+        default=0.5,
+        min=0,
+        max=64,
+        step=1,
+        precision=3,
+    )
+
     lightmap_scale: bpy.props.IntProperty(
         name='Lightmap Scale',
         description='Hammer units per lightmap luxel on the generated brushes',
