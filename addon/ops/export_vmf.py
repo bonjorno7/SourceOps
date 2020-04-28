@@ -48,10 +48,11 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
 
         uv_scale = props.uv_scale
         geometry_scale = props.geometry_scale
+        texture_scale = props.texture_scale
         lightmap_scale = props.lightmap_scale
         align_to_grid = props.align_to_grid
 
-        settings = Settings(brush_objects, disp_objects, uv_scale, geometry_scale, lightmap_scale, align_to_grid)
+        settings = Settings(brush_objects, disp_objects, uv_scale, geometry_scale, texture_scale, lightmap_scale, align_to_grid)
         vmf = VMF(settings)
         vmf.export(path)
 
