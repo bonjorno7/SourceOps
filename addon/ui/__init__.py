@@ -6,7 +6,6 @@ from . lists import SOURCEOPS_UL_SkinList
 from . lists import SOURCEOPS_UL_SequenceList
 from . lists import SOURCEOPS_UL_EventList
 from . lists import SOURCEOPS_UL_MapList
-from . lists import SOURCEOPS_UL_DisplacementList
 from . lists import SOURCEOPS_UL_VMFList
 from . panels import SOURCEOPS_PT_MainPanel
 
@@ -19,7 +18,6 @@ def register():
     bpy.utils.register_class(SOURCEOPS_UL_SequenceList)
     bpy.utils.register_class(SOURCEOPS_UL_EventList)
     bpy.utils.register_class(SOURCEOPS_UL_MapList)
-    bpy.utils.register_class(SOURCEOPS_UL_DisplacementList)
     bpy.utils.register_class(SOURCEOPS_UL_VMFList)
     bpy.utils.register_class(SOURCEOPS_PT_MainPanel)
 

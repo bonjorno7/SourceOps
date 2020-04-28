@@ -1,7 +1,7 @@
 import bpy
 import bmesh
 import mathutils
-from .. pyvmf import pyvmf
+from . pyvmf import pyvmf
 import pathlib
 
 class Plane:
@@ -16,7 +16,7 @@ class Plane:
         onetotwo = self.v1 - self.v2
         onetothree = self.v1 - self.v3
     
-        self.normal = onetotwo.cross(onetothree).normalized()*-1
+        self.normal = -onetotwo.cross(onetothree).normalized()
         self.d = -self.normal.dot(self.v1)
 
 class Map:
@@ -48,6 +48,44 @@ class Map:
                +((n1.cross(n2)) * (d3))) / -denom
                
         return ret
+        
+    def sort_poly(self, poly):
+        aPoly = poly[0]
+        if(len(aPoly) <= 0):
+            return
+        
+        normal = poly[1][0]
+        d = poly[1][1]
+        centroid = mathutils.Vector([0,0,0])
+        for n in range(0, len(aPoly)):
+            centroid = centroid + aPoly[n]
+        
+        centroid = centroid / len(aPoly)
+        
+        for n in range(0, len(aPoly) - 2):
+            a = (aPoly[n] - centroid).normalized()
+            p = Plane([aPoly[n], centroid, centroid + normal])
+            
+            smallestAngle = -1.0
+            smallest = -1
+            
+            for m in range(n+1, len(aPoly)):
+                if normal.dot(aPoly[m]) + d > -self.epsilon:
+                    b = (aPoly[m] - centroid).normalized()
+                    angle = a.dot(b)
+                    
+                    if angle < smallestAngle:
+                        smallestAngle = angle
+                        smallest = m
+
+            tempVector = aPoly[n+1]
+            aPoly[n+1] = aPoly[m]
+            aPoly[m] = tempVector
+            
+            if Plane(aPoly).normal.dot(normal) > 0:
+                aPoly.reverse()
+            
+            poly[0] = aPoly
 
     @staticmethod
     def round_to_nearest(val, base):
@@ -59,7 +97,12 @@ class Map:
         for solid in self.vmf.get_solids():
             
             sides = solid.get_sides()
-            polys = [[[]] for side in sides] # Double nested to make room for textures later on
+            polys = [] # Double nested to make room for textures later on
+            
+            for side in sides:
+                plane = Plane(side.get_vertices())
+            
+                polys.append([[], (plane.normal, plane.d)])
             
             for i in range(0,len(sides)-2):
                 for j in range(i,len(sides)-1):
@@ -68,6 +111,7 @@ class Map:
                             p_i = Plane(sides[i].get_vertices())
                             p_j = Plane(sides[j].get_vertices())
                             p_k = Plane(sides[k].get_vertices())
+                                
                         
                             curVertex = self.get_intersection(p_i, p_j, p_k)
                             if curVertex is None:
@@ -84,6 +128,11 @@ class Map:
                                polys[i][0].append(curVertex)
                                polys[j][0].append(curVertex)
                                polys[k][0].append(curVertex)
+                               
+                               
+            for poly in polys:
+                self.sort_poly(poly)
+                
             self.meshes.append(polys)
 
 class MapToMesh:
@@ -109,6 +158,9 @@ class MapToMesh:
         for i, item in enumerate(mesh):
                 
             face = item[0]
+            
+            if len(face) < 3:
+                continue
 
             ob.data.materials.append(mat)
             
@@ -120,15 +172,14 @@ class MapToMesh:
             result = bmesh.ops.contextual_create(bm, geom=new_face)
 
             if not result["faces"]:
+                print("AHHH")
                 continue
-            
-            poly = result["faces"][0]
                 
             
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.01*self.brush_scale)
         
         bm.to_mesh(me)
-        
+
         return me
         
     def import_meshes(self):
@@ -141,7 +192,7 @@ class MapToMesh:
         bpy.context.collection.children.link(vmf_col)
         
         for mesh in self.map.meshes:
-            procMesh = self.create_mesh(mesh, vmf_col, b_mat)
+            self.create_mesh(mesh, vmf_col, b_mat)
             
         bpy.ops.view3d.view_all()
         for a in bpy.context.screen.areas:
@@ -149,6 +200,7 @@ class MapToMesh:
                 for s in a.spaces:
                     if s.type == 'VIEW_3D':
                         s.clip_end = 100000 # Placeholder value until I make it work properly
+                        s.clip_start = 10 # Placeholder value until I make it work properly
         
         return {"FINISHED"}
 

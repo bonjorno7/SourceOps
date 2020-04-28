@@ -1,7 +1,7 @@
 import bpy
 from pathlib import Path
 from .. utils import common
-from .. pyvmf import pyvmf
+from .. types.pyvmf import pyvmf
 from .. types import map
 
 

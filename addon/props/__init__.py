@@ -1,6 +1,5 @@
 import bpy
 from . map_props import SOURCEOPS_MapProps
-from . displacement_props import SOURCEOPS_DisplacementProps
 from . vmf_props import SOURCEOPS_VMFProps
 from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
@@ -35,4 +34,3 @@ def unregister():
     bpy.utils.unregister_class(SOURCEOPS_EventProps)
     bpy.utils.unregister_class(SOURCEOPS_MapProps)
     bpy.utils.unregister_class(SOURCEOPS_VMFProps)
-    bpy.utils.unregister_class(SOURCEOPS_DisplacementProps)

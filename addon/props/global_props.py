@@ -2,7 +2,6 @@ import bpy
 from . game_props import SOURCEOPS_GameProps
 from . model_props import SOURCEOPS_ModelProps
 from . map_props import SOURCEOPS_MapProps
-from . displacement_props import SOURCEOPS_DisplacementProps
 from . vmf_props import SOURCEOPS_VMFProps
 
 class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
@@ -14,8 +13,6 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
 
     map_items: bpy.props.CollectionProperty(type=SOURCEOPS_MapProps)
     map_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
-    displacement_items: bpy.props.CollectionProperty(type=SOURCEOPS_DisplacementProps)
-    displacement_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
     
     vmf_items: bpy.props.CollectionProperty(type=SOURCEOPS_VMFProps)
     vmf_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')

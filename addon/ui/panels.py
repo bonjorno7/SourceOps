@@ -19,7 +19,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
         map_props = common.get_map(sourceops)
-        displacement = common.get_displacement(sourceops)
         vmf = common.get_vmf(sourceops)
 
         if sourceops:
