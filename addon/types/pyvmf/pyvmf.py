@@ -39,6 +39,14 @@ class Convert:
     @staticmethod
     def string_to_color_light(string: str) -> ColorLight:
         temp = string.split()
+        
+        if len(temp) == 3: # No brightness value
+            temp.append(200)
+            
+        elif len(temp) < 3:
+            temp = [255, 255, 255, 200]
+            print("Invalid light detected, substituting with 255, 255, 255, 200")
+        
         return ColorLight(int(temp[0]), int(temp[1]), int(temp[2]), int(temp[3]))
 
     @staticmethod
@@ -2124,6 +2132,9 @@ class VMF:
         :rtype: :obj:`list` of :class:`Solid`
         """
         li = []
+        if self.world is None:
+            raise Exception("An issue occurred while parsing the map.")
+                
         li.extend(self.world.solids)
         if include_hidden:
             for s in self.world.hidden:
@@ -2137,8 +2148,9 @@ class VMF:
         if include_hidden:
             for h in self.hidden:
                 if h.entity is not None:
-                    for s in h.entity.solid:
-                        li.append(s)
+                    if hasattr(h.entity, 'solid'):
+                        for s in h.entity.solid:
+                            li.append(s)
 
         return li
 

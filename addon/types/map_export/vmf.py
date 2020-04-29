@@ -28,6 +28,7 @@ class VMF:
         self.solids = brush_converter.solids + disp_converter.solids
 
         self.to_mesh_clear(brush_objects + disp_objects)
+        self.mesh_clear(brush_meshes + disp_meshes)
         self.restore_scene(scene_settings)
 
 
@@ -82,13 +83,20 @@ class VMF:
             evaluated_object = object.evaluated_get(depsgraph)
             evaluated_objects.append(evaluated_object)
 
-            evaluated_mesh = evaluated_object.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
+            evaluated_mesh_precopy = evaluated_object.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
+            evaluated_mesh = evaluated_mesh_precopy.copy()
+            del evaluated_mesh_precopy
+            
+            
             evaluated_mesh.transform(object.matrix_world)
             evaluated_meshes.append(evaluated_mesh)
 
         return evaluated_objects, evaluated_meshes
 
-
     def to_mesh_clear(self, evaluated_objects):
         for object in evaluated_objects:
             object.to_mesh_clear()
+
+    def mesh_clear(self, evaluated_meshes):
+        for object in evaluated_meshes:
+            del object
