@@ -34,7 +34,8 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
             self.report({'INFO'}, 'Please choose a collection')
             return {'CANCELLED'}
 
-        path = str(Path(game.maps).joinpath(props.name))
+        maps = bpy.path.abspath(game.maps)
+        path = str(Path(maps) / props.name)
 
         if props.brush_collection:
             brush_objects = [o for o in props.brush_collection.all_objects if o.type == 'MESH']
