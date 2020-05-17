@@ -284,7 +284,7 @@ class Triangles:
 
         bm = bmesh.new()
         bm.from_mesh(mesh)
-        bmesh.ops.triangulate(bm, faces=bm.faces)
+        bmesh.ops.triangulate(bm, faces=bm.faces, quad_method='FIXED', ngon_method='EAR_CLIP')
         bm.to_mesh(mesh)
         bm.free()
 
