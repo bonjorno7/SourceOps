@@ -171,6 +171,7 @@ class Model:
                 for collection in bodygroup.children:
                     name = common.clean_filename(collection.name)
                     qc.write(f'    studio "{name}.smd"\n')
+                qc.write('    blank\n')
                 qc.write('}')
                 qc.write('\n')
 
