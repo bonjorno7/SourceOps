@@ -163,7 +163,7 @@ class Model:
             qc.write('}')
             qc.write('\n')
 
-        if self.bodygroups:
+        if self.bodygroups and not self.static:
             for bodygroup in self.bodygroups.children:
                 qc.write('\n')
                 bodygroup_name = common.clean_filename(bodygroup.name)
