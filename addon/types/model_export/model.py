@@ -167,7 +167,7 @@ class Model:
             for bodygroup in self.bodygroups.children:
                 qc.write('\n')
                 bodygroup_name = common.clean_filename(bodygroup.name)
-                qc.write(f'$bodygroup "{bodygroup_name}.smd"' + ' {\n')
+                qc.write(f'$bodygroup "{bodygroup_name}"' + ' {\n')
                 for collection in bodygroup.children:
                     name = common.clean_filename(collection.name)
                     qc.write(f'    studio "{name}.smd"\n')
