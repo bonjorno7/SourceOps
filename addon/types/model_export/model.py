@@ -163,14 +163,15 @@ class Model:
             qc.write('}')
             qc.write('\n')
 
-        if self.bodygroups:
+        if self.bodygroups and not self.static:
             for bodygroup in self.bodygroups.children:
                 qc.write('\n')
                 bodygroup_name = common.clean_filename(bodygroup.name)
-                qc.write(f'$bodygroup "{bodygroup_name}.smd"' + ' {\n')
+                qc.write(f'$bodygroup "{bodygroup_name}"' + ' {\n')
                 for collection in bodygroup.children:
                     name = common.clean_filename(collection.name)
                     qc.write(f'    studio "{name}.smd"\n')
+                qc.write('    blank\n')
                 qc.write('}')
                 qc.write('\n')
 
