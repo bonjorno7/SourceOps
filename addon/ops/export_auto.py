@@ -3,10 +3,10 @@ from .. utils import common
 from .. types . model_export . model import Model
 
 
-class SOURCEOPS_OT_ExportAll(bpy.types.Operator):
-    bl_idname = 'sourceops.export_all'
+class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
+    bl_idname = 'sourceops.export_auto'
     bl_options = {'REGISTER'}
-    bl_label = 'Export All'
+    bl_label = 'Export Auto'
     bl_description = 'Export '
 
     @classmethod
