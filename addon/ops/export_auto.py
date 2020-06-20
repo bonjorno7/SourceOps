@@ -7,7 +7,8 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_idname = 'sourceops.export_auto'
     bl_options = {'REGISTER'}
     bl_label = 'Export Auto'
-    bl_description = 'Export '
+    bl_description = '''Generate QC, export meshes, and compile QC
+Shift click to do this for all models in the scene'''
 
     @classmethod
     def poll(cls, context):
@@ -24,20 +25,35 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             self.report({'ERROR'}, 'Game is invalid')
             return {'CANCELLED'}
 
-        for model in sourceops.model_items:
-            source_model = Model(game, model)
+        if event.shift:
+            for model in sourceops.model_items:
+                if not self.export(game, model):
+                    return {'CANCELLED'}
 
-            if not source_model.generate_qc():
-                self.report({'ERROR'}, f'Failed to generate QC for {model.display}')
+            self.report({'INFO'}, 'Exported all models in the scene')
+            return {'FINISHED'}
+
+        else:
+            model = common.get_model(sourceops)
+            if not self.export(game, model):
                 return {'CANCELLED'}
 
-            if not source_model.export_meshes():
-                self.report({'ERROR'}, f'Failed to export meshes for {model.display}')
-                return {'CANCELLED'}
+            self.report({'INFO'}, f'Exported {model.display}')
+            return {'FINISHED'}
 
-            if not source_model.compile_qc():
-                self.report({'ERROR'}, f'Failed to compile QC for {model.display}')
-                return {'CANCELLED'}
+    def export(self, game, model):
+        source_model = Model(game, model)
 
-        self.report({'INFO'}, 'Exported Everything')
-        return {'FINISHED'}
+        if not source_model.generate_qc():
+            self.report({'ERROR'}, f'Failed to generate QC for {model.display}')
+            return False
+
+        if not source_model.export_meshes():
+            self.report({'ERROR'}, f'Failed to export meshes for {model.display}')
+            return False
+
+        if not source_model.compile_qc():
+            self.report({'ERROR'}, f'Failed to compile QC for {model.display}')
+            return False
+
+        return True
