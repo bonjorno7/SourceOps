@@ -28,19 +28,19 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     )
 
     collision: bpy.props.PointerProperty(
-        name='Reference',
+        name='Collision',
         description='Tangible meshes combined into one body',
         type=bpy.types.Collection,
     )
 
     bodygroups: bpy.props.PointerProperty(
-        name='Reference',
+        name='Bodygroups',
         description='Groups of visible meshes, the game can choose one body per group',
         type=bpy.types.Collection,
     )
 
     stacking: bpy.props.PointerProperty(
-        name='Reference',
+        name='Stacking',
         description='Visible meshes drawn in the specified order',
         type=bpy.types.Collection,
     )
