@@ -11,6 +11,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
     bl_label = f'SourceOps    -    {common.get_version()}'
 
     def draw(self, context):
+        layout = self.layout
+
         sourceops = common.get_globals(context)
         game = common.get_game(sourceops)
         model = common.get_model(sourceops)
@@ -21,7 +23,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         map_props = common.get_map(sourceops)
 
         if sourceops:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5
             row.label(text='Panel')
@@ -30,7 +32,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.prop(sourceops, 'panel', expand=True, icon_only=True)
 
         if sourceops.panel == 'GAMES' and sourceops:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Games')
@@ -47,7 +49,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Maps Path', game, 'maps')
 
         elif sourceops.panel == 'MODELS' and sourceops:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Models')
@@ -65,7 +67,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Stacking', model, 'stacking')
 
         elif sourceops.panel == 'MODEL_OPTIONS' and model:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Model Options')
@@ -74,7 +76,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             common.add_prop(box, 'Static Prop', model, 'static')
             common.add_prop(box, 'Has Glass', model, 'glass')
 
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Transform Options')
@@ -87,7 +89,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             common.add_prop(box, 'Scale', model, 'scale')
 
         elif sourceops.panel == 'TEXTURES' and model:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Material Folders')
@@ -100,7 +102,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if material_folder:
                 common.add_prop(box, 'Name', material_folder, 'name')
 
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Skins')
@@ -114,7 +116,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Name', skin, 'name')
 
         elif sourceops.panel == 'SEQUENCES' and model:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Sequences')
@@ -135,7 +137,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Loop', sequence, 'loop')
 
         elif sourceops.panel == 'EVENTS' and sequence:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Events')
@@ -152,7 +154,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Value', event, 'value')
 
         if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS'}:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5
             row.label(text='Export')
@@ -168,7 +170,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.export_auto', text='', icon='AUTO')
 
         if sourceops.panel == 'MAPS' and sourceops:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Maps')
@@ -188,7 +190,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 common.add_prop(box, 'Lightmap Scale', map_props, 'lightmap_scale')
                 common.add_prop(box, 'Align to Grid', map_props, 'align_to_grid')
 
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5
             row.label(text='Export')
@@ -198,7 +200,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.export_vmf', text='', icon_value=icons.id('vmf'))
 
         if sourceops.panel == 'SIMULATION' and sourceops:
-            box = self.layout.box()
+            box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Simulation')
