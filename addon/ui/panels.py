@@ -43,10 +43,12 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'GAMES')
 
             if game:
-                common.add_prop(box, 'Name', game, 'name')
-                common.add_prop(box, 'Gameinfo Path', game, 'gameinfo')
-                common.add_prop(box, 'Additional Path', game, 'additional')
-                common.add_prop(box, 'Maps Path', game, 'maps')
+                col = common.split_column(box)
+                col.prop(game, 'name')
+                col.prop(game, 'bin')
+                col.prop(game, 'modelsrc')
+                col.prop(game, 'models')
+                col.prop(game, 'maps')
 
         elif sourceops.panel == 'MODELS' and sourceops:
             box = layout.box()
@@ -60,11 +62,12 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MODELS')
 
             if model:
-                common.add_prop(box, 'Name', model, 'name')
-                common.add_prop(box, 'Reference', model, 'reference')
-                common.add_prop(box, 'Collision', model, 'collision')
-                common.add_prop(box, 'Bodygroups', model, 'bodygroups')
-                common.add_prop(box, 'Stacking', model, 'stacking')
+                col = common.split_column(box)
+                col.prop(model, 'name')
+                col.prop(model, 'reference')
+                col.prop(model, 'collision')
+                col.prop(model, 'bodygroups')
+                col.prop(model, 'stacking')
 
         elif sourceops.panel == 'MODEL_OPTIONS' and model:
             box = layout.box()
@@ -72,21 +75,26 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.alignment = 'CENTER'
             row.label(text='Model Options')
 
-            common.add_prop(box, 'Surface Property', model, 'surface')
-            common.add_prop(box, 'Static Prop', model, 'static')
-            common.add_prop(box, 'Has Glass', model, 'glass')
+            col = common.split_column(box)
+            col.prop(model, 'surface')
+            col.prop(model, 'static')
+            col.prop(model, 'glass')
 
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Transform Options')
 
-            common.add_prop(box, 'Ignore Transforms', model, 'ignore_transforms')
-            common.add_prop(box, 'Origin +X', model, 'origin_x')
-            common.add_prop(box, 'Origin +Y', model, 'origin_y')
-            common.add_prop(box, 'Origin -Z', model, 'origin_z')
-            common.add_prop(box, 'Rotation', model, 'rotation')
-            common.add_prop(box, 'Scale', model, 'scale')
+            col = common.split_column(box)
+            col.prop(model, 'ignore_transforms')
+
+            align = col.column(align=True)
+            align.prop(model, 'origin_x', text='Origin X')
+            align.prop(model, 'origin_y', text='Y')
+            align.prop(model, 'origin_z', text='-Z')
+
+            col.prop(model, 'rotation')
+            col.prop(model, 'scale')
 
         elif sourceops.panel == 'TEXTURES' and model:
             box = layout.box()
@@ -100,7 +108,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MATERIAL_FOLDERS')
 
             if material_folder:
-                common.add_prop(box, 'Name', material_folder, 'name')
+                col = common.split_column(box)
+                col.prop(material_folder, 'name')
 
             box = layout.box()
             row = box.row()
@@ -113,7 +122,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'SKINS')
 
             if skin:
-                common.add_prop(box, 'Name', skin, 'name')
+                col = common.split_column(box)
+                col.prop(skin, 'name')
 
         elif sourceops.panel == 'SEQUENCES' and model:
             box = layout.box()
@@ -127,14 +137,19 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'SEQUENCES')
 
             if sequence:
-                common.add_prop(box, 'Name', sequence, 'name')
-                common.add_props(box, 'Framerate Override', sequence, ('override', 'framerate'))
-                common.add_prop(box, 'Start Frame', sequence, 'start')
-                common.add_prop(box, 'End Frame', sequence, 'end')
-                common.add_prop(box, 'Activity', sequence, 'activity')
-                common.add_prop(box, 'Weight', sequence, 'weight')
-                common.add_prop(box, 'Snap', sequence, 'snap')
-                common.add_prop(box, 'Loop', sequence, 'loop')
+                col = common.split_column(box)
+                col.prop(sequence, 'name')
+
+                row = col.row()
+                row.prop(sequence, 'framerate')
+                row.prop(sequence, 'override', text='')
+                
+                col.prop(sequence, 'start')
+                col.prop(sequence, 'end')
+                col.prop(sequence, 'activity')
+                col.prop(sequence, 'weight')
+                col.prop(sequence, 'snap')
+                col.prop(sequence, 'loop')
 
         elif sourceops.panel == 'EVENTS' and sequence:
             box = layout.box()
@@ -148,10 +163,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'EVENTS')
 
             if event:
-                common.add_prop(box, 'Name', event, 'name')
-                common.add_prop(box, 'Event Type', event, 'event')
-                common.add_prop(box, 'Frame', event, 'frame')
-                common.add_prop(box, 'Value', event, 'value')
+                col = common.split_column(box)
+                col.prop(event, 'name')
+                col.prop(event, 'event')
+                col.prop(event, 'frame')
+                col.prop(event, 'value')
 
         if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS'}:
             box = layout.box()
@@ -181,14 +197,15 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MAPS')
 
             if map_props:
-                common.add_prop(box, 'Name', map_props, 'name')
-                common.add_prop(box, 'Brushes', map_props, 'brush_collection')
-                common.add_prop(box, 'Displacements', map_props, 'disp_collection')
-                common.add_prop(box, 'UV Scale', map_props, 'uv_scale')
-                common.add_prop(box, 'Geometry Scale', map_props, 'geometry_scale')
-                common.add_prop(box, 'Texture Scale', map_props, 'texture_scale')
-                common.add_prop(box, 'Lightmap Scale', map_props, 'lightmap_scale')
-                common.add_prop(box, 'Align to Grid', map_props, 'align_to_grid')
+                col = common.split_column(box)
+                col.prop(map_props, 'name')
+                col.prop(map_props, 'brush_collection')
+                col.prop(map_props, 'disp_collection')
+                col.prop(map_props, 'uv_scale')
+                col.prop(map_props, 'geometry_scale')
+                col.prop(map_props, 'texture_scale')
+                col.prop(map_props, 'lightmap_scale')
+                col.prop(map_props, 'align_to_grid')
 
             box = layout.box()
             row = box.row()
@@ -205,8 +222,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.alignment = 'CENTER'
             row.label(text='Simulation')
 
-            common.add_prop(box, 'Simulation Input', sourceops, 'simulation_input')
-            common.add_prop(box, 'Simulation Output', sourceops, 'simulation_output')
+            col = common.split_column(box)
+            col.prop(sourceops, 'simulation_input')
+            col.prop(sourceops, 'simulation_output')
             box.operator('sourceops.rig_simulation', text='Rig Simulation')
 
     def draw_list_buttons(self, layout, item):
