@@ -1,7 +1,6 @@
 import bpy
 import string
 import unicodedata
-import os
 from pathlib import Path
 
 
@@ -106,9 +105,9 @@ def resolve_path(path):
 
 
 def verify_folder(path):
-    if not os.path.exists(path):
+    if not path.is_dir():
         try:
-            os.makedirs(path)
+            path.mkdir(parents=True, exist_ok=True)
         except:
             print(f'Failed to create directory: {path}')
     return path
