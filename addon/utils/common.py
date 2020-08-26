@@ -81,20 +81,6 @@ def verify_game(game):
     return False
 
 
-def add_prop(layout, label, scope, prop):
-    row = layout.row().split(factor=0.4)
-    row.label(text=label)
-    row.split().row().prop(scope, prop, text='')
-
-
-def add_props(layout, label, scope, props):
-    row = layout.row().split(factor=0.4)
-    row.label(text=label)
-    row = row.row()
-    for prop in props:
-        row.prop(scope, prop, text='')
-
-
 def split_column(layout):
     col = layout.column()
     col.use_property_split = True
