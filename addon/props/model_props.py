@@ -15,14 +15,8 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     sequence_items: bpy.props.CollectionProperty(type=SOURCEOPS_SequenceProps)
     sequence_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
-    display: bpy.props.StringProperty(
-        name='Display Name',
-        description='The name this model has in the list',
-        default='Example',
-    )
-
     name: bpy.props.StringProperty(
-        name='Model Name',
+        name='Name',
         description='Your model\'s path, eg example/model',
         default='example/model',
     )

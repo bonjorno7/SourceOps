@@ -7,7 +7,7 @@ class SOURCEOPS_SequenceProps(bpy.types.PropertyGroup):
     event_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
     name: bpy.props.StringProperty(
-        name='Sequence Name',
+        name='Name',
         description='The name this sequence will have in game',
         default='idle',
     )
