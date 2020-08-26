@@ -1,11 +1,17 @@
 import bpy
 from pathlib import Path
-from . import common
+
+
+def resolve(path):
+    if path:
+        return str(Path(bpy.path.abspath(path)).resolve())
+    else:
+        return ''
 
 
 def update_game(self, context):
-    game = common.resolve_path(self.game)
-    self['game'] = str(game)
+    self['game'] = resolve(self.game)
+    game = Path(self.game)
 
     if game.joinpath('gameinfo.txt').is_file():
         self['bin'] = str(game.parent.joinpath('bin'))
@@ -15,19 +21,19 @@ def update_game(self, context):
 
 
 def update_bin(self, context):
-    self['bin'] = str(common.resolve_path(self.bin))
+    self['bin'] = resolve(self.bin)
 
 
 def update_modelsrc(self, context):
-    self['modelsrc'] = str(common.resolve_path(self.modelsrc))
+    self['modelsrc'] = resolve(self.modelsrc)
 
 
 def update_models(self, context):
-    self['models'] = str(common.resolve_path(self.models))
+    self['models'] = resolve(self.models)
 
 
 def update_maps(self, context):
-    self['maps'] = str(common.resolve_path(self.maps))
+    self['maps'] = resolve(self.maps)
 
 
 def verify(game):
