@@ -8,23 +8,26 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         default='Example',
     )
 
-    gameinfo: bpy.props.StringProperty(
-        name='Gameinfo Path',
-        description='Path to your gameinfo.txt',
-        default='gameinfo.txt',
-        subtype='FILE_PATH',
+    bin: bpy.props.StringProperty(
+        name='Bin',
+        description='Path to your bin folder',
+        subtype='DIR_PATH',
     )
 
-    additional: bpy.props.StringProperty(
-        name='Additional Path',
-        description='Compiled models will be copied to this path',
-        default='',
-        subtype='FILE_PATH',
+    modelsrc: bpy.props.StringProperty(
+        name='ModelSrc',
+        description='Path to your modelsrc folder',
+        subtype='DIR_PATH',
+    )
+
+    models: bpy.props.StringProperty(
+        name='Models',
+        description='Path to your models folder',
+        subtype='DIR_PATH',
     )
 
     maps: bpy.props.StringProperty(
-        name='Maps Path',
-        description='Maps will be exported to this folder',
-        default='',
-        subtype='FILE_PATH',
+        name='Maps',
+        description='Path to your maps folder',
+        subtype='DIR_PATH',
     )
