@@ -65,21 +65,6 @@ def get_map(sourceops):
         return None
 
 
-def verify_game(game):
-    gameinfo = Path(bpy.path.abspath(game.gameinfo)).resolve()
-    studiomdl = gameinfo.parent.parent / 'bin/studiomdl.exe'
-
-    if gameinfo.is_file() and studiomdl.is_file():
-        game.gameinfo = str(gameinfo)
-
-        if game.additional:
-            additional = Path(bpy.path.abspath(game.additional)).resolve()
-            game.additional = str(additional)
-
-        return True
-    return False
-
-
 def split_column(layout):
     col = layout.column()
     col.use_property_split = True
