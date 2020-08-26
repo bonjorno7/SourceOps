@@ -1,4 +1,5 @@
 import bpy
+from .. import utils
 
 
 class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
@@ -12,28 +13,33 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         name='Game',
         description='Path to your game folder',
         subtype='DIR_PATH',
+        update=utils.game.update_game,
     )
 
     bin: bpy.props.StringProperty(
         name='Bin',
         description='Path to your bin folder',
         subtype='DIR_PATH',
+        update=utils.game.update_bin,
     )
 
     modelsrc: bpy.props.StringProperty(
         name='ModelSrc',
         description='Path to your modelsrc folder',
         subtype='DIR_PATH',
+        update=utils.game.update_modelsrc,
     )
 
     models: bpy.props.StringProperty(
         name='Models',
         description='Path to your models folder',
         subtype='DIR_PATH',
+        update=utils.game.update_models,
     )
 
     maps: bpy.props.StringProperty(
         name='Maps',
         description='Path to your maps folder',
         subtype='DIR_PATH',
+        update=utils.game.update_maps,
     )
