@@ -1,9 +1,2 @@
-import bpy
-
-
-def register():
-    pass
-
-
-def unregister():
-    pass
+from . import common
+from . import game
