@@ -1,4 +1,4 @@
-SOURCEOPS_SurfaceProps = [
+SOURCEOPS_SurfaceProps = sorted([
     ('default', 'default', ''),
     ('default_silent', 'default_silent', ''),
     ('floatingstandable', 'floatingstandable', ''),
@@ -85,4 +85,4 @@ SOURCEOPS_SurfaceProps = [
     ('ceiling_tile', 'ceiling_tile', ''),
     ('computer', 'computer', ''),
     ('pottery', 'pottery', ''),
-]
+])
