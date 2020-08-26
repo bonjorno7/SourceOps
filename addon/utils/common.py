@@ -85,10 +85,6 @@ def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_ch
     return cleaned_filename[:char_limit]   
 
 
-def resolve_path(path):
-    return Path(bpy.path.abspath(path)).resolve()
-
-
 def verify_folder(path):
     if not path.is_dir():
         try:
