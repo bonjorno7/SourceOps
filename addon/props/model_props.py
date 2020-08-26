@@ -55,6 +55,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='Surface Property',
         description='$surfaceprop, this affects decals and how it sounds in game',
         items=SOURCEOPS_SurfaceProps,
+        default='default',
     )
 
     static: bpy.props.BoolProperty(
