@@ -41,7 +41,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'GAMES')
 
             if game:
-                common.add_prop(box, 'Display Name', game, 'display')
+                common.add_prop(box, 'Name', game, 'name')
                 common.add_prop(box, 'Gameinfo Path', game, 'gameinfo')
                 common.add_prop(box, 'Additional Path', game, 'additional')
                 common.add_prop(box, 'Maps Path', game, 'maps')
@@ -58,8 +58,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MODELS')
 
             if model:
-                common.add_prop(box, 'Display Name', model, 'display')
-                common.add_prop(box, 'Model Name', model, 'name')
+                common.add_prop(box, 'Name', model, 'name')
                 common.add_prop(box, 'Reference', model, 'reference')
                 common.add_prop(box, 'Collision', model, 'collision')
                 common.add_prop(box, 'Bodygroups', model, 'bodygroups')
@@ -99,7 +98,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MATERIAL_FOLDERS')
 
             if material_folder:
-                common.add_prop(box, 'Folder Path', material_folder, 'path')
+                common.add_prop(box, 'Name', material_folder, 'name')
 
             box = self.layout.box()
             row = box.row()
@@ -112,7 +111,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'SKINS')
 
             if skin:
-                common.add_prop(box, 'VMT Name', skin, 'name')
+                common.add_prop(box, 'Name', skin, 'name')
 
         elif sourceops.panel == 'SEQUENCES' and model:
             box = self.layout.box()
@@ -126,7 +125,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'SEQUENCES')
 
             if sequence:
-                common.add_prop(box, 'Sequence Name', sequence, 'name')
+                common.add_prop(box, 'Name', sequence, 'name')
                 common.add_props(box, 'Framerate Override', sequence, ('override', 'framerate'))
                 common.add_prop(box, 'Start Frame', sequence, 'start')
                 common.add_prop(box, 'End Frame', sequence, 'end')
@@ -147,7 +146,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'EVENTS')
 
             if event:
-                common.add_prop(box, 'Display Name', event, 'display')
+                common.add_prop(box, 'Name', event, 'name')
                 common.add_prop(box, 'Event Type', event, 'event')
                 common.add_prop(box, 'Frame', event, 'frame')
                 common.add_prop(box, 'Value', event, 'value')
@@ -180,7 +179,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'MAPS')
 
             if map_props:
-                common.add_prop(box, 'Map Name', map_props, 'name')
+                common.add_prop(box, 'Name', map_props, 'name')
                 common.add_prop(box, 'Brushes', map_props, 'brush_collection')
                 common.add_prop(box, 'Displacements', map_props, 'disp_collection')
                 common.add_prop(box, 'UV Scale', map_props, 'uv_scale')
