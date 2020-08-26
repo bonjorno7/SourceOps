@@ -8,6 +8,12 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         default='Example',
     )
 
+    game: bpy.props.StringProperty(
+        name='Game',
+        description='Path to your game folder',
+        subtype='DIR_PATH',
+    )
+
     bin: bpy.props.StringProperty(
         name='Bin',
         description='Path to your bin folder',

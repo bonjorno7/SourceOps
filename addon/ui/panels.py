@@ -45,6 +45,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if game:
                 col = common.split_column(box)
                 col.prop(game, 'name')
+                col.prop(game, 'game')
                 col.prop(game, 'bin')
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
