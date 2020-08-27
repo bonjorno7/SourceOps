@@ -1,23 +1,33 @@
 import bpy
-import os
 import shutil
 import subprocess
+from pathlib import Path
 from ... utils import common
 from . smd import SMD
 
 
 class Model:
     def __init__(self, game, model):
-        self.gameinfo = game.gameinfo
-        self.additional = game.additional
+        self.game = Path(game.game)
+        self.bin = Path(game.bin)
+        self.modelsrc = Path(game.modelsrc)
+        self.models = Path(game.models)
+        self.maps = Path(game.maps)
 
-        self.name = model.name
-        if self.name.lower().endswith('.mdl'):
-            self.name = self.name[0:-4]
+        self.name = str(Path(model.name).with_suffix(''))
+        self.basename = common.clean_filename(Path(self.name).stem)
+        directory = self.modelsrc.joinpath(self.name)
+        self.directory = common.verify_folder(directory)
+
+        studiomdl = self.bin.joinpath('studiomdl.exe')
+        quickmdl = self.bin.joinpath('quickmdl.exe')
+        self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
+        self.hlmv = self.bin.joinpath('hlmv.exe')
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
         self.sequence_items = model.sequence_items
+
         self.reference = model.reference
         self.collision = model.collision
         self.bodygroups = model.bodygroups
@@ -35,41 +45,38 @@ class Model:
         self.scale = model.scale
 
     def export_meshes(self):
-        directory = self.get_directory()
         armatures = self.get_armatures()
-
-        name = common.clean_filename(os.path.basename(self.name))
-        path = f'{directory}{name}_anims.smd'
+        path = self.directory.joinpath(f'{self.basename}_anims.smd')
         self.export_smd(armatures, [], path)
 
         if self.reference:
             objects = self.get_all_objects(self.reference)
-            path = self.get_body_path(directory, self.reference)
+            path = self.get_body_path(self.reference)
             self.export_smd(armatures, objects, path)
 
         if self.collision:
             objects = self.get_all_objects(self.collision)
-            path = self.get_body_path(directory, self.collision)
+            path = self.get_body_path(self.collision)
             self.export_smd(armatures, objects, path)
 
         if self.bodygroups:
             for bodygroup in self.bodygroups.children:
                 for collection in bodygroup.children:
                     objects = self.get_all_objects(collection)
-                    path = self.get_body_path(directory, collection)
+                    path = self.get_body_path(collection)
                     self.export_smd(armatures, objects, path)
 
         if self.stacking:
             for collection in self.stacking.children:
                 objects = self.get_all_objects(collection)
-                path = self.get_body_path(directory, collection)
+                path = self.get_body_path(collection)
                 self.export_smd(armatures, objects, path)
 
         return True
 
     def export_smd(self, armatures, objects, path):
         try:
-            smd_file = open(path, 'w')
+            smd_file = path.open('w')
             print(f'Exporting: {path}')
 
         except:
@@ -93,21 +100,19 @@ class Model:
     def get_all_objects(self, collection):
         return common.remove_duplicates(collection.all_objects) if collection else []
 
-    def get_body_path(self, directory, collection):
+    def get_body_path(self, collection):
         name = common.clean_filename(collection.name)
-        return f'{directory}{name}.smd'
+        return self.directory.joinpath(f'{name}.smd')
 
     def generate_qc(self):
         if not self.reference and not self.stacking:
             print('Models need visible meshes')
             return False
 
-        directory = self.get_directory()
-        name = common.clean_filename(os.path.basename(self.name))
-        path = f'{directory}{name}.qc'
+        path = self.directory.joinpath(f'{self.basename}.qc')
 
         try:
-            qc = open(path, 'w')
+            qc = path.open('w')
             print(f'Generating: {path}')
         except:
             print(f'Failed to generate: {path}')
@@ -123,7 +128,7 @@ class Model:
 
         for material_folder in self.material_folder_items:
             qc.write('\n')
-            qc.write(f'$cdmaterials "{material_folder.path}"')
+            qc.write(f'$cdmaterials "{material_folder.name}"')
             qc.write('\n')
 
         qc.write('\n')
@@ -182,8 +187,7 @@ class Model:
                 qc.write(f'$model "{name}" "{name}.smd"')
                 qc.write('\n')
 
-        name = common.clean_filename(os.path.basename(self.name))
-        path = f'{name}_anims.smd'
+        path = f'{self.basename}_anims.smd'
 
         if not self.sequence_items:
             qc.write('\n')
@@ -227,81 +231,69 @@ class Model:
         return True
 
     def compile_qc(self):
-        name = common.clean_filename(os.path.basename(self.name))
-        directory = self.get_directory()
-        studiomdl = self.get_studiomdl()
-
-        qc = f'{directory}{name}.qc'
-        if os.path.isfile(qc):
+        qc = self.directory.joinpath(f'{self.basename}.qc')
+        if qc.is_file():
             print(f'Compiling: {qc}')
             self.remove_old()
 
-            args = [studiomdl, '-nop4', '-fullcollide', qc]
+            args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             while True:
                 code = pipe.returncode
                 if code is None:
-                    with open(f'{directory}{name}.log', 'w') as log:
-                        log.write(pipe.communicate()[0].decode('utf'))
+                    log = self.directory.joinpath(f'{self.basename}.log')
+                    log.write_text(pipe.communicate()[0].decode('utf'))
                 else:
                     break
 
             if code == 0:
-                self.copy_files()
+                self.move_files()
                 return True
 
         print(f'Failed to compile: {qc}')
         return False
 
     def open_qc(self):
-        directory = self.get_directory()
-        name = common.clean_filename(os.path.basename(self.name))
-
-        qc = f'{directory}{name}.qc'.replace('\\', '/')
-        if not os.path.isfile(qc):
+        qc = self.directory.joinpath(f'{self.basename}.qc')
+        if qc.is_file():
             print(f'Failed to open: {qc}')
             return False
 
         for text in bpy.data.texts:
-            if text.filepath.replace('\\', '/') == qc:
+            if Path(text.filepath) == qc:
                 bpy.data.texts.remove(text)
 
-        text = bpy.data.texts.load(filepath=qc)
+        text = bpy.data.texts.load(filepath=str(qc))
         text.name = f'{self.name} (qc)'
 
         print(f'Opening: {qc}')
         return True
 
     def open_log(self):
-        directory = self.get_directory()
-        name = common.clean_filename(os.path.basename(self.name))
-
-        log = f'{directory}{name}.log'.replace('\\', '/')
-        if not os.path.isfile(log):
+        log = self.directory.joinpath(f'{self.basename}.log')
+        if log.is_file():
             print(f'Failed to open: {log}')
             return False
 
         for text in bpy.data.texts:
-            if text.filepath.replace('\\', '/') == log:
+            if Path(text.filepath) == log:
                 bpy.data.texts.remove(text)
 
-        text = bpy.data.texts.load(filepath=log)
+        text = bpy.data.texts.load(filepath=str(log))
         text.name = f'{self.name} (log)'
 
         print(f'Opening: {log}')
         return True
 
     def view_model(self):
-        mod = os.path.dirname(self.gameinfo)
-        model = f'{mod}/models/{self.name}'
-        mdl = f'{model}.mdl'
-        dx90 = f'{model}.dx90.vtx'
+        model = self.models.joinpath(self.name)
+        mdl = model.with_suffix('.mdl')
+        dx90 = model.with_suffix('.dx90.vtx')
 
-        hlmv = self.get_hlmv()
-        args = [hlmv, '-game', mod, mdl]
+        args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
-        if os.path.isfile(dx90):
+        if dx90.is_file():
             print(f'Viewing: {mdl}')
             subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             return True
@@ -309,50 +301,29 @@ class Model:
         print(f'Failed to view: {mdl}')
         return False
 
-    def copy_files(self):
-        if not self.additional:
+    def move_files(self):
+        path_src = self.game.joinpath('models', self.name)
+        path_dst = self.models.joinpath(self.name)
+
+        if path_src == path_dst:
             return
 
-        print(f'Copying to: {self.additional}')
-        mod = os.path.dirname(self.gameinfo)
-        model = f'{mod}/models/{self.name}'
-        additional = f'{self.additional}/models/{self.name}'
-        common.verify_folder(os.path.dirname(additional))
+        print(f'Moving to: {self.models}')
+        common.verify_folder(path_dst.parent)
 
-        for extension in ['.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy']:
-            src = f'{model}{extension}'
-            dst = f'{additional}{extension}'
+        for suffix in ('.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy'):
+            src = path_src.with_suffix(suffix)
+            dst = path_dst.with_suffix(suffix)
 
             try:
                 shutil.copyfile(src, dst)
+                src.unlink()
             except:
-                pass
+                print(f'Failed to move {src} to {dst}')
 
     def remove_old(self):
-        mod = os.path.dirname(self.gameinfo)
-        model = f'{mod}/models/{self.name}'
-        additional = f'{self.additional}/{self.name}'
-
-        for extension in ['.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy']:
-            path = f'{model}{extension}'
-            if os.path.isfile(path):
-                os.remove(path)
-
-            path = f'{additional}{extension}'
-            if os.path.isfile(path):
-                os.remove(path)
-
-    def get_directory(self):
-        mod = os.path.dirname(self.gameinfo)
-        directory = f'{mod}/modelsrc/{self.name}/'
-        return common.verify_folder(directory)
-
-    def get_studiomdl(self):
-        game = os.path.dirname(os.path.dirname(self.gameinfo))
-        studiomdl = f'{game}/bin/studiomdl.exe'
-        quickmdl = f'{game}/bin/quickmdl.exe'
-        return quickmdl if os.path.isfile(quickmdl) else studiomdl
-
-    def get_hlmv(self):
-        game = os.path.dirname(os.path.dirname(self.gameinfo))
-        return f'{game}/bin/hlmv.exe'
+        model = self.models.joinpath(self.name)
+        for suffix in ('.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy'):
+            path = model.with_suffix(suffix)
+            if path.is_file():
+                path.unlink()
