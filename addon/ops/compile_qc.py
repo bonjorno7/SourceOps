@@ -1,5 +1,5 @@
 import bpy
-from .. utils import common
+from .. import utils
 from .. types . model_export . model import Model
 
 
@@ -11,17 +11,17 @@ class SOURCEOPS_OT_CompileQC(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        sourceops = common.get_globals(context)
-        game = common.get_game(sourceops)
-        model = common.get_model(sourceops)
+        sourceops = utils.common.get_globals(context)
+        game = utils.common.get_game(sourceops)
+        model = utils.common.get_model(sourceops)
         return sourceops and game and model
 
     def invoke(self, context, event):
-        sourceops = common.get_globals(context)
-        game = common.get_game(sourceops)
-        model = common.get_model(sourceops)
+        sourceops = utils.common.get_globals(context)
+        game = utils.common.get_game(sourceops)
+        model = utils.common.get_model(sourceops)
 
-        if not common.verify_game(game):
+        if not utils.game.verify(game):
             self.report({'ERROR'}, 'Game is invalid')
             return {'CANCELLED'}
 
