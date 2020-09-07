@@ -1,7 +1,7 @@
 import bpy
 from pathlib import Path
-from .. utils import common
-from ..types.map_export.vmf import VMF, Settings
+from .. import utils
+from .. types . map_export . vmf import VMF, Settings
 
 
 class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
@@ -12,15 +12,17 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        sourceops = common.get_globals(context)
-        game = common.get_game(sourceops)
-        props = common.get_map(sourceops)
-        return sourceops and game and props
+        prefs = utils.common.get_prefs(context)
+        game = utils.common.get_game(prefs)
+        sourceops = utils.common.get_globals(context)
+        props = utils.common.get_map(sourceops)
+        return prefs and game and sourceops and props
 
     def invoke(self, context, event):
-        sourceops = common.get_globals(context)
-        game = common.get_game(sourceops)
-        props = common.get_map(sourceops)
+        prefs = utils.common.get_prefs(context)
+        game = utils.common.get_game(prefs)
+        sourceops = utils.common.get_globals(context)
+        props = utils.common.get_map(sourceops)
 
         if not game.maps:
             self.report({'INFO'}, 'Please enter a maps folder')

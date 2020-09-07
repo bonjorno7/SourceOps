@@ -12,14 +12,16 @@ Shift click to do this for all models in the scene'''
 
     @classmethod
     def poll(cls, context):
+        prefs = utils.common.get_prefs(context)
+        game = utils.common.get_game(prefs)
         sourceops = utils.common.get_globals(context)
-        game = utils.common.get_game(sourceops)
         model = utils.common.get_model(sourceops)
-        return sourceops and game and model
+        return prefs and game and sourceops and model
 
     def invoke(self, context, event):
+        prefs = utils.common.get_prefs(context)
+        game = utils.common.get_game(prefs)
         sourceops = utils.common.get_globals(context)
-        game = utils.common.get_game(sourceops)
 
         if not utils.game.verify(game):
             self.report({'ERROR'}, 'Game is invalid')
