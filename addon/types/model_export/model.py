@@ -256,7 +256,7 @@ class Model:
 
     def open_qc(self):
         qc = self.directory.joinpath(f'{self.basename}.qc')
-        if qc.is_file():
+        if not qc.is_file():
             print(f'Failed to open: {qc}')
             return False
 
@@ -272,7 +272,7 @@ class Model:
 
     def open_log(self):
         log = self.directory.joinpath(f'{self.basename}.log')
-        if log.is_file():
+        if not log.is_file():
             print(f'Failed to open: {log}')
             return False
 
