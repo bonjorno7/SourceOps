@@ -9,16 +9,22 @@ def get_version():
     return '.'.join(str(n) for n in bl_info['version'])
 
 
-def get_globals(context):
+def get_prefs(context):
+    addons = context.preferences.addons
+    module = __name__.partition('.')[0]
+    return addons[module].preferences
+
+
+def get_game(prefs):
     try:
-        return context.scene.sourceops
+        return prefs.game_items[prefs.game_index]
     except:
         return None
 
 
-def get_game(sourceops):
+def get_globals(context):
     try:
-        return sourceops.game_items[sourceops.game_index]
+        return context.scene.sourceops
     except:
         return None
 
