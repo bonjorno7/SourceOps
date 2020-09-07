@@ -13,8 +13,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
+        prefs = common.get_prefs(context)
+        game = common.get_game(prefs)
         sourceops = common.get_globals(context)
-        game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         material_folder = common.get_material_folder(model)
         skin = common.get_skin(model)
@@ -31,14 +32,14 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.alignment = 'RIGHT'
             row.prop(sourceops, 'panel', expand=True, icon_only=True)
 
-        if sourceops.panel == 'GAMES' and sourceops:
+        if sourceops.panel == 'GAMES' and prefs:
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
             row.label(text='Games')
 
             row = box.row()
-            row.template_list('SOURCEOPS_UL_GameList', '', sourceops, 'game_items', sourceops, 'game_index', rows=5)
+            row.template_list('SOURCEOPS_UL_GameList', '', prefs, 'game_items', prefs, 'game_index', rows=5)
             col = row.column(align=True)
             self.draw_list_buttons(col, 'GAMES')
 
