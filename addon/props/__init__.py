@@ -7,6 +7,7 @@ from . material_folder_props import SOURCEOPS_MaterialFolderProps
 from . model_props import SOURCEOPS_ModelProps
 from . game_props import SOURCEOPS_GameProps
 from . global_props import SOURCEOPS_GlobalProps
+from . addon_prefs import SOURCEOPS_AddonPrefs
 
 
 def register():
@@ -18,11 +19,13 @@ def register():
     bpy.utils.register_class(SOURCEOPS_ModelProps)
     bpy.utils.register_class(SOURCEOPS_GameProps)
     bpy.utils.register_class(SOURCEOPS_GlobalProps)
+    bpy.utils.register_class(SOURCEOPS_AddonPrefs)
     bpy.types.Scene.sourceops = bpy.props.PointerProperty(type=SOURCEOPS_GlobalProps)
 
 
 def unregister():
     del bpy.types.Scene.sourceops
+    bpy.utils.unregister_class(SOURCEOPS_AddonPrefs)
     bpy.utils.unregister_class(SOURCEOPS_GlobalProps)
     bpy.utils.unregister_class(SOURCEOPS_GameProps)
     bpy.utils.unregister_class(SOURCEOPS_ModelProps)
