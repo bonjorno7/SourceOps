@@ -4,14 +4,21 @@ import mathutils
 
 
 class Settings:
-    def __init__(self, ignore_transforms):
+    def __init__(self, prepend_armature, ignore_transforms):
+        self.prepend_armature = prepend_armature
         self.ignore_transforms = ignore_transforms
 
 
 class Lookup:
     def __init__(self, settings):
         self.settings = settings
-        self.bones = ['Source.Implicit']
+
+        if self.settings.prepend_armature:
+            name = 'Source.Implicit'
+        else:
+            name = 'Implicit'
+
+        self.bones = [name]
 
     def __getitem__(self, key):
         return self.bones.index(key)
@@ -19,7 +26,11 @@ class Lookup:
     def from_blender(self, armatures):
         for armature in armatures:
             for bone in armature.data.bones:
-                name = f'{armature.name}.{bone.name}'
+                if self.settings.prepend_armature:
+                    name = f'{armature.name}.{bone.name}'
+                else:
+                    name = bone.name
+
                 self.bones.append(name)
 
 
@@ -27,14 +38,26 @@ class Node:
     def __init__(self, settings):
         self.settings = settings
         self.index = 0
-        self.name = 'Source.Implicit'
+
+        if self.settings.prepend_armature:
+            name = 'Source.Implicit'
+        else:
+            name = 'Implicit'
+
+        self.name = name
         self.parent = -1
 
     def from_blender(self, lookup, armature, bone):
-        name = f'{armature.name}.{bone.name}'
+        if self.settings.prepend_armature:
+            name = f'{armature.name}.{bone.name}'
+        else:
+            name = bone.name
 
         if bone.parent:
-            parent = lookup[f'{armature.name}.{bone.parent.name}']
+            if self.settings.prepend_armature:
+                parent = lookup[f'{armature.name}.{bone.parent.name}']
+            else:
+                parent = lookup[bone.parent.name]
         else:
             parent = -1
 
@@ -73,7 +96,10 @@ class RestBone:
         self.rotation = [0, 0, 0]
 
     def from_blender(self, lookup, armature, bone):
-        name = f'{armature.name}.{bone.name}'
+        if self.settings.prepend_armature:
+            name = f'{armature.name}.{bone.name}'
+        else:
+            name = bone.name
 
         if bone.parent:
             parent = bone.parent.matrix_local.inverted_safe()
@@ -123,7 +149,10 @@ class PoseBone:
         self.rotation = [0, 0, 0]
 
     def from_blender(self, lookup, armature, bone):
-        name = f'{armature.name}.{bone.name}'
+        if self.settings.prepend_armature:
+            name = f'{armature.name}.{bone.name}'
+        else:
+            name = bone.name
 
         if bone.parent:
             parent = bone.parent.matrix.inverted_safe()
@@ -222,7 +251,12 @@ class Vertex:
         if armature:
             for group in vertex.groups:
                 bone = object.vertex_groups[group.group]
-                name = f'{armature.name}.{bone.name}'
+
+                if self.settings.prepend_armature:
+                    name = f'{armature.name}.{bone.name}'
+                else:
+                    name = bone.name
+
                 index = lookup[name]
 
                 if index != -1:
@@ -312,8 +346,8 @@ class Triangles:
 
 
 class SMD:
-    def __init__(self, ignore_transforms):
-        self.settings = Settings(ignore_transforms)
+    def __init__(self, prepend_armature, ignore_transforms):
+        self.settings = Settings(prepend_armature, ignore_transforms)
         self.lookup = Lookup(self.settings)
         self.nodes = Nodes(self.settings)
         self.skeleton = Skeleton(self.settings)

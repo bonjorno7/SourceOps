@@ -88,6 +88,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.label(text='Transform Options')
 
             col = common.split_column(box)
+            col.prop(model, 'prepend_armature')
             col.prop(model, 'ignore_transforms')
 
             align = col.column(align=True)

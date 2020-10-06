@@ -37,6 +37,7 @@ class Model:
         self.static = model.static
         self.glass = model.glass
 
+        self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
         self.origin_x = model.origin_x
         self.origin_y = model.origin_y
@@ -83,7 +84,7 @@ class Model:
             print(f'Failed to export: {path}')
             return
 
-        smd = SMD(self.ignore_transforms)
+        smd = SMD(self.prepend_armature, self.ignore_transforms)
         smd.from_blender(armatures, objects)
 
         smd_file.write(smd.to_string())

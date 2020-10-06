@@ -64,6 +64,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+    prepend_armature: bpy.props.BoolProperty(
+        name='Prepend Armature',
+        description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',
+        default=True,
+    )
+
     ignore_transforms: bpy.props.BoolProperty(
         name='Ignore Transforms',
         description='Ignores all transforms of all objects, this includes parenting',
