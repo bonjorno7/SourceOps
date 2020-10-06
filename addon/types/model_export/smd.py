@@ -21,7 +21,10 @@ class Lookup:
         self.bones = [name]
 
     def __getitem__(self, key):
-        return self.bones.index(key)
+        if key in self.bones:
+            return self.bones.index(key)
+        else:
+            return -1
 
     def from_blender(self, armatures):
         for armature in armatures:
