@@ -6,7 +6,17 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
     bl_idname = 'sourceops.list_operator'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     bl_label = 'List Operator'
-    bl_description = 'Add / remove / copy / move items in the list'
+
+    @classmethod
+    def description(cls, context, properties):
+        action = properties.mode.split('_')
+        item = properties.item.replace('_', ' ')
+
+        text = f'{action[0]} {item[:-1]}'
+        if len(action) > 1:
+            text = f'{text} {action[1]}'
+
+        return text.capitalize()
 
     mode: bpy.props.EnumProperty(
         name='Mode',
@@ -69,8 +79,9 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         return self.move(parent, items, index, 1)
 
     def invoke(self, context, event):
+        prefs = common.get_prefs(context)
+        game = common.get_game(prefs)
         sourceops = common.get_globals(context)
-        game = common.get_game(sourceops)
         model = common.get_model(sourceops)
         sequence = common.get_sequence(model)
 
@@ -83,7 +94,7 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         }
 
         item_dict = {
-            'GAMES': (sourceops, 'game_items', 'game_index'),
+            'GAMES': (prefs, 'game_items', 'game_index'),
             'MODELS': (sourceops, 'model_items', 'model_index'),
             'MATERIAL_FOLDERS': (model, 'material_folder_items', 'material_folder_index'),
             'SKINS': (model, 'skin_items', 'skin_index'),

@@ -6,7 +6,6 @@ from . import ui
 
 
 def register():
-    utils.register()
     props.register()
     icons.register()
     ops.register()
@@ -18,4 +17,3 @@ def unregister():
     ops.unregister()
     props.unregister()
     icons.unregister()
-    utils.unregister()

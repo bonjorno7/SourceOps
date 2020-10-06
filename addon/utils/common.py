@@ -1,7 +1,6 @@
 import bpy
 import string
 import unicodedata
-import os
 from pathlib import Path
 
 
@@ -10,16 +9,22 @@ def get_version():
     return '.'.join(str(n) for n in bl_info['version'])
 
 
-def get_globals(context):
+def get_prefs(context):
+    addons = context.preferences.addons
+    module = __name__.partition('.')[0]
+    return addons[module].preferences
+
+
+def get_game(prefs):
     try:
-        return context.scene.sourceops
+        return prefs.game_items[prefs.game_index]
     except:
         return None
 
 
-def get_game(sourceops):
+def get_globals(context):
     try:
-        return sourceops.game_items[sourceops.game_index]
+        return context.scene.sourceops
     except:
         return None
 
@@ -66,33 +71,11 @@ def get_map(sourceops):
         return None
 
 
-def verify_game(game):
-    gameinfo = Path(bpy.path.abspath(game.gameinfo)).resolve()
-    studiomdl = gameinfo.parent.parent / 'bin/studiomdl.exe'
-
-    if gameinfo.is_file() and studiomdl.is_file():
-        game.gameinfo = str(gameinfo)
-
-        if game.additional:
-            additional = Path(bpy.path.abspath(game.additional)).resolve()
-            game.additional = str(additional)
-
-        return True
-    return False
-
-
-def add_prop(layout, label, scope, prop):
-    row = layout.row().split(factor=0.4)
-    row.label(text=label)
-    row.split().row().prop(scope, prop, text='')
-
-
-def add_props(layout, label, scope, props):
-    row = layout.row().split(factor=0.4)
-    row.label(text=label)
-    row = row.row()
-    for prop in props:
-        row.prop(scope, prop, text='')
+def split_column(layout):
+    col = layout.column()
+    col.use_property_split = True
+    col.use_property_decorate = False
+    return col
 
 
 filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
@@ -108,14 +91,10 @@ def clean_filename(filename, whitelist=filename_chars_valid, replace=filename_ch
     return cleaned_filename[:char_limit]   
 
 
-def resolve_path(path):
-    return Path(bpy.path.abspath(path)).resolve()
-
-
 def verify_folder(path):
-    if not os.path.exists(path):
+    if not path.is_dir():
         try:
-            os.makedirs(path)
+            path.mkdir(parents=True, exist_ok=True)
         except:
             print(f'Failed to create directory: {path}')
     return path

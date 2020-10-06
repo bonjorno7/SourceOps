@@ -15,14 +15,8 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     sequence_items: bpy.props.CollectionProperty(type=SOURCEOPS_SequenceProps)
     sequence_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
-    display: bpy.props.StringProperty(
-        name='Display Name',
-        description='The name this model has in the list',
-        default='Example',
-    )
-
     name: bpy.props.StringProperty(
-        name='Model Name',
+        name='Name',
         description='Your model\'s path, eg example/model',
         default='example/model',
     )
@@ -34,19 +28,19 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     )
 
     collision: bpy.props.PointerProperty(
-        name='Reference',
+        name='Collision',
         description='Tangible meshes combined into one body',
         type=bpy.types.Collection,
     )
 
     bodygroups: bpy.props.PointerProperty(
-        name='Reference',
+        name='Bodygroups',
         description='Groups of visible meshes, the game can choose one body per group',
         type=bpy.types.Collection,
     )
 
     stacking: bpy.props.PointerProperty(
-        name='Reference',
+        name='Stacking',
         description='Visible meshes drawn in the specified order',
         type=bpy.types.Collection,
     )
@@ -55,6 +49,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='Surface Property',
         description='$surfaceprop, this affects decals and how it sounds in game',
         items=SOURCEOPS_SurfaceProps,
+        default='default',
     )
 
     static: bpy.props.BoolProperty(
@@ -67,6 +62,18 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='Has Glass',
         description='$mostlyopaque, use this if your model has something transparent like glass',
         default=False,
+    )
+
+    blank: bpy.props.BoolProperty(
+        name='Blank Bodygroup',
+        description='Whether to add a blank bodygroup, if bodygroups are used',
+        default=False,
+    )
+
+    prepend_armature: bpy.props.BoolProperty(
+        name='Prepend Armature',
+        description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',
+        default=True,
     )
 
     ignore_transforms: bpy.props.BoolProperty(

@@ -1,30 +1,45 @@
 import bpy
+from .. import utils
 
 
 class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
-    display: bpy.props.StringProperty(
-        name='Display Name',
+    name: bpy.props.StringProperty(
+        name='Name',
         description='The name this game has in the list',
         default='Example',
     )
 
-    gameinfo: bpy.props.StringProperty(
-        name='Gameinfo Path',
-        description='Path to your gameinfo.txt',
-        default='gameinfo.txt',
-        subtype='FILE_PATH',
+    game: bpy.props.StringProperty(
+        name='Game',
+        description='Path to your game folder',
+        subtype='DIR_PATH',
+        update=utils.game.update_game,
     )
 
-    additional: bpy.props.StringProperty(
-        name='Additional Path',
-        description='Compiled models will be copied to this path',
-        default='',
-        subtype='FILE_PATH',
+    bin: bpy.props.StringProperty(
+        name='Bin',
+        description='Path to your bin folder',
+        subtype='DIR_PATH',
+        update=utils.game.update_bin,
+    )
+
+    modelsrc: bpy.props.StringProperty(
+        name='ModelSrc',
+        description='Path to your modelsrc folder',
+        subtype='DIR_PATH',
+        update=utils.game.update_modelsrc,
+    )
+
+    models: bpy.props.StringProperty(
+        name='Models',
+        description='Path to your models folder',
+        subtype='DIR_PATH',
+        update=utils.game.update_models,
     )
 
     maps: bpy.props.StringProperty(
-        name='Maps Path',
-        description='Maps will be exported to this folder',
-        default='',
-        subtype='FILE_PATH',
+        name='Maps',
+        description='Path to your maps folder',
+        subtype='DIR_PATH',
+        update=utils.game.update_maps,
     )

@@ -3,7 +3,7 @@ import bpy
 
 class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
-        name='Map Name',
+        name='Name',
         description='The name of the VMF to overwrite with your displacements',
         default='example',
     )

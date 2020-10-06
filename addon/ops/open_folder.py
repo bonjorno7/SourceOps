@@ -3,11 +3,11 @@ from .. import utils
 from .. types . model_export . model import Model
 
 
-class SOURCEOPS_OT_ExportMeshes(bpy.types.Operator):
-    bl_idname = 'sourceops.export_meshes'
+class SOURCEOPS_OT_OpenFolder(bpy.types.Operator):
+    bl_idname = 'sourceops.open_folder'
     bl_options = {'REGISTER'}
-    bl_label = 'Export Meshes'
-    bl_description = 'Export this model\'s meshes'
+    bl_label = 'Open Folder'
+    bl_description = 'Open this model\'s folder in your OS\'s file browser'
 
     @classmethod
     def poll(cls, context):
@@ -29,9 +29,9 @@ class SOURCEOPS_OT_ExportMeshes(bpy.types.Operator):
 
         source_model = Model(game, model)
 
-        if not source_model.export_meshes():
-            self.report({'ERROR'}, 'Failed to export meshes')
+        if not source_model.open_folder():
+            self.report({'ERROR'}, 'Failed to open folder')
             return {'CANCELLED'}
 
-        self.report({'INFO'}, 'Exported meshes')
+        self.report({'INFO'}, 'Opened folder')
         return {'FINISHED'}

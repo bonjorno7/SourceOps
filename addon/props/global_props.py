@@ -1,13 +1,9 @@
 import bpy
-from . game_props import SOURCEOPS_GameProps
 from . model_props import SOURCEOPS_ModelProps
 from . map_props import SOURCEOPS_MapProps
 
 
 class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
-    game_items: bpy.props.CollectionProperty(type=SOURCEOPS_GameProps)
-    game_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
-
     model_items: bpy.props.CollectionProperty(type=SOURCEOPS_ModelProps)
     model_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 

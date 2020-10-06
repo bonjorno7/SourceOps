@@ -2,8 +2,8 @@ import bpy
 
 
 class SOURCEOPS_EventProps(bpy.types.PropertyGroup):
-    display: bpy.props.StringProperty(
-        name='Display Name',
+    name: bpy.props.StringProperty(
+        name='Name',
         description='The name this event has in the list',
         default='Example',
     )
