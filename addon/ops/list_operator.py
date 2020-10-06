@@ -6,7 +6,17 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
     bl_idname = 'sourceops.list_operator'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     bl_label = 'List Operator'
-    bl_description = 'Add / remove / copy / move items in the list'
+
+    @classmethod
+    def description(cls, context, properties):
+        action = properties.mode.split('_')
+        item = properties.item.replace('_', ' ')
+
+        text = f'{action[0]} {item[:-1]}'
+        if len(action) > 1:
+            text = f'{text} {action[1]}'
+
+        return text.capitalize()
 
     mode: bpy.props.EnumProperty(
         name='Mode',
