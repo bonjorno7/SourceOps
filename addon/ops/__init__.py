@@ -1,4 +1,5 @@
 import bpy
+from . open_folder import SOURCEOPS_OT_OpenFolder
 from . export_meshes import SOURCEOPS_OT_ExportMeshes
 from . generate_qc import SOURCEOPS_OT_GenerateQC
 from . compile_qc import SOURCEOPS_OT_CompileQC
@@ -10,6 +11,7 @@ from . rig_simulation import SOURCEOPS_OT_RigSimulation
 
 
 def register():
+    bpy.utils.register_class(SOURCEOPS_OT_OpenFolder)
     bpy.utils.register_class(SOURCEOPS_OT_ExportMeshes)
     bpy.utils.register_class(SOURCEOPS_OT_GenerateQC)
     bpy.utils.register_class(SOURCEOPS_OT_CompileQC)
@@ -21,6 +23,7 @@ def register():
 
 
 def unregister():
+    bpy.utils.unregister_class(SOURCEOPS_OT_OpenFolder)
     bpy.utils.unregister_class(SOURCEOPS_OT_RigSimulation)
     bpy.utils.unregister_class(SOURCEOPS_OT_ExportVMF)
     bpy.utils.unregister_class(SOURCEOPS_OT_ListOperator)

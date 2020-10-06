@@ -254,6 +254,11 @@ class Model:
         print(f'Failed to compile: {qc}')
         return False
 
+    def open_folder(self):
+        bpy.ops.wm.path_open(filepath=str(self.directory))
+        print(f'Opening: {self.directory}')
+        return True
+
     def view_model(self):
         model = self.models.joinpath(self.name)
         mdl = model.with_suffix('.mdl')

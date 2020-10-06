@@ -179,6 +179,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row = row.row(align=True)
             row.alignment = 'RIGHT'
 
+            row.operator('sourceops.open_folder', text='', icon='FILEBROWSER')
             row.operator('sourceops.export_meshes', text='', icon_value=icons.id('smd'))
             row.operator('sourceops.generate_qc', text='', icon_value=icons.id('qc'))
             row.operator('sourceops.compile_qc', text='', icon_value=icons.id('mdl'))
