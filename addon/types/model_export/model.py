@@ -254,38 +254,6 @@ class Model:
         print(f'Failed to compile: {qc}')
         return False
 
-    def open_qc(self):
-        qc = self.directory.joinpath(f'{self.basename}.qc')
-        if not qc.is_file():
-            print(f'Failed to open: {qc}')
-            return False
-
-        for text in bpy.data.texts:
-            if Path(text.filepath) == qc:
-                bpy.data.texts.remove(text)
-
-        text = bpy.data.texts.load(filepath=str(qc))
-        text.name = f'{self.name} (qc)'
-
-        print(f'Opening: {qc}')
-        return True
-
-    def open_log(self):
-        log = self.directory.joinpath(f'{self.basename}.log')
-        if not log.is_file():
-            print(f'Failed to open: {log}')
-            return False
-
-        for text in bpy.data.texts:
-            if Path(text.filepath) == log:
-                bpy.data.texts.remove(text)
-
-        text = bpy.data.texts.load(filepath=str(log))
-        text.name = f'{self.name} (log)'
-
-        print(f'Opening: {log}')
-        return True
-
     def view_model(self):
         model = self.models.joinpath(self.name)
         mdl = model.with_suffix('.mdl')
