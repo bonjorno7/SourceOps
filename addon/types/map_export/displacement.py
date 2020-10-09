@@ -137,6 +137,10 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     # Get evaluated dependency graph
     depsgraph = bpy.context.evaluated_depsgraph_get()
 
+    # Create bmesh from base mesh
+    bm_base = bmesh.new()
+    bm_base.from_mesh(obj.data)
+
     # Create bmesh from subdivided object
     bm_subd = bmesh.new()
     bm_subd.from_object(obj_subd, depsgraph)
@@ -155,9 +159,10 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         'corners': [None for i in range(8)],
         'normals': [[None for x in range(width + 1)] for y in range(width + 1)],
         'lengths': [[None for x in range(width + 1)] for y in range(width + 1)],
+        'material': 'dev/dev_blendmeasure'.upper(),
     } for face_map in face_maps]
 
-    # Iterate through subd and mres faces
+    # Populate displacements with data from subd and mres faces
     for face_subd, face_mres in zip(bm_subd.faces, bm_mres.faces):
 
         # Get index for this displacement
@@ -194,6 +199,17 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
                 displacements[z]['corners'][3] = vert_subd.co.copy()
                 displacements[z]['corners'][7] = vert_subd.co - face_subd.normal * 8
 
+    # Check if mesh has materials
+    if obj.data.materials:
+
+        # Get displacement materials from base mesh faces
+        for displacement, face in zip(displacements, bm_base.faces):
+            material = obj.data.materials[face.material_index]
+
+            # Use material if it exists
+            if material:
+                displacement['material'] = material.name.upper()
+
     # Setup solids list
     solids = []
 
@@ -214,7 +230,7 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         # Set U axis, V axis, lightmap scale, and material for top face
         f1.uaxis, f1.vaxis = calc_uv_axes(v1, v3, v2, settings.texture_scale)
         f1.lightmapscale = settings.lightmap_scale
-        f1.material = 'DEV/DEV_BLENDMEASURE' # displacement.material
+        f1.material = displacement['material']
 
         # Prepare dispinfo dictionary
         power = displacement['levels']
@@ -246,6 +262,7 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     # Free bmeshes
     bm_mres.free()
     bm_subd.free()
+    bm_base.free()
 
     # Remove temporary object and mesh, in that order
     mesh_subd = obj_subd.data
