@@ -6,11 +6,8 @@ import typing
 from .. pyvmf import pyvmf
 
 
-def sort_into_parts(mesh: bpy.types.Mesh):
+def sort_into_parts(bm: bmesh.types.BMesh):
     parts = []
-
-    bm = bmesh.new()
-    bm.from_mesh(mesh)
 
     bm.select_mode = {'FACE'}
 
@@ -38,30 +35,26 @@ def sort_into_parts(mesh: bpy.types.Mesh):
         for face in faces:
             face.hide_set(True)
 
-        parts.append([mesh.polygons[f.index] for f in faces])
-
-    bm.free()
+        parts.append(faces)
 
     return parts
 
 
-def calc_uv_axes(settings: typing.Any, mesh: bpy.types.Mesh, polygon: bpy.types.MeshPolygon):
-    points = []
+def calc_uv_axes(settings: typing.Any, bm: bmesh.types.BMesh, face: bmesh.types.BMFace):
+    points = [loop.vert.co.copy() for loop in face.loops[0:3]]
+
     u_vals = []
     v_vals = []
 
-    for loop_index in range(polygon.loop_start, polygon.loop_start + 3):
-        loop = mesh.loops[loop_index]
+    if len(bm.loops.layers.uv) > 0:
+        uv_layer = bm.loops.layers.uv.verify()
 
-        point = mesh.vertices[loop.vertex_index].co
-        points.append(mathutils.Vector(point))
-
-        if mesh.uv_layers:
-            uv = mesh.uv_layers.active.data[loop_index].uv
+        for loop in face.loops[0:3]:
+            uv = loop[uv_layer].uv
             u_vals.append(uv[0])
             v_vals.append(uv[1])
 
-    if not mesh.uv_layers:
+    else:
         u_vals = [0, 0, 1]
         v_vals = [0, 1, 1]
 
@@ -70,7 +63,7 @@ def calc_uv_axes(settings: typing.Any, mesh: bpy.types.Mesh, polygon: bpy.types.
     v1, v2, v3 = v_vals
 
     tangent = -1 * ((p2 - p1) * (v3 - v1) - (p3 - p1) * (v2 - v1))
-    bitangent = mathutils.Quaternion(polygon.normal, math.radians(90)) @ tangent
+    bitangent = mathutils.Quaternion(face.normal, math.radians(90)) @ tangent
 
     # TODO: Calculate scale and offset
 
@@ -83,25 +76,33 @@ def calc_uv_axes(settings: typing.Any, mesh: bpy.types.Mesh, polygon: bpy.types.
     return u_axis, v_axis
 
 
-def convert_objects(settings: typing.Any, meshes: typing.List[bpy.types.Mesh]):
+def convert_objects(settings: typing.Any, objects: typing.List[bpy.types.Object]):
     solids = []
 
-    for mesh in meshes:
-        parts = sort_into_parts(mesh)
+    for obj in objects:
+        if obj.type != 'MESH':
+            print(f'Skipping {obj.name} because it is not a mesh')
+            continue
+
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+
+        bm = bmesh.new()
+        bm.from_object(obj, depsgraph)
+
+        parts = sort_into_parts(bm)
 
         for part in parts:
             solid = pyvmf.Solid()
 
-            for polygon in part:
+            for face in part:
                 side = pyvmf.Side()
 
-                polygon.flip()
+                face.normal_flip()
 
                 side.plane.clear()
 
-                for vertex_index in polygon.vertices[0:3]:
-                    vertex = mesh.vertices[vertex_index]
-                    vertex = pyvmf.Vertex(*vertex.co)
+                for vert in face.verts[0:3]:
+                    vertex = pyvmf.Vertex(*vert.co)
 
                     vertex.multiply(settings.geometry_scale)
 
@@ -110,14 +111,14 @@ def convert_objects(settings: typing.Any, meshes: typing.List[bpy.types.Mesh]):
 
                     side.plane.append(vertex)
 
-                u_axis, v_axis = calc_uv_axes(settings, mesh, polygon)
+                u_axis, v_axis = calc_uv_axes(settings, bm, face)
                 side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
                 side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
 
                 side.lightmapscale = settings.lightmap_scale
 
                 try:
-                    side.material = mesh.materials[polygon.material_index].name.upper()
+                    side.material = obj.data.materials[face.material_index].name.upper()
                 except:
                     side.material = 'tools/toolsnodraw'.upper()
 
@@ -126,5 +127,7 @@ def convert_objects(settings: typing.Any, meshes: typing.List[bpy.types.Mesh]):
             solid.editor = pyvmf.Editor()
 
             solids.append(solid)
+
+        bm.free()
 
     return solids
