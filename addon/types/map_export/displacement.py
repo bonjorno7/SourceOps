@@ -153,6 +153,18 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     bm_mres = bmesh.new()
     bm_mres.from_object(obj, depsgraph)
 
+    # Convert geometry scale to matrix
+    scale = settings.geometry_scale
+    scale = mathutils.Matrix.Scale(scale, 4)
+
+    # Calculate matrix and space for transform
+    matrix = scale @ obj.matrix_world
+    space = mathutils.Matrix.Identity(4)
+
+    # Transform bm_subd and bm_mres with matrix
+    bmesh.ops.transform(bm_subd, matrix=matrix, space=space, verts=bm_subd.verts)
+    bmesh.ops.transform(bm_mres, matrix=matrix, space=space, verts=bm_mres.verts)
+
     # Setup displacements list
     displacements = [{
         'levels': levels,
