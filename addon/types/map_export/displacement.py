@@ -1,6 +1,7 @@
 import bpy
 import bmesh
 import mathutils
+import math
 import typing
 from .. pyvmf import pyvmf
 
@@ -79,6 +80,30 @@ def setup_uv_layer(obj: bpy.types.Object):
 
     # Return UV layer
     return uv_layer
+
+
+def calc_uv_axes(a: mathutils.Vector, b: mathutils.Vector, c: mathutils.Vector, texture_scale: float):
+    '''Calculate U and V axes for brush plane'''
+
+    # Subtract points to calculate edge vectors
+    one = b - a
+    two = c - a
+
+    # Calculate normal using cross product of edges
+    normal = one.cross(two).normalized()
+
+    # Use arbitrary edge as tangent
+    tangent = -1 * two.normalized()
+
+    # Rotate tangent 90 degrees around normal to calculate bitangent
+    bitangent = mathutils.Quaternion(normal, math.radians(90)) @ tangent
+
+    # Combine data into strings for VMF export
+    u_axis = f'[{tangent[0]} {tangent[1]} {tangent[2]} 0] {texture_scale}'
+    v_axis = f'[{bitangent[0]} {bitangent[1]} {bitangent[2]} 0] {texture_scale}'
+
+    # Return U and V axes
+    return u_axis, v_axis
 
 
 def convert_object(settings: typing.Any, obj: bpy.types.Object):
@@ -186,9 +211,8 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         f5 = pyvmf.Side(dic={'plane': f'({v3.x} {v3.y} {v3.z}) ({v6.x} {v6.y} {v6.z}) ({v2.x} {v2.y} {v2.z})'}) # Right
         f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
 
-        # Set texture, lightmap scale, and material for top face
-        f1.uaxis.scale = settings.texture_scale
-        f1.vaxis.scale = settings.texture_scale
+        # Set U axis, V axis, lightmap scale, and material for top face
+        f1.uaxis, f1.vaxis = calc_uv_axes(v1, v3, v2, settings.texture_scale)
         f1.lightmapscale = settings.lightmap_scale
         f1.material = 'DEV/DEV_BLENDMEASURE' # displacement.material
 
