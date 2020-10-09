@@ -88,6 +88,9 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     bm = bmesh.new()
     bm.from_object(obj, depsgraph)
 
+    matrix = mathutils.Matrix.Scale(settings.geometry_scale, 4) @ obj.matrix_world
+    bmesh.ops.transform(bm, matrix=matrix, space=mathutils.Matrix.Identity(4), verts=bm.verts)
+
     parts = sort_into_parts(bm)
 
     for part in parts:
@@ -102,8 +105,6 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
 
             for vert in face.verts[0:3]:
                 vertex = pyvmf.Vertex(*vert.co)
-
-                vertex.multiply(settings.geometry_scale)
 
                 if settings.align_to_grid:
                     vertex.align_to_grid()
