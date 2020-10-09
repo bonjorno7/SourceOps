@@ -76,58 +76,67 @@ def calc_uv_axes(settings: typing.Any, bm: bmesh.types.BMesh, face: bmesh.types.
     return u_axis, v_axis
 
 
+def convert_object(settings: typing.Any, obj: bpy.types.Object):
+    solids = []
+
+    if obj.type != 'MESH':
+        print(f'Skipping {obj.name} because it is not a mesh')
+        return []
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    bm = bmesh.new()
+    bm.from_object(obj, depsgraph)
+
+    parts = sort_into_parts(bm)
+
+    for part in parts:
+        solid = pyvmf.Solid()
+
+        for face in part:
+            side = pyvmf.Side()
+
+            face.normal_flip()
+
+            side.plane.clear()
+
+            for vert in face.verts[0:3]:
+                vertex = pyvmf.Vertex(*vert.co)
+
+                vertex.multiply(settings.geometry_scale)
+
+                if settings.align_to_grid:
+                    vertex.align_to_grid()
+
+                side.plane.append(vertex)
+
+            u_axis, v_axis = calc_uv_axes(settings, bm, face)
+            side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
+            side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
+
+            side.lightmapscale = settings.lightmap_scale
+
+            try:
+                side.material = obj.data.materials[face.material_index].name.upper()
+            except:
+                side.material = 'tools/toolsnodraw'.upper()
+
+            solid.add_sides(side)
+
+        solid.editor = pyvmf.Editor()
+
+        solids.append(solid)
+
+    bm.free()
+
+    return solids
+
+
 def convert_objects(settings: typing.Any, objects: typing.List[bpy.types.Object]):
     solids = []
 
     for obj in objects:
-        if obj.type != 'MESH':
-            print(f'Skipping {obj.name} because it is not a mesh')
-            continue
-
-        depsgraph = bpy.context.evaluated_depsgraph_get()
-
-        bm = bmesh.new()
-        bm.from_object(obj, depsgraph)
-
-        parts = sort_into_parts(bm)
-
-        for part in parts:
-            solid = pyvmf.Solid()
-
-            for face in part:
-                side = pyvmf.Side()
-
-                face.normal_flip()
-
-                side.plane.clear()
-
-                for vert in face.verts[0:3]:
-                    vertex = pyvmf.Vertex(*vert.co)
-
-                    vertex.multiply(settings.geometry_scale)
-
-                    if settings.align_to_grid:
-                        vertex.align_to_grid()
-
-                    side.plane.append(vertex)
-
-                u_axis, v_axis = calc_uv_axes(settings, bm, face)
-                side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
-                side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
-
-                side.lightmapscale = settings.lightmap_scale
-
-                try:
-                    side.material = obj.data.materials[face.material_index].name.upper()
-                except:
-                    side.material = 'tools/toolsnodraw'.upper()
-
-                solid.add_sides(side)
-
-            solid.editor = pyvmf.Editor()
-
-            solids.append(solid)
-
-        bm.free()
+        result = convert_object(settings, obj)
+        solids.extend(result)
 
     return solids
