@@ -204,7 +204,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(map_props, 'name')
                 col.prop(map_props, 'brush_collection')
                 col.prop(map_props, 'disp_collection')
-                col.prop(map_props, 'uv_scale')
                 col.prop(map_props, 'geometry_scale')
                 col.prop(map_props, 'texture_scale')
                 col.prop(map_props, 'lightmap_scale')
