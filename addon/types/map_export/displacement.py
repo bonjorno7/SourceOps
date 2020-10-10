@@ -32,6 +32,55 @@ def get_levels_and_width(obj: bpy.types.Object):
     return levels, width
 
 
+def get_matrix_and_space(obj: bpy.types.Object, scale: float):
+    '''Get the proper matrix to transform an object.'''
+
+    # Calculate matrix and space
+    scale = mathutils.Matrix.Scale(scale, 4)
+    matrix = scale @ obj.matrix_world
+    space = mathutils.Matrix.Identity(4)
+
+    # Return matrix and space
+    return matrix, space
+
+
+def setup_subd_mesh(obj: bpy.types.Object, matrix: mathutils.Matrix, space: mathutils.Matrix):
+    '''Duplicate the mesh and apply transforms.'''
+
+    # Duplicate mesh
+    obj.data = obj.data.copy()
+
+    # Create bmesh from mesh
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+
+    # Transform bmesh
+    bmesh.ops.transform(bm, matrix=matrix, space=space, verts=bm.verts)
+
+    # Apply changes to mesh and free bmesh
+    bm.to_mesh(obj.data)
+    bm.free()
+
+
+def align_to_grid(obj: bpy.types.Object):
+    '''Align the mesh vertices to grid.'''
+
+    # Create bmesh from mesh
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+
+    # Align verts to grid
+    if align_to_grid:
+        for vert in bm.verts:
+            vert.co.x = round(vert.co.x)
+            vert.co.y = round(vert.co.y)
+            vert.co.z = round(vert.co.z)
+
+    # Apply changes to mesh and free bmesh
+    bm.to_mesh(obj.data)
+    bm.free()
+
+
 def setup_face_maps(obj: bpy.types.Object):
     '''Make a face map for every face of an object.'''
 
@@ -125,9 +174,16 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         print('Subdivision levels must be 2, 3, or 4')
         return []
 
-    # Duplicate object and mesh
+    # Calculate matrix and space for transform
+    matrix, space = get_matrix_and_space(obj, settings.geometry_scale)
+
+    # Setup subd object and mesh
     obj_subd = obj.copy()
-    obj_subd.data = obj.data.copy()
+    setup_subd_mesh(obj_subd, matrix, space)
+
+    # Align subd mesh verts to grid
+    if settings.align_to_grid:
+        align_to_grid(obj_subd)
 
     # Setup new UV layer, face maps, and subsurf modifier
     uv_layer = setup_uv_layer(obj_subd)
@@ -137,10 +193,6 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     # Get evaluated dependency graph
     depsgraph = bpy.context.evaluated_depsgraph_get()
 
-    # Create bmesh from base mesh
-    bm_base = bmesh.new()
-    bm_base.from_mesh(obj.data)
-
     # Create bmesh from subdivided object
     bm_subd = bmesh.new()
     bm_subd.from_object(obj_subd, depsgraph)
@@ -149,21 +201,14 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     uv_subd = bm_subd.loops.layers.uv.verify()
     fm_subd = bm_subd.faces.layers.face_map.verify()
 
-    # Create bmesh from sculpted object
+    # Create bmesh from sculpted object and transform it
     bm_mres = bmesh.new()
     bm_mres.from_object(obj, depsgraph)
-
-    # Convert geometry scale to matrix
-    scale = settings.geometry_scale
-    scale = mathutils.Matrix.Scale(scale, 4)
-
-    # Calculate matrix and space for transform
-    matrix = scale @ obj.matrix_world
-    space = mathutils.Matrix.Identity(4)
-
-    # Transform bm_subd and bm_mres with matrix
-    bmesh.ops.transform(bm_subd, matrix=matrix, space=space, verts=bm_subd.verts)
     bmesh.ops.transform(bm_mres, matrix=matrix, space=space, verts=bm_mres.verts)
+
+    # Create bmesh from base mesh
+    bm_base = bmesh.new()
+    bm_base.from_mesh(obj.data)
 
     # Setup displacements list
     displacements = [{
@@ -272,9 +317,9 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         solids.append(solid)
 
     # Free bmeshes
+    bm_base.free()
     bm_mres.free()
     bm_subd.free()
-    bm_base.free()
 
     # Remove temporary object and mesh, in that order
     mesh_subd = obj_subd.data
