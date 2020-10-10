@@ -163,15 +163,22 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         print(f'Skipping {obj.name} because it is not a mesh')
         return []
 
+    # Make sure all polygons are quads
+    if any(len(polygon.vertices) != 4 for polygon in obj.data.polygons):
+        print(f'Skipping {obj.name} because all faces must be quads')
+        return []
+
     # Get levels and width
     levels, width = get_levels_and_width(obj)
 
-    # Make sure multires or subsurf mod is setup correctly
+    # Make sure multires or subsurf mod exists
     if levels == -1:
-        print('No multires or subsurf modifier found')
+        print(f'Skipping {obj.name} because no multires or subsurf modifier was found')
         return []
-    elif not (2 <= levels <= 4):
-        print('Subdivision levels must be 2, 3, or 4')
+
+    # Make sure subdivision levels are in range
+    if not (2 <= levels <= 4):
+        print(f'Skipping {obj.name} because subdivision levels must be 2, 3, or 4')
         return []
 
     # Calculate matrix and space for transform
