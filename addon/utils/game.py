@@ -17,7 +17,7 @@ def update_game(self, context):
         self['bin'] = str(game.parent.joinpath('bin'))
         self['modelsrc'] = str(game.joinpath('modelsrc'))
         self['models'] = str(game.joinpath('models'))
-        self['maps'] = str(game.joinpath('maps'))
+        self['mapsrc'] = str(game.joinpath('mapsrc'))
 
 
 def update_bin(self, context):
@@ -32,8 +32,8 @@ def update_models(self, context):
     self['models'] = resolve(self.models)
 
 
-def update_maps(self, context):
-    self['maps'] = resolve(self.maps)
+def update_mapsrc(self, context):
+    self['mapsrc'] = resolve(self.mapsrc)
 
 
 def verify(game):
