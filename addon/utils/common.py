@@ -1,7 +1,9 @@
 import bpy
 import string
 import unicodedata
-from pathlib import Path
+import platform
+import ctypes.wintypes
+import pathlib
 
 
 def get_version():
@@ -102,3 +104,14 @@ def verify_folder(path):
 
 def remove_duplicates(list_with_duplicates):
     return list(dict.fromkeys(list(list_with_duplicates)))
+
+
+def documents():
+    if platform.system() == 'Windows':
+        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+
+        ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 1, buf)
+        return pathlib.Path(buf.value)
+
+    else:
+        return pathlib.Path.home()

@@ -12,7 +12,7 @@ class Model:
         self.bin = Path(game.bin)
         self.modelsrc = Path(game.modelsrc)
         self.models = Path(game.models)
-        self.maps = Path(game.maps)
+        self.mapsrc = Path(game.mapsrc)
 
         self.name = str(Path(model.name).with_suffix(''))
         self.basename = common.clean_filename(Path(self.name).stem)

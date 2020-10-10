@@ -20,14 +20,6 @@ class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
         type=bpy.types.Collection,
     )
 
-    uv_scale: bpy.props.IntProperty(
-        name='UV Scale',
-        description='How much the generated brushes will be scaled, necessary to get around floating point inprecision',
-        default=128,
-        min=1,
-        max=16384,
-    )
-
     geometry_scale: bpy.props.IntProperty(
         name='Geometry Scale',
         description='How much the geometry will be scaled, just to allow more convenient modeling',

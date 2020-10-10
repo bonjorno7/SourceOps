@@ -4,14 +4,13 @@ import mathutils
 import pathlib
 from .. pyvmf import pyvmf
 from . import brush
-from . import disp
+from . import displacement
 
 
 class Settings:
-    def __init__(self, brush_objects, disp_objects, uv_scale, geometry_scale, texture_scale, lightmap_scale, align_to_grid):
+    def __init__(self, brush_objects, disp_objects, geometry_scale, texture_scale, lightmap_scale, align_to_grid):
         self.brush_objects = brush_objects
         self.disp_objects = disp_objects
-        self.uv_scale = uv_scale
         self.geometry_scale = geometry_scale
         self.texture_scale = texture_scale
         self.lightmap_scale = lightmap_scale
@@ -21,14 +20,11 @@ class Settings:
 class VMF:
     def __init__(self, settings: Settings):
         scene_settings = self.configure_scene(settings.brush_objects + settings.disp_objects)
-        brush_objects, brush_meshes = self.evaluated_get(settings.brush_objects)
-        disp_objects, disp_meshes = self.evaluated_get(settings.disp_objects)
 
-        brush_converter = brush.Converter(settings, brush_meshes)
-        disp_converter = disp.Converter(settings, disp_meshes)
-        self.solids = brush_converter.solids + disp_converter.solids
+        brush_solids = brush.convert_objects(settings, settings.brush_objects)
+        displacement_solids = displacement.convert_objects(settings, settings.disp_objects)
+        self.solids = brush_solids + displacement_solids
 
-        self.to_mesh_clear(brush_objects + disp_objects)
         self.restore_scene(scene_settings)
 
 

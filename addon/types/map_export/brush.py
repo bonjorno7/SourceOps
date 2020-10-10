@@ -2,127 +2,142 @@ import bpy
 import bmesh
 import mathutils
 import math
+import typing
 from .. pyvmf import pyvmf
 
 
-class Converter:
-    def __init__(self, settings, meshes: list):
-        self.solids = []
+def sort_into_parts(bm: bmesh.types.BMesh):
+    parts = []
 
-        for mesh in meshes:
-            parts = self.sort_into_parts(mesh)
+    bm.select_mode = {'FACE'}
 
-            for part in parts:
-                solid = pyvmf.Solid()
+    for face in bm.faces:
+        face.hide_set(False)
 
-                for polygon in part:
-                    side = pyvmf.Side()
+    while True:
+        face = next((f for f in bm.faces if not f.hide), None)
 
-                    polygon.flip()
+        if not face:
+            break
 
-                    side.plane.clear()
-
-                    for vertex_index in polygon.vertices[0:3]:
-                        vertex = mesh.vertices[vertex_index]
-                        vertex = pyvmf.Vertex(*vertex.co)
-
-                        vertex.multiply(settings.geometry_scale)
-
-                        if settings.align_to_grid:
-                            vertex.align_to_grid()
-
-                        side.plane.append(vertex)
-
-                    u_axis, v_axis = self.calc_uv_axes(settings, mesh, polygon)
-                    side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
-                    side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
-
-                    side.lightmapscale = settings.lightmap_scale
-
-                    try:
-                        side.material = mesh.materials[polygon.material_index].name.upper()
-                    except:
-                        side.material = 'tools/toolsnodraw'.upper()
-
-                    solid.add_sides(side)
-
-                solid.editor = pyvmf.Editor()
-
-                self.solids.append(solid)
-
-
-    def sort_into_parts(self, mesh):
-        parts = []
-
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-
-        bm.select_mode = {'FACE'}
-
-        for face in bm.faces:
-            face.hide_set(False)
+        faces = set([face])
 
         while True:
-            face = next((f for f in bm.faces if not f.hide), None)
+            temp_faces = faces.copy()
 
-            if not face:
+            for face in temp_faces:
+                for edge in face.edges:
+                    faces.update(set(edge.link_faces))
+
+            if len(temp_faces) == len(faces):
                 break
 
-            faces = set([face])
+        for face in faces:
+            face.hide_set(True)
 
-            while True:
-                temp_faces = faces.copy()
+        parts.append(faces)
 
-                for face in temp_faces:
-                    for edge in face.edges:
-                        faces.update(set(edge.link_faces))
-
-                if len(temp_faces) == len(faces):
-                    break
-
-            for face in faces:
-                face.hide_set(True)
-
-            parts.append([mesh.polygons[f.index] for f in faces])
-
-        bm.free()
-
-        return parts
+    return parts
 
 
-    def calc_uv_axes(self, settings, mesh, polygon):
-        points = []
-        u_vals = []
-        v_vals = []
+def calc_uv_axes(settings: typing.Any, bm: bmesh.types.BMesh, face: bmesh.types.BMFace):
+    points = [loop.vert.co.copy() for loop in face.loops[0:3]]
 
-        for loop_index in range(polygon.loop_start, polygon.loop_start + 3):
-            loop = mesh.loops[loop_index]
+    u_vals = []
+    v_vals = []
 
-            point = mesh.vertices[loop.vertex_index].co
-            points.append(mathutils.Vector(point))
+    if len(bm.loops.layers.uv) > 0:
+        uv_layer = bm.loops.layers.uv.verify()
 
-            if mesh.uv_layers:
-                uv = mesh.uv_layers.active.data[loop_index].uv
-                u_vals.append(uv[0])
-                v_vals.append(uv[1])
+        for loop in face.loops[0:3]:
+            uv = loop[uv_layer].uv
+            u_vals.append(uv[0])
+            v_vals.append(uv[1])
 
-        if not mesh.uv_layers:
-            u_vals = [0, 0, 1]
-            v_vals = [0, 1, 1]
+    else:
+        u_vals = [0, 0, 1]
+        v_vals = [0, 1, 1]
 
-        p1, p2, p3 = points
-        u1, u2, u3 = u_vals
-        v1, v2, v3 = v_vals
+    p1, p2, p3 = points
+    u1, u2, u3 = u_vals
+    v1, v2, v3 = v_vals
 
-        tangent = -1 * ((p2 - p1) * (v3 - v1) - (p3 - p1) * (v2 - v1))
-        bitangent = mathutils.Quaternion(polygon.normal, math.radians(90)) @ tangent
+    tangent = -1 * ((p2 - p1) * (v3 - v1) - (p3 - p1) * (v2 - v1))
+    bitangent = mathutils.Quaternion(face.normal, math.radians(90)) @ tangent
 
-        # TODO: Calculate scale and offset
+    # TODO: Calculate scale and offset
 
-        tangent.normalize()
-        bitangent.normalize()
+    tangent.normalize()
+    bitangent.normalize()
 
-        u_axis = f'[{tangent[0]} {tangent[1]} {tangent[2]} 0] {settings.texture_scale}'
-        v_axis = f'[{bitangent[0]} {bitangent[1]} {bitangent[2]} 0] {settings.texture_scale}'
+    u_axis = f'[{tangent[0]} {tangent[1]} {tangent[2]} 0] {settings.texture_scale}'
+    v_axis = f'[{bitangent[0]} {bitangent[1]} {bitangent[2]} 0] {settings.texture_scale}'
 
-        return u_axis, v_axis
+    return u_axis, v_axis
+
+
+def convert_object(settings: typing.Any, obj: bpy.types.Object):
+    solids = []
+
+    if obj.type != 'MESH':
+        print(f'Skipping {obj.name} because it is not a mesh')
+        return []
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    bm = bmesh.new()
+    bm.from_object(obj, depsgraph)
+
+    matrix = mathutils.Matrix.Scale(settings.geometry_scale, 4) @ obj.matrix_world
+    bmesh.ops.transform(bm, matrix=matrix, space=mathutils.Matrix.Identity(4), verts=bm.verts)
+
+    parts = sort_into_parts(bm)
+
+    for part in parts:
+        solid = pyvmf.Solid()
+
+        for face in part:
+            side = pyvmf.Side()
+
+            face.normal_flip()
+
+            side.plane.clear()
+
+            for vert in face.verts[0:3]:
+                vertex = pyvmf.Vertex(*vert.co)
+
+                if settings.align_to_grid:
+                    vertex.align_to_grid()
+
+                side.plane.append(vertex)
+
+            u_axis, v_axis = calc_uv_axes(settings, bm, face)
+            side.uaxis = pyvmf.Convert.string_to_uvaxis(u_axis)
+            side.vaxis = pyvmf.Convert.string_to_uvaxis(v_axis)
+
+            side.lightmapscale = settings.lightmap_scale
+
+            try:
+                side.material = obj.data.materials[face.material_index].name.upper()
+            except:
+                side.material = 'tools/toolsnodraw'.upper()
+
+            solid.add_sides(side)
+
+        solid.editor = pyvmf.Editor()
+
+        solids.append(solid)
+
+    bm.free()
+
+    return solids
+
+
+def convert_objects(settings: typing.Any, objects: typing.List[bpy.types.Object]):
+    solids = []
+
+    for obj in objects:
+        result = convert_object(settings, obj)
+        solids.extend(result)
+
+    return solids

@@ -24,8 +24,8 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         sourceops = utils.common.get_globals(context)
         props = utils.common.get_map(sourceops)
 
-        if not game.maps:
-            self.report({'INFO'}, 'Please enter a maps folder')
+        if not game.mapsrc:
+            self.report({'INFO'}, 'Please enter a mapsrc folder')
             return {'CANCELLED'}
 
         if not props.name:
@@ -36,8 +36,8 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
             self.report({'INFO'}, 'Please choose a collection')
             return {'CANCELLED'}
 
-        maps = bpy.path.abspath(game.maps)
-        path = str(Path(maps) / props.name)
+        mapsrc = bpy.path.abspath(game.mapsrc)
+        path = str(Path(mapsrc) / props.name)
 
         if props.brush_collection:
             brush_objects = [o for o in props.brush_collection.all_objects if o.type == 'MESH']
@@ -49,13 +49,12 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         else:
             disp_objects = []
 
-        uv_scale = props.uv_scale
         geometry_scale = props.geometry_scale
         texture_scale = props.texture_scale
         lightmap_scale = props.lightmap_scale
         align_to_grid = props.align_to_grid
 
-        settings = Settings(brush_objects, disp_objects, uv_scale, geometry_scale, texture_scale, lightmap_scale, align_to_grid)
+        settings = Settings(brush_objects, disp_objects, geometry_scale, texture_scale, lightmap_scale, align_to_grid)
         vmf = VMF(settings)
         vmf.export(path)
 

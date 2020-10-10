@@ -37,9 +37,9 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         update=utils.game.update_models,
     )
 
-    maps: bpy.props.StringProperty(
-        name='Maps',
-        description='Path to your maps folder',
+    mapsrc: bpy.props.StringProperty(
+        name='Mapsrc',
+        description='Path to your mapsrc folder',
         subtype='DIR_PATH',
-        update=utils.game.update_maps,
+        update=utils.game.update_mapsrc,
     )
