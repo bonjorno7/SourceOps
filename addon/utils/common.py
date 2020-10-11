@@ -115,3 +115,8 @@ def documents():
 
     else:
         return pathlib.Path.home()
+
+
+def appdata():
+    user = bpy.utils.resource_path('USER')
+    return pathlib.Path(user).resolve()
