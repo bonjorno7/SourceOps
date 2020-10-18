@@ -67,7 +67,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     prepend_armature: bpy.props.BoolProperty(
         name='Prepend Armature',
         description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',
-        default=True,
+        default=False,
     )
 
     ignore_transforms: bpy.props.BoolProperty(
