@@ -10,13 +10,19 @@ class Model:
     def __init__(self, game, model):
         self.game = Path(game.game)
         self.bin = Path(game.bin)
-        self.modelsrc = Path(game.modelsrc)
+        if model.static and model.static_prop_combine:
+            self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
+        else:
+            self.modelsrc = Path(game.modelsrc)
         self.models = Path(game.models)
         self.mapsrc = Path(game.mapsrc)
 
         self.name = str(Path(model.name).with_suffix(''))
         self.basename = common.clean_filename(Path(self.name).stem)
-        directory = self.modelsrc.joinpath(self.name)
+        if model.static and model.static_prop_combine:
+            directory = self.modelsrc.joinpath(Path(self.name).parent)
+        else:
+            directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
         studiomdl = self.bin.joinpath('studiomdl.exe')
