@@ -58,6 +58,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+    static_prop_combine: bpy.props.BoolProperty(
+        name='Static Prop Combine',
+        description='Whether to use the steamapps/content path instead of modelsrc, necessary for autocombine, a neat CS:GO feature',
+        default=False,
+    )
+
     glass: bpy.props.BoolProperty(
         name='Has Glass',
         description='$mostlyopaque, use this if your model has something transparent like glass',
