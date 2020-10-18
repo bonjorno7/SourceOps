@@ -36,7 +36,6 @@ class Model:
         self.surface = model.surface
         self.static = model.static
         self.glass = model.glass
-        self.blank = model.blank
 
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
@@ -178,8 +177,6 @@ class Model:
                 for collection in bodygroup.children:
                     name = common.clean_filename(collection.name)
                     qc.write(f'    studio "{name}.smd"\n')
-                if self.blank:
-                    qc.write('    blank\n')
                 qc.write('}')
                 qc.write('\n')
 

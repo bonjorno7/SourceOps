@@ -64,12 +64,6 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
-    blank: bpy.props.BoolProperty(
-        name='Blank Bodygroup',
-        description='Whether to add a blank bodygroup, if bodygroups are used',
-        default=False,
-    )
-
     prepend_armature: bpy.props.BoolProperty(
         name='Prepend Armature',
         description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',
