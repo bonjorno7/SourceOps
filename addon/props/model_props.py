@@ -58,22 +58,22 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+    static_prop_combine: bpy.props.BoolProperty(
+        name='Static Prop Combine',
+        description='Whether to use the steamapps/content path instead of modelsrc, necessary for autocombine, a neat CS:GO feature',
+        default=False,
+    )
+
     glass: bpy.props.BoolProperty(
         name='Has Glass',
         description='$mostlyopaque, use this if your model has something transparent like glass',
         default=False,
     )
 
-    blank: bpy.props.BoolProperty(
-        name='Blank Bodygroup',
-        description='Whether to add a blank bodygroup, if bodygroups are used',
-        default=False,
-    )
-
     prepend_armature: bpy.props.BoolProperty(
         name='Prepend Armature',
         description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',
-        default=True,
+        default=False,
     )
 
     ignore_transforms: bpy.props.BoolProperty(
