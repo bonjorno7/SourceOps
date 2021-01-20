@@ -41,6 +41,7 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             ('SEQUENCES', 'Sequences', 'Operate on sequences'),
             ('EVENTS', 'Events', 'Operate on events'),
             ('MAPS', 'Maps', 'Operate on maps'),
+            ('ATTACHMENTS', 'Attachments', 'Operate on attachments')
         ],
     )
 
@@ -101,6 +102,7 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             'SEQUENCES': (model, 'sequence_items', 'sequence_index'),
             'EVENTS': (sequence, 'event_items', 'event_index'),
             'MAPS': (sourceops, 'map_items', 'map_index'),
+            'ATTACHMENTS': (model, 'attachment_items', 'attachment_index')
         }
 
         function = mode_dict[self.mode]
