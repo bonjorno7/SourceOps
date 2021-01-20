@@ -5,6 +5,7 @@ from . lists import SOURCEOPS_UL_MaterialFolderList
 from . lists import SOURCEOPS_UL_SkinList
 from . lists import SOURCEOPS_UL_SequenceList
 from . lists import SOURCEOPS_UL_EventList
+from . lists import SOURCEOPS_UL_AttachmentList
 from . lists import SOURCEOPS_UL_MapList
 from . panels import SOURCEOPS_PT_MainPanel
 
@@ -16,6 +17,7 @@ def register():
     bpy.utils.register_class(SOURCEOPS_UL_SkinList)
     bpy.utils.register_class(SOURCEOPS_UL_SequenceList)
     bpy.utils.register_class(SOURCEOPS_UL_EventList)
+    bpy.utils.register_class(SOURCEOPS_UL_AttachmentList)
     bpy.utils.register_class(SOURCEOPS_UL_MapList)
     bpy.utils.register_class(SOURCEOPS_PT_MainPanel)
 
@@ -23,6 +25,7 @@ def register():
 def unregister():
     bpy.utils.unregister_class(SOURCEOPS_PT_MainPanel)
     bpy.utils.unregister_class(SOURCEOPS_UL_MapList)
+    bpy.utils.unregister_class(SOURCEOPS_UL_AttachmentList)
     bpy.utils.unregister_class(SOURCEOPS_UL_EventList)
     bpy.utils.unregister_class(SOURCEOPS_UL_SequenceList)
     bpy.utils.unregister_class(SOURCEOPS_UL_SkinList)

@@ -66,6 +66,13 @@ def get_event(sequence):
         return None
 
 
+def get_attachment(model):
+    try:
+        return model.attachment_items[model.attachment_index]
+    except:
+        return None
+
+
 def get_map(sourceops):
     try:
         return sourceops.map_items[sourceops.map_index]

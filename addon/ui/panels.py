@@ -21,6 +21,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
+        attachment = common.get_attachment(model)
         map_props = common.get_map(sourceops)
 
         if sourceops:
@@ -175,7 +176,27 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(event, 'frame')
                 col.prop(event, 'value')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS'}:
+        elif sourceops.panel == 'ATTACHMENTS' and model:
+            box = layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Attachments')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_AttachmentList', '', model, 'attachment_items', model, 'attachment_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'ATTACHMENTS')
+
+            if attachment:
+                col = common.split_column(box)
+                col.prop(attachment, 'name')
+                col.prop(attachment, 'bone')
+                col.prop(attachment, 'offset')
+                col.prop(attachment, 'rotation')
+                col.prop(attachment, 'absolute')
+                col.prop(attachment, 'rigid')
+
+        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS'}:
             box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5

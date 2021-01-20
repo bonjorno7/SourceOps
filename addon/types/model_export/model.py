@@ -33,6 +33,7 @@ class Model:
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
         self.sequence_items = model.sequence_items
+        self.attachment_items = model.attachment_items
 
         self.reference = model.reference
         self.collision = model.collision
@@ -217,6 +218,17 @@ class Model:
             for event in sequence.event_items:
                 qc.write('    { ' + f'event "{event.event}" {event.frame} "{event.value}"' + ' }\n')
             qc.write('}')
+            qc.write('\n')
+
+        for attachment in self.attachment_items:
+            qc.write('\n')
+            qc.write(f'$attachment "{attachment.name}" "{attachment.bone}"')
+            qc.write(f' {attachment.offset[0]} {attachment.offset[1]} {attachment.offset[2]}')
+            if attachment.absolute:
+                qc.write(' absolute')
+            if attachment.rigid:
+                qc.write(' rigid')
+            qc.write(f' rotate {attachment.rotation[0]} {attachment.rotation[1]} {attachment.rotation[2]}')
             qc.write('\n')
 
         if self.skin_items:

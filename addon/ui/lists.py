@@ -43,6 +43,13 @@ class SOURCEOPS_UL_EventList(bpy.types.UIList):
         layout.prop(item, 'name', text='', emboss=False, translate=False)
 
 
+class SOURCEOPS_UL_AttachmentList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_AttachmentList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        layout.prop(item, 'name', text='', emboss=False, translate=False)
+
+
 class SOURCEOPS_UL_MapList(bpy.types.UIList):
     bl_idname = 'SOURCEOPS_UL_MapList'
 

@@ -40,6 +40,7 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             ('SKINS', 'Skins', 'Operate on skins'),
             ('SEQUENCES', 'Sequences', 'Operate on sequences'),
             ('EVENTS', 'Events', 'Operate on events'),
+            ('ATTACHMENTS', 'Attachments', 'Operate on attachments'),
             ('MAPS', 'Maps', 'Operate on maps'),
         ],
     )
@@ -100,6 +101,7 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
             'SKINS': (model, 'skin_items', 'skin_index'),
             'SEQUENCES': (model, 'sequence_items', 'sequence_index'),
             'EVENTS': (sequence, 'event_items', 'event_index'),
+            'ATTACHMENTS': (model, 'attachment_items', 'attachment_index'),
             'MAPS': (sourceops, 'map_items', 'map_index'),
         }
 
