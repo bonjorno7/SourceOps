@@ -32,8 +32,8 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('TEXTURES', 'Textures', 'Display the textures panel', 'TEXTURE', 4),
             ('SEQUENCES', 'Sequences', 'Display the sequences panel', 'SEQUENCE', 5),
             ('EVENTS', 'Events', 'Display the events panel', 'ACTION', 6),
-            ('MAPS', 'Maps', 'Display the maps panel', 'MOD_BUILD', 7),
-            ('SIMULATION', 'Simulation', 'Display the simulation panel', 'PHYSICS', 8),
-            ('ATTACHMENTS', 'Attachments', 'Display the attachments panel', 'BONE_DATA', 9)
+            ('ATTACHMENTS', 'Attachments', 'Display the attachments panel', 'BONE_DATA', 7),
+            ('MAPS', 'Maps', 'Display the maps panel', 'MOD_BUILD', 8),
+            ('SIMULATION', 'Simulation', 'Display the simulation panel', 'PHYSICS', 9),
         ],
     )

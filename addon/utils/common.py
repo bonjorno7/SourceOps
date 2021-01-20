@@ -59,16 +59,16 @@ def get_sequence(model):
         return None
 
 
-def get_attachment(model):
+def get_event(sequence):
     try:
-        return model.attachment_items[model.attachment_index]
+        return sequence.event_items[sequence.event_index]
     except:
         return None
 
 
-def get_event(sequence):
+def get_attachment(model):
     try:
-        return sequence.event_items[sequence.event_index]
+        return model.attachment_items[model.attachment_index]
     except:
         return None
 

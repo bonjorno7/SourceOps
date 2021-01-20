@@ -1,8 +1,8 @@
 import bpy
 from . map_props import SOURCEOPS_MapProps
+from . attachment_props import SOURCEOPS_AttachmentProps
 from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
-from . attachment_props import SOURCEOPS_AttachmentProps
 from . skin_props import SOURCEOPS_SkinProps
 from . material_folder_props import SOURCEOPS_MaterialFolderProps
 from . model_props import SOURCEOPS_ModelProps
@@ -13,9 +13,9 @@ from . addon_prefs import SOURCEOPS_AddonPrefs
 
 def register():
     bpy.utils.register_class(SOURCEOPS_MapProps)
+    bpy.utils.register_class(SOURCEOPS_AttachmentProps)
     bpy.utils.register_class(SOURCEOPS_EventProps)
     bpy.utils.register_class(SOURCEOPS_SequenceProps)
-    bpy.utils.register_class(SOURCEOPS_AttachmentProps)
     bpy.utils.register_class(SOURCEOPS_SkinProps)
     bpy.utils.register_class(SOURCEOPS_MaterialFolderProps)
     bpy.utils.register_class(SOURCEOPS_ModelProps)
@@ -34,6 +34,6 @@ def unregister():
     bpy.utils.unregister_class(SOURCEOPS_MaterialFolderProps)
     bpy.utils.unregister_class(SOURCEOPS_SkinProps)
     bpy.utils.unregister_class(SOURCEOPS_SequenceProps)
-    bpy.utils.unregister_class(SOURCEOPS_AttachmentProps)
     bpy.utils.unregister_class(SOURCEOPS_EventProps)
+    bpy.utils.unregister_class(SOURCEOPS_AttachmentProps)
     bpy.utils.unregister_class(SOURCEOPS_MapProps)

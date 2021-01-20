@@ -20,8 +20,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         material_folder = common.get_material_folder(model)
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
-        attachment = common.get_attachment(model)
         event = common.get_event(sequence)
+        attachment = common.get_attachment(model)
         map_props = common.get_map(sourceops)
 
         if sourceops:
@@ -190,11 +190,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if attachment:
                 col = common.split_column(box)
                 col.prop(attachment, 'name')
-                col.prop(attachment, 'boneName')
+                col.prop(attachment, 'bone')
                 col.prop(attachment, 'offset')
+                col.prop(attachment, 'rotation')
                 col.prop(attachment, 'absolute')
                 col.prop(attachment, 'rigid')
-                col.prop(attachment, 'rotationPYR')
 
         if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS'}:
             box = layout.box()
