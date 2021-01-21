@@ -221,12 +221,13 @@ class Model:
             qc.write('\n')
 
         for attachment in self.attachment_items:
-            if (attachment.armature and attachment.bone):
+            if attachment.armature and attachment.bone:
                 qc.write('\n')
-                qc.write(f'$attachment "{attachment.name}" "')
-                if (self.prepend_armature):
-                    qc.write(f'{attachment.armature}.')
-                qc.write(f'{attachment.bone}"')
+                qc.write(f'$attachment "{attachment.name}"')
+                if self.prepend_armature:
+                    qc.write(f' "{attachment.armature}.{attachment.bone}"')
+                else:
+                    qc.write(f' "{attachment.bone}"')
                 qc.write(f' {attachment.offset[0]} {attachment.offset[1]} {attachment.offset[2]}')
                 if attachment.absolute:
                     qc.write(' absolute')

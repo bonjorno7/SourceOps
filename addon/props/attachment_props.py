@@ -10,13 +10,13 @@ class SOURCEOPS_AttachmentProps(bpy.types.PropertyGroup):
 
     armature: bpy.props.StringProperty(
         name='Armature',
-        description='The armature to choose the bone from."',
+        description='The armature to choose the bone from',
         default='',
     )
 
     bone: bpy.props.StringProperty(
         name='Bone',
-        description='The bone that this attachment should attach to."',
+        description='The bone that this attachment should attach to',
         default='',
     )
 
