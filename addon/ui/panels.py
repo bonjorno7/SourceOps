@@ -190,7 +190,12 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if attachment:
                 col = common.split_column(box)
                 col.prop(attachment, 'name')
-                col.prop(attachment, 'bone')
+
+                col.prop_search(attachment, 'armature', bpy.data, 'armatures')
+                armature = bpy.data.armatures.get(attachment.armature)
+                if armature:
+                    col.prop_search(attachment, 'bone', armature, 'bones')
+
                 col.prop(attachment, 'offset')
                 col.prop(attachment, 'rotation')
                 col.prop(attachment, 'absolute')

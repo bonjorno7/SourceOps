@@ -221,15 +221,20 @@ class Model:
             qc.write('\n')
 
         for attachment in self.attachment_items:
-            qc.write('\n')
-            qc.write(f'$attachment "{attachment.name}" "{attachment.bone}"')
-            qc.write(f' {attachment.offset[0]} {attachment.offset[1]} {attachment.offset[2]}')
-            if attachment.absolute:
-                qc.write(' absolute')
-            if attachment.rigid:
-                qc.write(' rigid')
-            qc.write(f' rotate {attachment.rotation[0]} {attachment.rotation[1]} {attachment.rotation[2]}')
-            qc.write('\n')
+            if attachment.armature and attachment.bone:
+                qc.write('\n')
+                qc.write(f'$attachment "{attachment.name}"')
+                if self.prepend_armature:
+                    qc.write(f' "{attachment.armature}.{attachment.bone}"')
+                else:
+                    qc.write(f' "{attachment.bone}"')
+                qc.write(f' {attachment.offset[0]} {attachment.offset[1]} {attachment.offset[2]}')
+                if attachment.absolute:
+                    qc.write(' absolute')
+                if attachment.rigid:
+                    qc.write(' rigid')
+                qc.write(f' rotate {attachment.rotation[0]} {attachment.rotation[1]} {attachment.rotation[2]}')
+                qc.write('\n')
 
         if self.skin_items:
             qc.write('\n')
