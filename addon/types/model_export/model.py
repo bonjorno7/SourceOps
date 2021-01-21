@@ -222,7 +222,11 @@ class Model:
 
         for attachment in self.attachment_items:
             qc.write('\n')
-            qc.write(f'$attachment "{attachment.name}" "{attachment.bone}"')
+            qc.write(f'$attachment "{attachment.name}"')
+            if (not attachment.armature or not self.prepend_armature):
+                qc.write(f' "{attachment.bone}"')
+            else:
+                qc.write(f' "{attachment.armature}.{attachment.bone}"')
             qc.write(f' {attachment.offset[0]} {attachment.offset[1]} {attachment.offset[2]}')
             if attachment.absolute:
                 qc.write(' absolute')

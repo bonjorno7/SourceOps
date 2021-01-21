@@ -8,10 +8,16 @@ class SOURCEOPS_AttachmentProps(bpy.types.PropertyGroup):
         default='Attachment',
     )
 
+    armature: bpy.props.StringProperty(
+        name='Armature',
+        description='The armature to choose the bone from."',
+        default='',
+    )
+
     bone: bpy.props.StringProperty(
-        name='Bone Name',
-        description='The name of the bone that this attachment should attach to. If using Prepend Armature, name should be formatted as "<Armature>.<Bone>"',
-        default='Bone',
+        name='Bone',
+        description='The bone that this attachment should attach to."',
+        default='',
     )
 
     offset: bpy.props.FloatVectorProperty(
