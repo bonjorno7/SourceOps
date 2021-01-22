@@ -1,4 +1,5 @@
 import bpy
+import mathutils
 from .. import utils
 
 
@@ -109,6 +110,7 @@ class SOURCEOPS_OT_RigSimulation(bpy.types.Operator):
             constraint = bone.constraints.new('CHILD_OF')
             name = bone.name.replace('Rigged ', '', 1)
             constraint.target = bpy.data.objects[name]
+            constraint.inverse_matrix = mathutils.Matrix.Identity(4)
 
         # Switch to object mode
         bpy.ops.object.mode_set(mode='OBJECT')
