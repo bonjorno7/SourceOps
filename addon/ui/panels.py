@@ -256,6 +256,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(sourceops, 'simulation_input')
             col.prop(sourceops, 'simulation_output')
             box.operator('sourceops.rig_simulation', text='Rig Simulation')
+            box.operator('sourceops.rig_cloth', text='Rig Cloth')
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.list_operator', text='', icon='ADD')

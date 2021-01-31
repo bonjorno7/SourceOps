@@ -8,6 +8,7 @@ from . export_auto import SOURCEOPS_OT_ExportAuto
 from . list_operator import SOURCEOPS_OT_ListOperator
 from . export_vmf import SOURCEOPS_OT_ExportVMF
 from . rig_simulation import SOURCEOPS_OT_RigSimulation
+from . rig_cloth import SOURCEOPS_OT_RigCloth
 from . backup import SOURCEOPS_OT_BackupPreferences, SOURCEOPS_OT_RestorePreferences
 
 
@@ -21,6 +22,7 @@ def register():
     bpy.utils.register_class(SOURCEOPS_OT_ListOperator)
     bpy.utils.register_class(SOURCEOPS_OT_ExportVMF)
     bpy.utils.register_class(SOURCEOPS_OT_RigSimulation)
+    bpy.utils.register_class(SOURCEOPS_OT_RigCloth)
     bpy.utils.register_class(SOURCEOPS_OT_BackupPreferences)
     bpy.utils.register_class(SOURCEOPS_OT_RestorePreferences)
 
@@ -28,6 +30,7 @@ def register():
 def unregister():
     bpy.utils.unregister_class(SOURCEOPS_OT_RestorePreferences)
     bpy.utils.unregister_class(SOURCEOPS_OT_BackupPreferences)
+    bpy.utils.unregister_class(SOURCEOPS_OT_RigCloth)
     bpy.utils.unregister_class(SOURCEOPS_OT_RigSimulation)
     bpy.utils.unregister_class(SOURCEOPS_OT_ExportVMF)
     bpy.utils.unregister_class(SOURCEOPS_OT_ListOperator)
