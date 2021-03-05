@@ -1,39 +1,40 @@
 import bpy
-from . open_folder import SOURCEOPS_OT_OpenFolder
-from . export_meshes import SOURCEOPS_OT_ExportMeshes
-from . generate_qc import SOURCEOPS_OT_GenerateQC
-from . compile_qc import SOURCEOPS_OT_CompileQC
-from . view_model import SOURCEOPS_OT_ViewModel
-from . export_auto import SOURCEOPS_OT_ExportAuto
-from . list_operator import SOURCEOPS_OT_ListOperator
-from . export_vmf import SOURCEOPS_OT_ExportVMF
-from . rig_simulation import SOURCEOPS_OT_RigSimulation
-from . backup import SOURCEOPS_OT_BackupPreferences, SOURCEOPS_OT_RestorePreferences
+from . import open_folder
+from . import export_meshes
+from . import generate_qc
+from . import compile_qc
+from . import view_model
+from . import export_auto
+from . import list_operator
+from . import export_vmf
+from . import rig_simulation
+from . import pose_bone_transforms
+from . import backup
+
+classes = (
+    open_folder.SOURCEOPS_OT_OpenFolder,
+    export_meshes.SOURCEOPS_OT_ExportMeshes,
+    generate_qc.SOURCEOPS_OT_GenerateQC,
+    compile_qc.SOURCEOPS_OT_CompileQC,
+    view_model.SOURCEOPS_OT_ViewModel,
+    export_auto.SOURCEOPS_OT_ExportAuto,
+    list_operator.SOURCEOPS_OT_ListOperator,
+    export_vmf.SOURCEOPS_OT_ExportVMF,
+    rig_simulation.SOURCEOPS_OT_RigSimulation,
+    pose_bone_transforms.SOURCEOPS_OT_PoseBoneTransforms,
+    backup.SOURCEOPS_OT_BackupPreferences,
+    backup.SOURCEOPS_OT_RestorePreferences,
+)
 
 
 def register():
-    bpy.utils.register_class(SOURCEOPS_OT_OpenFolder)
-    bpy.utils.register_class(SOURCEOPS_OT_ExportMeshes)
-    bpy.utils.register_class(SOURCEOPS_OT_GenerateQC)
-    bpy.utils.register_class(SOURCEOPS_OT_CompileQC)
-    bpy.utils.register_class(SOURCEOPS_OT_ViewModel)
-    bpy.utils.register_class(SOURCEOPS_OT_ExportAuto)
-    bpy.utils.register_class(SOURCEOPS_OT_ListOperator)
-    bpy.utils.register_class(SOURCEOPS_OT_ExportVMF)
-    bpy.utils.register_class(SOURCEOPS_OT_RigSimulation)
-    bpy.utils.register_class(SOURCEOPS_OT_BackupPreferences)
-    bpy.utils.register_class(SOURCEOPS_OT_RestorePreferences)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
+    bpy.types.VIEW3D_MT_pose_context_menu.append(pose_bone_transforms.menu_func)
 
 def unregister():
-    bpy.utils.unregister_class(SOURCEOPS_OT_RestorePreferences)
-    bpy.utils.unregister_class(SOURCEOPS_OT_BackupPreferences)
-    bpy.utils.unregister_class(SOURCEOPS_OT_RigSimulation)
-    bpy.utils.unregister_class(SOURCEOPS_OT_ExportVMF)
-    bpy.utils.unregister_class(SOURCEOPS_OT_ListOperator)
-    bpy.utils.unregister_class(SOURCEOPS_OT_ExportAuto)
-    bpy.utils.unregister_class(SOURCEOPS_OT_ViewModel)
-    bpy.utils.unregister_class(SOURCEOPS_OT_CompileQC)
-    bpy.utils.unregister_class(SOURCEOPS_OT_GenerateQC)
-    bpy.utils.unregister_class(SOURCEOPS_OT_ExportMeshes)
-    bpy.utils.unregister_class(SOURCEOPS_OT_OpenFolder)
+    bpy.types.VIEW3D_MT_pose_context_menu.remove(pose_bone_transforms.menu_func)
+
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
