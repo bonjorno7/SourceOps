@@ -2,7 +2,6 @@ import bpy
 import string
 import unicodedata
 import platform
-import ctypes.wintypes
 import pathlib
 
 
@@ -115,6 +114,7 @@ def remove_duplicates(list_with_duplicates):
 
 def documents():
     if platform.system() == 'Windows':
+        import ctypes.wintypes
         buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
 
         ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 1, buf)
