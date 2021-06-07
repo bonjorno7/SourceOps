@@ -311,6 +311,11 @@ class Triangles:
         if object.type not in {'MESH', 'CURVE', 'SURFACE', 'FONT'}:
             return
 
+        collection = bpy.data.collections.new('SourceOps')
+        bpy.context.scene.collection.children.link(collection)
+        object = object.copy()
+        collection.objects.link(object)
+
         mod = object.modifiers.new('Triangulate', 'TRIANGULATE')
         mod.min_vertices = 4
         mod.quad_method = 'BEAUTY'
@@ -338,9 +343,8 @@ class Triangles:
         mesh.free_normals_split()
         evaluated.to_mesh_clear()
 
-        for mod in getattr(object, 'modifiers', []):
-            if mod.type == 'ARMATURE':
-                mod.show_viewport = True
+        bpy.data.objects.remove(object)
+        bpy.data.collections.remove(collection)
 
     def to_string(self):
         header = f'triangles\n'
@@ -358,7 +362,7 @@ class SMD:
         self.triangles = Triangles(self.settings)
 
     def configure_scene(self, objects):
-        scene_settings = {o: {} for o in objects}
+        scene_settings = {}
 
         if bpy.context.active_object:
             scene_settings['mode'] = bpy.context.active_object.mode
@@ -367,10 +371,7 @@ class SMD:
             scene_settings['mode'] = 'OBJECT'
 
         for object in objects:
-            scene_settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
-            if not scene_settings[object]['in_scene']:
-                bpy.context.scene.collection.objects.link(object)
-
+            scene_settings[object] = {}
             scene_settings[object]['hide_viewport'] = True if object.hide_viewport else False
             object.hide_viewport = False
 
@@ -378,9 +379,6 @@ class SMD:
 
     def restore_scene(self, objects, scene_settings):
         for object in objects:
-            if not scene_settings[object]['in_scene']:
-                bpy.context.scene.collection.objects.unlink(object)
-
             object.hide_viewport = scene_settings[object]['hide_viewport']
 
         if scene_settings['mode'] != 'OBJECT':
