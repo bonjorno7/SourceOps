@@ -308,27 +308,26 @@ class Triangles:
         self.triangles = []
 
     def from_blender(self, lookup, armature, object):
-        if object.type not in {'MESH', 'CURVE', 'SURFACE', 'META', 'FONT'}:
+        if object.type not in {'MESH', 'CURVE', 'SURFACE', 'FONT'}:
             return
+
+        mod = object.modifiers.new('Triangulate', 'TRIANGULATE')
+        mod.min_vertices = 4
+        mod.quad_method = 'BEAUTY'
+        mod.ngon_method = 'BEAUTY'
+        mod.keep_custom_normals = True
 
         for mod in getattr(object, 'modifiers', []):
             if mod.type == 'ARMATURE':
                 mod.show_viewport = False
 
+        bpy.context.view_layer.update()
         depsgraph = bpy.context.evaluated_depsgraph_get()
         evaluated = object.evaluated_get(depsgraph)
         mesh = evaluated.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
 
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        bmesh.ops.triangulate(bm, faces=bm.faces, quad_method='FIXED', ngon_method='EAR_CLIP')
-        bm.normal_update()
-        bm.to_mesh(mesh)
-        bm.free()
-
         if not self.settings.ignore_transforms:
             mesh.transform(object.matrix_world)
-        mesh.calc_normals()
         mesh.calc_normals_split()
 
         for poly in mesh.polygons:
