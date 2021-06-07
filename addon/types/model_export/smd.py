@@ -318,8 +318,8 @@ class Triangles:
 
         mod = object.modifiers.new('Triangulate', 'TRIANGULATE')
         mod.min_vertices = 4
-        mod.quad_method = 'BEAUTY'
-        mod.ngon_method = 'BEAUTY'
+        mod.quad_method = 'FIXED'
+        mod.ngon_method = 'CLIP'
         mod.keep_custom_normals = True
 
         for mod in getattr(object, 'modifiers', []):
