@@ -322,11 +322,13 @@ class Triangles:
         bm = bmesh.new()
         bm.from_mesh(mesh)
         bmesh.ops.triangulate(bm, faces=bm.faces, quad_method='FIXED', ngon_method='EAR_CLIP')
+        bm.normal_update()
         bm.to_mesh(mesh)
         bm.free()
 
         if not self.settings.ignore_transforms:
             mesh.transform(object.matrix_world)
+        mesh.calc_normals()
         mesh.calc_normals_split()
 
         for poly in mesh.polygons:
