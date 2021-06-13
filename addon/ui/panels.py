@@ -257,6 +257,17 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(sourceops, 'simulation_output')
             box.operator('sourceops.rig_simulation', text='Rig Simulation')
 
+        if sourceops.panel == 'MISC' and sourceops:
+            box = layout.box()
+
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Misc')
+
+            col = box.column()
+            col.operator('sourceops.weighted_normal')
+            col.operator('sourceops.triangulate')
+
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.list_operator', text='', icon='ADD')
         op.mode, op.item = 'ADD', item

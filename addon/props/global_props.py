@@ -35,5 +35,6 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('ATTACHMENTS', 'Attachments', 'Display the attachments panel', 'BONE_DATA', 7),
             ('MAPS', 'Maps', 'Display the maps panel', 'MOD_BUILD', 8),
             ('SIMULATION', 'Simulation', 'Display the simulation panel', 'PHYSICS', 9),
+            ('MISC', 'Misc', 'Display the misc panel', 'MONKEY', 10),
         ],
     )
