@@ -9,6 +9,8 @@ from . import list_operator
 from . import export_vmf
 from . import rig_simulation
 from . import pose_bone_transforms
+from . import weighted_normal
+from . import triangulate
 from . import backup
 
 classes = (
@@ -22,6 +24,8 @@ classes = (
     export_vmf.SOURCEOPS_OT_ExportVMF,
     rig_simulation.SOURCEOPS_OT_RigSimulation,
     pose_bone_transforms.SOURCEOPS_OT_PoseBoneTransforms,
+    weighted_normal.SOURCEOPS_OT_weighted_normal,
+    triangulate.SOURCEOPS_OT_triangulate,
     backup.SOURCEOPS_OT_BackupPreferences,
     backup.SOURCEOPS_OT_RestorePreferences,
 )
