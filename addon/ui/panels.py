@@ -33,7 +33,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.alignment = 'RIGHT'
             row.prop(sourceops, 'panel', expand=True, icon_only=True)
 
-        if sourceops.panel == 'GAMES' and prefs:
+        if prefs and sourceops.panel == 'GAMES':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -53,7 +53,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
 
-        elif sourceops.panel == 'MODELS' and sourceops:
+        elif sourceops and sourceops.panel == 'MODELS':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -72,7 +72,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(model, 'bodygroups')
                 col.prop(model, 'stacking')
 
-        elif sourceops.panel == 'MODEL_OPTIONS' and model:
+        elif model and sourceops.panel == 'MODEL_OPTIONS':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -103,7 +103,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(model, 'rotation')
             col.prop(model, 'scale')
 
-        elif sourceops.panel == 'TEXTURES' and model:
+        elif model and sourceops.panel == 'TEXTURES':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -132,7 +132,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = common.split_column(box)
                 col.prop(skin, 'name')
 
-        elif sourceops.panel == 'SEQUENCES' and model:
+        elif model and sourceops.panel == 'SEQUENCES':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -158,7 +158,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(sequence, 'snap')
                 col.prop(sequence, 'loop')
 
-        elif sourceops.panel == 'EVENTS' and sequence:
+        elif sequence and sourceops.panel == 'EVENTS':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -176,7 +176,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(event, 'frame')
                 col.prop(event, 'value')
 
-        elif sourceops.panel == 'ATTACHMENTS' and model:
+        elif model and sourceops.panel == 'ATTACHMENTS':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -216,7 +216,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.operator('sourceops.view_model', text='', icon_value=icons.id('hlmv'))
             row.operator('sourceops.export_auto', text='', icon='AUTO')
 
-        if sourceops.panel == 'MAPS' and sourceops:
+        if sourceops and sourceops.panel == 'MAPS':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -246,7 +246,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             row.operator('sourceops.export_vmf', text='', icon_value=icons.id('vmf'))
 
-        if sourceops.panel == 'SIMULATION' and sourceops:
+        if sourceops and sourceops.panel == 'SIMULATION':
             box = layout.box()
             row = box.row()
             row.alignment = 'CENTER'
@@ -257,7 +257,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(sourceops, 'simulation_output')
             box.operator('sourceops.rig_simulation', text='Rig Simulation')
 
-        if sourceops.panel == 'MISC' and sourceops:
+        if sourceops and sourceops.panel == 'MISC':
             box = layout.box()
 
             row = box.row()
