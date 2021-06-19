@@ -266,7 +266,7 @@ class Model:
                 code = pipe.returncode
                 if code is None:
                     log = self.directory.joinpath(f'{self.basename}.log')
-                    log.write_text(pipe.communicate()[0].decode('utf'))
+                    log.write_text(pipe.communicate()[0].decode('unicode-escape'))
                 else:
                     break
 
