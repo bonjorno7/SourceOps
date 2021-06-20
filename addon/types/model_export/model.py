@@ -2,8 +2,10 @@ import bpy
 import shutil
 import subprocess
 from pathlib import Path
+from traceback import print_exc
 from ... utils import common
 from . smd import SMD
+from . fbx import export_fbx
 
 
 class Model:
@@ -52,35 +54,43 @@ class Model:
         self.rotation = model.rotation
         self.scale = model.scale
 
+        self.mesh_type = 'FBX'
+
     def export_meshes(self):
         armatures = self.get_armatures()
-        path = self.directory.joinpath(f'{self.basename}_anims.smd')
+        path = self.directory.joinpath(f'{self.basename}_anims.SMD')
         self.export_smd(armatures, [], path)
 
         if self.reference:
             objects = self.get_all_objects(self.reference)
             path = self.get_body_path(self.reference)
-            self.export_smd(armatures, objects, path)
+            self.export_mesh(armatures, objects, path)
 
         if self.collision:
             objects = self.get_all_objects(self.collision)
             path = self.get_body_path(self.collision)
-            self.export_smd(armatures, objects, path)
+            self.export_mesh(armatures, objects, path)
 
         if self.bodygroups:
             for bodygroup in self.bodygroups.children:
                 for collection in bodygroup.children:
                     objects = self.get_all_objects(collection)
                     path = self.get_body_path(collection)
-                    self.export_smd(armatures, objects, path)
+                    self.export_mesh(armatures, objects, path)
 
         if self.stacking:
             for collection in self.stacking.children:
                 objects = self.get_all_objects(collection)
                 path = self.get_body_path(collection)
-                self.export_smd(armatures, objects, path)
+                self.export_mesh(armatures, objects, path)
 
         return True
+
+    def export_mesh(self, armatures, objects, path):
+        if self.mesh_type == 'SMD':
+            self.export_smd(armatures, objects, path)
+        elif self.mesh_type == 'FBX':
+            self.export_fbx(armatures, objects, path)
 
     def export_smd(self, armatures, objects, path):
         try:
@@ -89,13 +99,23 @@ class Model:
 
         except:
             print(f'Failed to export: {path}')
-            return
+            print_exc()
 
-        smd = SMD(self.prepend_armature, self.ignore_transforms)
-        smd.from_blender(armatures, objects)
+        else:
+            smd = SMD(self.prepend_armature, self.ignore_transforms)
+            smd.from_blender(armatures, objects)
 
-        smd_file.write(smd.to_string())
-        smd_file.close()
+            smd_file.write(smd.to_string())
+            smd_file.close()
+
+    def export_fbx(self, armatures, objects, path):
+        try:
+            print(f'Exporting: {path}')
+            export_fbx(path, set(armatures) | set(objects))
+
+        except:
+            print(f'Failed to export {path}')
+            print_exc()
 
     def get_armatures(self):
         objects = self.get_all_objects(self.reference)
@@ -110,7 +130,7 @@ class Model:
 
     def get_body_path(self, collection):
         name = common.clean_filename(collection.name)
-        return self.directory.joinpath(f'{name}.smd')
+        return self.directory.joinpath(f'{name}.{self.mesh_type}')
 
     def generate_qc(self):
         if not self.reference and not self.stacking:
@@ -164,13 +184,13 @@ class Model:
         if self.reference:
             qc.write('\n')
             name = common.clean_filename(self.reference.name)
-            qc.write(f'$body "{name}" "{name}.smd"')
+            qc.write(f'$body "{name}" "{name}.{self.mesh_type}"')
             qc.write('\n')
 
         if self.collision:
             qc.write('\n')
             name = common.clean_filename(self.collision.name)
-            qc.write(f'$collisionmodel "{name}.smd"' + ' {\n')
+            qc.write(f'$collisionmodel "{name}.{self.mesh_type}"' + ' {\n')
             qc.write('    $concave\n')
             qc.write('    $maxconvexpieces 10000\n')
             qc.write('}')
@@ -183,7 +203,7 @@ class Model:
                 qc.write(f'$bodygroup "{bodygroup_name}"' + ' {\n')
                 for collection in bodygroup.children:
                     name = common.clean_filename(collection.name)
-                    qc.write(f'    studio "{name}.smd"\n')
+                    qc.write(f'    studio "{name}.{self.mesh_type}"\n')
                 qc.write('}')
                 qc.write('\n')
 
@@ -191,10 +211,10 @@ class Model:
             for collection in self.stacking.children:
                 qc.write('\n')
                 name = common.clean_filename(collection.name)
-                qc.write(f'$model "{name}" "{name}.smd"')
+                qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
-        path = f'{self.basename}_anims.smd'
+        path = f'{self.basename}_anims.SMD'
 
         if not self.sequence_items:
             qc.write('\n')
