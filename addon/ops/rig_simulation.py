@@ -63,6 +63,7 @@ class SOURCEOPS_OT_RigSimulation(bpy.types.Operator):
             output_obj.data = input_obj.data.copy()
             output_obj.name = f'Rigged {input_obj.name}'
             output_obj.data.name = output_obj.name
+            output_obj.animation_data_clear()
             output_collection.objects.link(output_obj)
 
             # Reset transforms
