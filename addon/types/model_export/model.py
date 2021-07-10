@@ -1,6 +1,7 @@
 import bpy
 import shutil
 import subprocess
+import platform
 from pathlib import Path
 from ... utils import common
 from . smd import SMD
@@ -10,6 +11,7 @@ class Model:
     def __init__(self, game, model):
         self.game = Path(game.game)
         self.bin = Path(game.bin)
+        self.wine = game.wine
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
@@ -260,6 +262,8 @@ class Model:
             self.remove_old()
 
             args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
+            if platform.system() != 'Windows' and str(self.studiomdl).endswith('.exe'):
+                args.insert(0, self.wine)
             pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             while True:

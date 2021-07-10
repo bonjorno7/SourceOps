@@ -23,6 +23,13 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         update=utils.game.update_bin,
     )
 
+    wine: bpy.props.StringProperty(
+        name='Wine',
+        description='Path to wine',
+        subtype='DIR_PATH',
+        update=utils.game.update_wine,
+    )
+
     modelsrc: bpy.props.StringProperty(
         name='ModelSrc',
         description='Path to your modelsrc folder',
