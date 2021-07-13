@@ -43,3 +43,13 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         subtype='DIR_PATH',
         update=utils.game.update_mapsrc,
     )
+
+    mesh_type: bpy.props.EnumProperty(
+        name='Mesh Type',
+        description='File type for mesh export',
+        items=[
+            ('SMD', 'SMD', 'Export meshes as SMD'),
+            ('FBX', 'FBX', 'Export meshes as FBX (only on CS:GO branch)'),
+        ],
+        default='SMD',
+    )

@@ -18,6 +18,7 @@ class Model:
             self.modelsrc = Path(game.modelsrc)
         self.models = Path(game.models)
         self.mapsrc = Path(game.mapsrc)
+        self.mesh_type = game.mesh_type
 
         self.name = str(Path(model.name).with_suffix(''))
         self.basename = common.clean_filename(Path(self.name).stem)
@@ -53,8 +54,6 @@ class Model:
         self.origin_z = model.origin_z
         self.rotation = model.rotation
         self.scale = model.scale
-
-        self.mesh_type = 'FBX'
 
     def export_meshes(self):
         armatures = self.get_armatures()
