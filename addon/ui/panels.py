@@ -52,6 +52,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
+                col.prop(game, 'mesh_type')
 
         elif sourceops and sourceops.panel == 'MODELS':
             box = layout.box()
