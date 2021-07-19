@@ -86,6 +86,18 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+    use_other_object_origin: bpy.props.BoolProperty(
+        name='Use Other Object\'s Origin',
+        description='Use the position of another object as the $origin',
+        default=False,
+    )
+
+    other_object_ref: bpy.props.PointerProperty(
+        name='Other Object',
+        description='The other Object to use the position of as the $origin',
+        type=bpy.types.Object,
+    )
+
     origin_x: bpy.props.FloatProperty(
         name='Origin +X',
         description='Translation on the positive X axis for $origin in the QC file',
