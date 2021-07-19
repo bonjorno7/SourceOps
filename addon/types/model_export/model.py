@@ -49,6 +49,10 @@ class Model:
 
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
+
+        self.use_other_object_origin = model.use_other_object_origin
+        self.other_object_ref = model.other_object_ref
+
         self.origin_x = model.origin_x
         self.origin_y = model.origin_y
         self.origin_z = model.origin_z
@@ -172,13 +176,29 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
-        qc.write('\n')
-        qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
-        qc.write('\n')
+        if not self.use_other_object_origin:
+            qc.write('\n')
+            qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
+            qc.write('\n')
 
-        qc.write('\n')
-        qc.write(f'$scale {self.scale}')
-        qc.write('\n')
+            qc.write('\n')
+            qc.write(f'$scale {self.scale}')
+            qc.write('\n')
+        else:
+            # Using temp variables for readability
+            ref_obj_pos_x = self.other_object_ref.matrix_world[0][3]
+            ref_obj_pos_y = self.other_object_ref.matrix_world[1][3]
+            ref_obj_pos_z = self.other_object_ref.matrix_world[2][3]
+            ref_obj_scale = self.other_object_ref.matrix_world[0][0]
+
+            qc.write('\n')
+            qc.write(f'$origin {ref_obj_pos_x} {ref_obj_pos_y} {ref_obj_pos_z} {self.rotation}')
+            qc.write('\n')
+
+            qc.write('\n')
+            # Using only the X scale at this time, assumes the object used is uniform scale
+            qc.write(f'$scale {ref_obj_scale}')
+            qc.write('\n')
 
         if self.reference:
             qc.write('\n')

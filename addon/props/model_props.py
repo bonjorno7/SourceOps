@@ -88,13 +88,13 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     use_other_object_origin: bpy.props.BoolProperty(
         name='Use Other Object\'s Origin',
-        description='Use the position of another object as the $origin',
+        description='Use the position of another object as the $origin and $scale',
         default=False,
     )
 
     other_object_ref: bpy.props.PointerProperty(
         name='Other Object',
-        description='The other Object to use the position of as the $origin',
+        description='The other Object to use the position of as the $origin and $scale',
         type=bpy.types.Object,
     )
 
