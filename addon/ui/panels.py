@@ -95,21 +95,19 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col = common.split_column(box)
             col.prop(model, 'prepend_armature')
             col.prop(model, 'ignore_transforms')
-            col.prop(model, 'use_other_object_origin')
+            col.prop(model, 'custom_transform_source')
 
-            align = col.column(align=True)
-            align.enabled = not model.use_other_object_origin
-            align.prop(model, 'origin_x', text='Origin X')
-            align.prop(model, 'origin_y', text='Y')
-            align.prop(model, 'origin_z', text='-Z')
-            
-            col = common.split_column(box)
-            col.enabled = model.use_other_object_origin
-            col.prop(model, 'other_object_ref')
+            if model.custom_transform_source == 'CUSTOM_OBJECT':
+                col.prop(model, 'custom_transform_object_ref')
+            else:
+                align = col.column(align=True)
+                align.prop(model, 'origin_x', text='Origin X')
+                align.prop(model, 'origin_y', text='Y')
+                align.prop(model, 'origin_z', text='-Z')
 
-            col = common.split_column(box)
-            col.prop(model, 'rotation')
-            col.prop(model, 'scale')
+                col = common.split_column(box)
+                col.prop(model, 'rotation')
+                col.prop(model, 'scale')
 
         elif model and sourceops.panel == 'TEXTURES':
             box = layout.box()

@@ -1,6 +1,7 @@
 import bpy
 import shutil
 import subprocess
+from math import degrees
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
@@ -50,8 +51,8 @@ class Model:
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
 
-        self.use_other_object_origin = model.use_other_object_origin
-        self.other_object_ref = model.other_object_ref
+        self.custom_transform_source = model.custom_transform_source
+        self.custom_transform_object_ref = model.custom_transform_object_ref
 
         self.origin_x = model.origin_x
         self.origin_y = model.origin_y
@@ -176,7 +177,10 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
-        if not self.use_other_object_origin:
+        if self.custom_transform_source == 'MANUAL' or self.custom_transform_object_ref is None:
+            # How to properly report error? Extract to method?
+            if self.custom_transform_object_ref is None:
+                print('No object was specified for custom transforms!\nFalling back to manual input.')
             qc.write('\n')
             qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
             qc.write('\n')
@@ -186,17 +190,18 @@ class Model:
             qc.write('\n')
         else:
             # Using temp variables for readability
-            ref_obj_pos_x = self.other_object_ref.matrix_world[0][3]
-            ref_obj_pos_y = self.other_object_ref.matrix_world[1][3]
-            ref_obj_pos_z = self.other_object_ref.matrix_world[2][3]
-            ref_obj_scale = self.other_object_ref.matrix_world[0][0]
+            ref_obj_pos_x = self.custom_transform_object_ref.matrix_world[0][3]
+            ref_obj_pos_y = self.custom_transform_object_ref.matrix_world[1][3]
+            ref_obj_pos_z = self.custom_transform_object_ref.matrix_world[2][3]
+            ref_obj_rot_z = degrees(self.custom_transform_object_ref.rotation_euler.z)
+            # Only using X axis for scale, as the object is assumed to be uniformly scaled
+            ref_obj_scale = self.custom_transform_object_ref.scale.x
 
             qc.write('\n')
-            qc.write(f'$origin {ref_obj_pos_x} {ref_obj_pos_y} {ref_obj_pos_z} {self.rotation}')
+            qc.write(f'$origin {ref_obj_pos_x} {ref_obj_pos_y} {ref_obj_pos_z} {ref_obj_rot_z}')
             qc.write('\n')
 
             qc.write('\n')
-            # Using only the X scale at this time, assumes the object used is uniform scale
             qc.write(f'$scale {ref_obj_scale}')
             qc.write('\n')
 

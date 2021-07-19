@@ -86,15 +86,18 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
-    use_other_object_origin: bpy.props.BoolProperty(
-        name='Use Other Object\'s Origin',
-        description='Use the position of another object as the $origin and $scale',
-        default=False,
+    custom_transform_source: bpy.props.EnumProperty(
+        name='Transform Source',
+        description='Method of specifying $origin and $scale\nEither manually specified in this Panel, or via an object',
+        items=[
+            ('MANUAL', 'Manual Input', 'Specify the Transform manually in this panel', 'NONE', 1),
+            ('CUSTOM_OBJECT', 'Object', 'Use an Object\'s transforms\nIf it is None, then falls back to Manual Input', 'NONE', 2)
+        ]
     )
 
-    other_object_ref: bpy.props.PointerProperty(
-        name='Other Object',
-        description='The other Object to use the position of as the $origin and $scale',
+    custom_transform_object_ref: bpy.props.PointerProperty(
+        name='Transform Object',
+        description='The Object to use the transform of as the $origin and $scale',
         type=bpy.types.Object,
     )
 
