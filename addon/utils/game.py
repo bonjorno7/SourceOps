@@ -23,6 +23,9 @@ def update_game(self, context):
 def update_bin(self, context):
     self['bin'] = resolve(self.bin)
 
+def update_wine(self, context):
+    self['wine'] = resolve(self.wine)
+
 
 def update_modelsrc(self, context):
     self['modelsrc'] = resolve(self.modelsrc)

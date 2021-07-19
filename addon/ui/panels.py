@@ -1,4 +1,5 @@
 import bpy
+import os
 from .. utils import common
 from .. import icons
 
@@ -49,6 +50,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'name')
                 col.prop(game, 'game')
                 col.prop(game, 'bin')
+                if os.name == 'posix':
+                    col.prop(game, 'wine')
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
