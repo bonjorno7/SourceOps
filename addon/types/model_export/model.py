@@ -177,10 +177,7 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
-        if self.custom_transform_source == 'MANUAL' or self.custom_transform_object_ref is None:
-            # How to properly report error? Extract to method?
-            if self.custom_transform_object_ref is None:
-                print('No object was specified for custom transforms!\nFalling back to manual input.')
+        if self.custom_transform_source == 'MANUAL':
             qc.write('\n')
             qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
             qc.write('\n')
@@ -188,7 +185,7 @@ class Model:
             qc.write('\n')
             qc.write(f'$scale {self.scale}')
             qc.write('\n')
-        else:
+        elif self.custom_transform_source == 'CUSTOM_OBJECT' and self.custom_transform_object_ref is not None:
             # Using temp variables for readability
             ref_obj_pos_x = self.custom_transform_object_ref.matrix_world[0][3]
             ref_obj_pos_y = self.custom_transform_object_ref.matrix_world[1][3]
@@ -204,6 +201,17 @@ class Model:
             qc.write('\n')
             qc.write(f'$scale {ref_obj_scale}')
             qc.write('\n')
+        else:
+            print('WARNING: No object was specified for custom transforms! Defaulting.')
+
+            qc.write('\n')
+            qc.write(f'$origin 0 0 0 0')
+            qc.write('\n')
+
+            qc.write('\n')
+            qc.write(f'$scale 1')
+            qc.write('\n')
+                
 
         if self.reference:
             qc.write('\n')
