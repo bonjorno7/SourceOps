@@ -1,7 +1,7 @@
 import bpy
 import shutil
 import subprocess
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from traceback import print_exc
 from ... utils import common
 from . smd import SMD
@@ -20,7 +20,7 @@ class Model:
         self.mapsrc = Path(game.mapsrc)
         self.mesh_type = game.mesh_type
 
-        self.name = str(Path(model.name).with_suffix(''))
+        self.name = str(PurePosixPath(model.name).with_suffix(''))
         self.basename = common.clean_filename(Path(self.name).stem)
         if model.static and model.static_prop_combine:
             directory = self.modelsrc.joinpath(Path(self.name).parent)
