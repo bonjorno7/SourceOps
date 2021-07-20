@@ -177,40 +177,35 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
+        output_x = 0
+        output_y = 0
+        output_z = 0
+        output_rotation = 0
+        output_scale = 1
+
         if self.custom_transform_source == 'MANUAL':
-            qc.write('\n')
-            qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
-            qc.write('\n')
-
-            qc.write('\n')
-            qc.write(f'$scale {self.scale}')
-            qc.write('\n')
+            output_x = self.origin_x
+            output_y = self.origin_y
+            output_z = self.origin_z
+            output_rotation = self.rotation
+            output_scale = self.scale
         elif self.custom_transform_source == 'CUSTOM_OBJECT' and self.custom_transform_object_ref is not None:
-            # Using temp variables for readability
-            ref_obj_pos_x = self.custom_transform_object_ref.matrix_world[0][3]
-            ref_obj_pos_y = self.custom_transform_object_ref.matrix_world[1][3]
-            ref_obj_pos_z = self.custom_transform_object_ref.matrix_world[2][3]
-            ref_obj_rot_z = degrees(self.custom_transform_object_ref.rotation_euler.z)
+            output_x = self.custom_transform_object_ref.matrix_world[0][3]
+            output_y = self.custom_transform_object_ref.matrix_world[1][3]
+            output_z = self.custom_transform_object_ref.matrix_world[2][3]
+            output_rotation = degrees(self.custom_transform_object_ref.rotation_euler.z)
             # Only using X axis for scale, as the object is assumed to be uniformly scaled
-            ref_obj_scale = self.custom_transform_object_ref.scale.x
-
-            qc.write('\n')
-            qc.write(f'$origin {ref_obj_pos_x} {ref_obj_pos_y} {ref_obj_pos_z} {ref_obj_rot_z}')
-            qc.write('\n')
-
-            qc.write('\n')
-            qc.write(f'$scale {ref_obj_scale}')
-            qc.write('\n')
+            output_scale = self.custom_transform_object_ref.scale.x
         else:
             print('WARNING: No object was specified for custom transforms! Defaulting.')
 
-            qc.write('\n')
-            qc.write(f'$origin 0 0 0 0')
-            qc.write('\n')
+        qc.write('\n')
+        qc.write(f'$origin {output_x} {output_y} {output_z} {output_rotation}')
+        qc.write('\n')
 
-            qc.write('\n')
-            qc.write(f'$scale 1')
-            qc.write('\n')
+        qc.write('\n')
+        qc.write(f'$scale {output_scale}')
+        qc.write('\n')
                 
 
         if self.reference:
