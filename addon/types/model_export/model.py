@@ -190,9 +190,9 @@ class Model:
             output_rotation = self.rotation
             output_scale = self.scale
         elif self.custom_transform_source == 'CUSTOM_OBJECT' and self.custom_transform_object_ref is not None:
-            output_x = self.custom_transform_object_ref.matrix_world[0][3]
+            output_x = (self.custom_transform_object_ref.matrix_world[0][3]) * -1
             output_y = self.custom_transform_object_ref.matrix_world[1][3]
-            output_z = self.custom_transform_object_ref.matrix_world[2][3]
+            output_z = (self.custom_transform_object_ref.matrix_world[2][3]) * -1
             output_rotation = degrees(self.custom_transform_object_ref.rotation_euler.z)
             # Only using X axis for scale, as the object is assumed to be uniformly scaled
             output_scale = self.custom_transform_object_ref.scale.x
