@@ -20,7 +20,7 @@ class Model:
         self.mapsrc = Path(game.mapsrc)
         self.mesh_type = game.mesh_type
 
-        self.name = str(Path(model.name).with_suffix(''))
+        self.name = Path(model.name).with_suffix('').as_posix()
         self.basename = common.clean_filename(Path(self.name).stem)
         if model.static and model.static_prop_combine:
             directory = self.modelsrc.joinpath(Path(self.name).parent)
