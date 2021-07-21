@@ -285,7 +285,7 @@ class Model:
                 code = pipe.returncode
                 if code is None:
                     log = self.directory.joinpath(f'{self.stem}.log')
-                    log.write_text(pipe.communicate()[0].decode('unicode-escape'))
+                    log.write_bytes(b'\n\n\n'.join(pipe.communicate()))
                 else:
                     break
 
