@@ -21,7 +21,7 @@ class Model:
         self.mesh_type = game.mesh_type
 
         self.name = Path(model.name).with_suffix('').as_posix()
-        self.basename = common.clean_filename(Path(self.name).stem)
+        self.stem = common.clean_filename(Path(self.name).stem)
         if model.static and model.static_prop_combine:
             directory = self.modelsrc.joinpath(Path(self.name).parent)
         else:
@@ -57,7 +57,7 @@ class Model:
 
     def export_meshes(self):
         armatures = self.get_armatures()
-        path = self.directory.joinpath(f'{self.basename}_anims.SMD')
+        path = self.directory.joinpath(f'{self.stem}_anims.SMD')
         self.export_smd(armatures, [], path)
 
         if self.reference:
@@ -136,7 +136,7 @@ class Model:
             print('Models need visible meshes')
             return False
 
-        path = self.directory.joinpath(f'{self.basename}.qc')
+        path = self.directory.joinpath(f'{self.stem}.qc')
 
         try:
             qc = path.open('w')
@@ -213,7 +213,7 @@ class Model:
                 qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
-        path = f'{self.basename}_anims.SMD'
+        path = f'{self.stem}_anims.SMD'
 
         if not self.sequence_items:
             qc.write('\n')
@@ -273,7 +273,7 @@ class Model:
         return True
 
     def compile_qc(self):
-        qc = self.directory.joinpath(f'{self.basename}.qc')
+        qc = self.directory.joinpath(f'{self.stem}.qc')
         if qc.is_file():
             print(f'Compiling: {qc}')
             self.remove_old()
@@ -284,7 +284,7 @@ class Model:
             while True:
                 code = pipe.returncode
                 if code is None:
-                    log = self.directory.joinpath(f'{self.basename}.log')
+                    log = self.directory.joinpath(f'{self.stem}.log')
                     log.write_text(pipe.communicate()[0].decode('unicode-escape'))
                 else:
                     break
