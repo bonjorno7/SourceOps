@@ -51,8 +51,8 @@ class Model:
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
 
-        self.custom_transform_source = model.custom_transform_source
-        self.custom_transform_object_ref = model.custom_transform_object_ref
+        self.transform_source = model.transform_source
+        self.transform_object = model.transform_object
 
         self.origin_x = model.origin_x
         self.origin_y = model.origin_y
@@ -177,37 +177,34 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
-        output_x = 0
-        output_y = 0
-        output_z = 0
-        output_rotation = 0
-        output_scale = 1
-
-        if self.custom_transform_source == 'MANUAL':
-            output_x = self.origin_x
-            output_y = self.origin_y
-            output_z = self.origin_z
-            output_rotation = self.rotation
-            output_scale = self.scale
-        elif self.custom_transform_source == 'CUSTOM_OBJECT' and self.custom_transform_object_ref is not None:
-            output_x = (self.custom_transform_object_ref.matrix_world[0][3]) * -1
-            output_y = self.custom_transform_object_ref.matrix_world[1][3]
-            output_z = (self.custom_transform_object_ref.matrix_world[2][3]) * -1
-            output_rotation = degrees(self.custom_transform_object_ref.rotation_euler.z)
-            # Only using X axis for scale, as the object is assumed to be uniformly scaled
-            output_scale = self.custom_transform_object_ref.scale.x
+        if self.transform_source == 'MANUAL':
+            origin_x = self.origin_x
+            origin_y = self.origin_y
+            origin_z = self.origin_z
+            rotation = self.rotation
+            scale = self.scale
+        elif self.transform_source == 'OBJECT' and self.transform_object is not None:
+            matrix = self.transform_object.matrix_world.decompose()
+            origin_x = -matrix[0][0]
+            origin_y = -matrix[0][1]
+            origin_z = -matrix[0][2]
+            rotation = degrees(matrix[1].to_euler('XYZ')[2])
+            scale = matrix[2][2]
         else:
-            print('WARNING: No object was specified for custom transforms! Defaulting.')
+            origin_x = 0
+            origin_y = 0
+            origin_z = 0
+            rotation = 0
+            scale = 1
 
         qc.write('\n')
-        qc.write(f'$origin {output_x} {output_y} {output_z} {output_rotation}')
+        qc.write(f'$origin {origin_x} {origin_y} {origin_z} {rotation}')
         qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {output_scale}')
+        qc.write(f'$scale {scale}')
         qc.write('\n')
                 
-
         if self.reference:
             qc.write('\n')
             name = common.clean_filename(self.reference.name)

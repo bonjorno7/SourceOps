@@ -86,18 +86,18 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
-    custom_transform_source: bpy.props.EnumProperty(
+    transform_source: bpy.props.EnumProperty(
         name='Transform Source',
-        description='Method of specifying $origin and $scale\nEither manually specified in this Panel, or via an object',
+        description='Method of specifying $origin and $scale.\nEither manually specified in this panel, or via an object',
         items=[
-            ('MANUAL', 'Manual Input', 'Specify the Transform manually in this panel', 'NONE', 1),
-            ('CUSTOM_OBJECT', 'Object', 'Use an Object\'s transforms\nIf it is None, then falls back to Manual Input', 'NONE', 2)
+            ('MANUAL', 'Manual Input', 'Specify the Transform manually in this panel'),
+            ('OBJECT', 'Object', 'Use an Object\'s transforms\nIf it is None, then falls back to Manual Input')
         ]
     )
 
-    custom_transform_object_ref: bpy.props.PointerProperty(
+    transform_object: bpy.props.PointerProperty(
         name='Transform Object',
-        description='The Object to use the transform of as the $origin and $scale',
+        description='The object to use the transform of as the $origin, $scale and Z-Axis rotation',
         type=bpy.types.Object,
     )
 
