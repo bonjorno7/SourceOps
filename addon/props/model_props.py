@@ -90,14 +90,14 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         name='Transform Source',
         description='Method of specifying $origin and $scale.\nEither manually specified in this panel, or via an object',
         items=[
-            ('MANUAL', 'Manual Input', 'Specify the Transform manually in this panel'),
-            ('OBJECT', 'Object', 'Use an Object\'s transforms\nIf it is None, then falls back to Manual Input')
-        ]
+            ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
+            ('OBJECT', 'Object', 'Use an Object\'s transforms\nIf it is None, then no transforms are used'),
+        ],
     )
 
     transform_object: bpy.props.PointerProperty(
         name='Transform Object',
-        description='The object to use the transform of as the $origin, $scale and Z-Axis rotation',
+        description='The object to use the transforms of as the $origin and $scale',
         type=bpy.types.Object,
     )
 
