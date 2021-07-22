@@ -99,6 +99,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             if model.transform_source == 'OBJECT':
                 col.prop(model, 'transform_object')
+
             else:
                 align = col.column(align=True)
                 align.prop(model, 'origin_x', text='Origin X')
