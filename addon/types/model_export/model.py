@@ -184,12 +184,12 @@ class Model:
             rotation = self.rotation
             scale = self.scale
         elif self.transform_source == 'OBJECT' and self.transform_object is not None:
-            matrix = self.transform_object.matrix_world.decompose()
-            origin_x = -matrix[0][0]
-            origin_y = -matrix[0][1]
-            origin_z = -matrix[0][2]
-            rotation = degrees(matrix[1].to_euler('XYZ')[2])
-            scale = matrix[2][2]
+            loc, rot, sca = self.transform_object.matrix_world.decompose()
+            origin_x = -loc.x
+            origin_y = -loc.y
+            origin_z = -loc.z
+            rotation = degrees(rot.to_euler().z)
+            scale = sca.z
         else:
             origin_x = 0
             origin_y = 0
@@ -198,11 +198,11 @@ class Model:
             scale = 1
 
         qc.write('\n')
-        qc.write(f'$origin {origin_x} {origin_y} {origin_z} {rotation}')
+        qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
         qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {scale}')
+        qc.write(f'$scale {scale:.6f}')
         qc.write('\n')
                 
         if self.reference:
