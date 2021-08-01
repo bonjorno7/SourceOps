@@ -127,3 +127,14 @@ def documents():
 def appdata():
     user = bpy.utils.resource_path('USER')
     return pathlib.Path(user).resolve()
+
+
+def resolve(path):
+    if path:
+        return str(pathlib.Path(bpy.path.abspath(path)).resolve())
+    else:
+        return ''
+
+
+def update_wine(self, context):
+    self['wine'] = resolve(self.wine)

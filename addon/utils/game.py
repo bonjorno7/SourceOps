@@ -1,12 +1,5 @@
-import bpy
 from pathlib import Path
-
-
-def resolve(path):
-    if path:
-        return str(Path(bpy.path.abspath(path)).resolve())
-    else:
-        return ''
+from ..utils.common import resolve
 
 
 def update_game(self, context):
@@ -22,9 +15,6 @@ def update_game(self, context):
 
 def update_bin(self, context):
     self['bin'] = resolve(self.bin)
-
-def update_wine(self, context):
-    self['wine'] = resolve(self.wine)
 
 
 def update_modelsrc(self, context):

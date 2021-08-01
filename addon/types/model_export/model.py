@@ -12,9 +12,11 @@ from . fbx import export_fbx
 
 class Model:
     def __init__(self, game, model):
+        self.prefs = common.get_prefs(bpy.context)
+        self.wine = Path(self.prefs.wine)
+
         self.game = Path(game.game)
         self.bin = Path(game.bin)
-        self.wine = Path(game.wine)
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
