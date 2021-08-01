@@ -1,9 +1,9 @@
 bl_info = {
     'name': 'SourceOps',
-    'author': 'bonjorno7, Gorange, RED_EYE, SethTooQuick, Cabbage McGravel, Almaas',
+    'author': 'bonjorno7, Almaas, Cabbage McGravel, Gorange, Krystian, RED_EYE, SethTooQuick, Yonder',
     'description': 'A more convenient alternative to Blender Source Tools',
     'blender': (2, 80, 0),
-    'version': (0, 5, 4),
+    'version': (0, 5, 6),
     'location': '3D View > Sidebar',
     'category': 'Import-Export',
 }

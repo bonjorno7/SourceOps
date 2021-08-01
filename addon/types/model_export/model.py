@@ -2,6 +2,7 @@ import bpy
 import shutil
 import subprocess
 import os
+from math import degrees
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
@@ -22,8 +23,8 @@ class Model:
         self.mapsrc = Path(game.mapsrc)
         self.mesh_type = game.mesh_type
 
-        self.name = str(Path(model.name).with_suffix(''))
-        self.basename = common.clean_filename(Path(self.name).stem)
+        self.name = Path(model.name).with_suffix('').as_posix()
+        self.stem = common.clean_filename(Path(self.name).stem)
         if model.static and model.static_prop_combine:
             directory = self.modelsrc.joinpath(Path(self.name).parent)
         else:
@@ -51,6 +52,10 @@ class Model:
 
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
+
+        self.transform_source = model.transform_source
+        self.transform_object = model.transform_object
+
         self.origin_x = model.origin_x
         self.origin_y = model.origin_y
         self.origin_z = model.origin_z
@@ -59,7 +64,7 @@ class Model:
 
     def export_meshes(self):
         armatures = self.get_armatures()
-        path = self.directory.joinpath(f'{self.basename}_anims.SMD')
+        path = self.directory.joinpath(f'{self.stem}_anims.SMD')
         self.export_smd(armatures, [], path)
 
         if self.reference:
@@ -138,7 +143,7 @@ class Model:
             print('Models need visible meshes')
             return False
 
-        path = self.directory.joinpath(f'{self.basename}.qc')
+        path = self.directory.joinpath(f'{self.stem}.qc')
 
         try:
             qc = path.open('w')
@@ -174,12 +179,35 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
+        if self.transform_source == 'MANUAL':
+            origin_x = self.origin_x
+            origin_y = self.origin_y
+            origin_z = self.origin_z
+            rotation = -self.rotation
+        elif self.transform_source == 'OBJECT' and self.transform_object:
+            loc, rot, _ = self.transform_object.matrix_world.decompose()
+            origin_x = loc.x
+            origin_y = loc.y
+            origin_z = loc.z
+            rotation = -degrees(rot.to_euler().z)
+        else:
+            origin_x = 0
+            origin_y = 0
+            origin_z = 0
+            rotation = 0
+
+        if self.mesh_type == 'SMD':
+            rotation -= 90
+        elif self.mesh_type == 'FBX':
+            origin_x, origin_y = -origin_y, origin_x
+            rotation -= 180
+
         qc.write('\n')
-        qc.write(f'$origin {self.origin_x} {self.origin_y} {self.origin_z} {self.rotation}')
+        qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
         qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {self.scale}')
+        qc.write(f'$scale {self.scale:.6f}')
         qc.write('\n')
 
         if self.reference:
@@ -215,7 +243,7 @@ class Model:
                 qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
-        path = f'{self.basename}_anims.SMD'
+        path = f'{self.stem}_anims.SMD'
 
         if not self.sequence_items:
             qc.write('\n')
@@ -275,7 +303,7 @@ class Model:
         return True
 
     def compile_qc(self):
-        qc = self.directory.joinpath(f'{self.basename}.qc')
+        qc = self.directory.joinpath(f'{self.stem}.qc')
         if qc.is_file():
             print(f'Compiling: {qc}')
             self.remove_old()
@@ -302,8 +330,8 @@ class Model:
             while True:
                 code = pipe.returncode
                 if code is None:
-                    log = self.directory.joinpath(f'{self.basename}.log')
-                    log.write_text(pipe.communicate()[0].decode('unicode-escape'))
+                    log = self.directory.joinpath(f'{self.stem}.log')
+                    log.write_bytes(b'\n\n\n'.join(pipe.communicate()))
                 else:
                     break
 
