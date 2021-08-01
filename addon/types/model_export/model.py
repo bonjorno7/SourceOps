@@ -14,7 +14,7 @@ class Model:
     def __init__(self, game, model):
         self.game = Path(game.game)
         self.bin = Path(game.bin)
-        self.wine = game.wine
+        self.wine = Path(game.wine)
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
@@ -308,24 +308,18 @@ class Model:
             print(f'Compiling: {qc}')
             self.remove_old()
 
-            root = os.path.dirname(str(self.game))
-            game = str(self.game)
-            studiomdl = str(self.studiomdl)
-            qc = str(qc)
-            
-            # Use wine to compile on linux
-            # Wine tends to complain about the paths we feed studiomdl
-            # So we use relatve paths working from the base directory of the game
-            use_wine = os.name == 'posix' and str(self.studiomdl).endswith('.exe')
-            if(use_wine):
-                game = os.path.relpath(game, root)
-                studiomdl = os.path.relpath(studiomdl, root)
-                qc = os.path.relpath(qc, root)
-            args = [studiomdl, '-nop4', '-fullcollide', '-game', game, qc]
-            if(use_wine):
-                args.insert(0, self.wine)
+            # Use wine to run StudioMDL on Linux.
+            # Wine tends to complain about the paths we feed StudioMDL.
+            # So we use relatve paths working from the base directory of the game.
+            if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
+                cwd = self.game.parent
+                args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
+                        '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+            else:
+                cwd = None
+                args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
 
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=root if use_wine else None)
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
 
             while True:
                 code = pipe.returncode
@@ -352,24 +346,20 @@ class Model:
         mdl = model.with_suffix('.mdl')
         dx90 = model.with_suffix('.dx90.vtx')
 
-        root = os.path.dirname(str(self.game))
-        game = str(self.game)
-        hlmv = str(self.hlmv)
-        mdl = str(mdl)
-
-        use_wine = os.name == 'posix' and str(self.studiomdl).endswith('.exe')
-        if(use_wine):
-            model = os.path.relpath(str(mdl), root)
-            game = os.path.relpath(game, root)
-            hlmv = os.path.relpath(hlmv, root)
-            mdl = os.path.relpath(mdl, root)
-        args = [hlmv, '-game', game, mdl]
-        if(use_wine):
-            args.insert(0, self.wine)
+        # Use wine to run HLMV on Linux.
+        # Wine tends to complain about the paths we feed HLMV.
+        # So we use relatve paths working from the base directory of the game.
+        if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
+            cwd = self.game.parent
+            args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
+                    str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+        else:
+            cwd = None
+            args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
         if dx90.is_file():
             print(f'Viewing: {mdl}')
-            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=root if use_wine else None)
+            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
             return True
 
         print(f'Failed to view: {mdl}')
