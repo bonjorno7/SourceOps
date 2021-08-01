@@ -180,15 +180,15 @@ class Model:
         if self.transform_source == 'MANUAL':
             origin_x = self.origin_x
             origin_y = self.origin_y
-            origin_z = -self.origin_z
-            rotation = self.rotation
+            origin_z = self.origin_z
+            rotation = -self.rotation
             scale = self.scale
         elif self.transform_source == 'OBJECT' and self.transform_object is not None:
             loc, rot, sca = self.transform_object.matrix_world.decompose()
-            origin_x = -loc.x
-            origin_y = -loc.y
-            origin_z = -loc.z
-            rotation = degrees(rot.to_euler().z)
+            origin_x = loc.x
+            origin_y = loc.y
+            origin_z = loc.z
+            rotation = -degrees(rot.to_euler().z)
             scale = sca.z
         else:
             origin_x = 0
@@ -197,6 +197,12 @@ class Model:
             rotation = 0
             scale = 1
 
+        if self.mesh_type == 'SMD':
+            rotation -= 90
+        elif self.mesh_type == 'FBX':
+            origin_x, origin_y = -origin_y, origin_x
+            rotation -= 180
+
         qc.write('\n')
         qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
         qc.write('\n')
@@ -204,7 +210,7 @@ class Model:
         qc.write('\n')
         qc.write(f'$scale {scale:.6f}')
         qc.write('\n')
-                
+
         if self.reference:
             qc.write('\n')
             name = common.clean_filename(self.reference.name)
