@@ -91,7 +91,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         description='Method of specifying $origin and $scale.\nEither manually specified in this panel, or via an object',
         items=[
             ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
-            ('OBJECT', 'Object', 'Use an Object\'s transforms\nIf it is None, then no transforms are used'),
+            ('OBJECT', 'Object', 'Use an object\'s transforms\nIf it is None, then no transforms are used'),
         ],
     )
 
