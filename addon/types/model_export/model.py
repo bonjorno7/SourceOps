@@ -182,20 +182,17 @@ class Model:
             origin_y = self.origin_y
             origin_z = self.origin_z
             rotation = -self.rotation
-            scale = self.scale
-        elif self.transform_source == 'OBJECT' and self.transform_object is not None:
-            loc, rot, sca = self.transform_object.matrix_world.decompose()
+        elif self.transform_source == 'OBJECT' and self.transform_object:
+            loc, rot, _ = self.transform_object.matrix_world.decompose()
             origin_x = loc.x
             origin_y = loc.y
             origin_z = loc.z
             rotation = -degrees(rot.to_euler().z)
-            scale = sca.z
         else:
             origin_x = 0
             origin_y = 0
             origin_z = 0
             rotation = 0
-            scale = 1
 
         if self.mesh_type == 'SMD':
             rotation -= 90
@@ -208,7 +205,7 @@ class Model:
         qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {scale:.6f}')
+        qc.write(f'$scale {self.scale:.6f}')
         qc.write('\n')
 
         if self.reference:
