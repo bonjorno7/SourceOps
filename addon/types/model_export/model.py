@@ -180,7 +180,7 @@ class Model:
         if self.transform_source == 'MANUAL':
             origin_x = self.origin_x
             origin_y = self.origin_y
-            origin_z = self.origin_z
+            origin_z = -self.origin_z
             rotation = self.rotation
             scale = self.scale
         elif self.transform_source == 'OBJECT' and self.transform_object is not None:
