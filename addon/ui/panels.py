@@ -106,9 +106,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 align.prop(model, 'origin_y', text='Y')
                 align.prop(model, 'origin_z', text='Z')
 
-                col = common.split_column(box)
                 col.prop(model, 'rotation')
-                col.prop(model, 'scale')
+
+            col.prop(model, 'scale')
 
         elif model and sourceops.panel == 'TEXTURES':
             box = layout.box()
