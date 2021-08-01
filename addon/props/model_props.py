@@ -88,7 +88,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     transform_source: bpy.props.EnumProperty(
         name='Transform Source',
-        description='Method of specifying $origin and $scale.\nEither manually specified in this panel, or via an object',
+        description='Method of specifying $origin.\nEither manually specified in this panel, or via an object',
         items=[
             ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
             ('OBJECT', 'Object', 'Use an object\'s transforms\nIf it isn\'t set, then no transforms are used'),
@@ -97,25 +97,25 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     transform_object: bpy.props.PointerProperty(
         name='Transform Object',
-        description='The object to use the transforms of as the $origin and $scale',
+        description='The object to use the transforms of as the $origin',
         type=bpy.types.Object,
     )
 
     origin_x: bpy.props.FloatProperty(
         name='Origin +X',
-        description='Translation on the positive X axis for $origin in the QC file',
+        description='Translation on the X axis for $origin in the QC file',
         default=0.0,
     )
 
     origin_y: bpy.props.FloatProperty(
         name='Origin +Y',
-        description='Translation on the positive Y axis for $origin in the QC file',
+        description='Translation on the Y axis for $origin in the QC file',
         default=0.0,
     )
 
     origin_z: bpy.props.FloatProperty(
         name='Origin Z',
-        description='Translation on the negative Z axis for $origin in the QC file, because Source is weird like that',
+        description='Translation on the Z axis for $origin in the QC file',
         default=0.0,
     )
 
