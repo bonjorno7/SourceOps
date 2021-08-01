@@ -114,7 +114,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     )
 
     origin_z: bpy.props.FloatProperty(
-        name='Origin -Z',
+        name='Origin Z',
         description='Translation on the negative Z axis for $origin in the QC file, because Source is weird like that',
         default=0.0,
     )
