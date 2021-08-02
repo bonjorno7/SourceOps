@@ -9,11 +9,11 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_label = 'Export Auto'
     bl_description = 'Generate QC, export meshes, compile QC, view model'
 
-    all_models: bpy.props.BoolProperty(name='All Models', default=False)
-    generate_qc: bpy.props.BoolProperty(name='Generate QC', default=True)
-    export_meshes: bpy.props.BoolProperty(name='Export Meshes', default=True)
-    compile_qc: bpy.props.BoolProperty(name='Compile QC', default=True)
-    view_model: bpy.props.BoolProperty(name='View Model', default=False)
+    all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False)
+    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True)
+    export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True)
+    compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True)
+    view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False)
 
     def draw(self, context):
         layout = self.layout
