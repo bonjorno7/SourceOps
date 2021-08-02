@@ -248,7 +248,7 @@ class Model:
                 qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
-        if not self.sequence_items:
+        if not self.armature or not self.sequence_items:
             qc.write('\n')
             qc.write(f'$sequence "idle" "anims/idle.SMD"')
             qc.write('\n')
