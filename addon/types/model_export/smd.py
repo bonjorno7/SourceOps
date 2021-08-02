@@ -25,17 +25,16 @@ class Lookup:
         else:
             return -1
 
-    def from_blender(self, armatures: List[bpy.types.Object]):
-        for armature in armatures:
-            for bone in armature.data.bones:
-                bone: bpy.types.Bone
+    def from_blender(self, armature: bpy.types.Object):
+        for bone in armature.data.bones:
+            bone: bpy.types.Bone
 
-                if self.settings.prepend_armature:
-                    name = f'{armature.name}.{bone.name}'
-                else:
-                    name = bone.name
+            if self.settings.prepend_armature:
+                name = f'{armature.name}.{bone.name}'
+            else:
+                name = bone.name
 
-                self.bones.append(name)
+            self.bones.append(name)
 
 
 class Node:
@@ -78,14 +77,13 @@ class Nodes:
         self.settings = settings
         self.nodes = [Node(self.settings)]
 
-    def from_blender(self, lookup: Lookup, armatures: List[bpy.types.Object]):
-        for armature in armatures:
-            for bone in armature.data.bones:
-                bone: bpy.types.Bone
+    def from_blender(self, lookup: Lookup, armature: bpy.types.Object):
+        for bone in armature.data.bones:
+            bone: bpy.types.Bone
 
-                node = Node(self.settings)
-                node.from_blender(lookup, armature, bone)
-                self.nodes.append(node)
+            node = Node(self.settings)
+            node.from_blender(lookup, armature, bone)
+            self.nodes.append(node)
 
     def to_string(self) -> str:
         header = f'nodes\n'
@@ -134,14 +132,13 @@ class RestFrame:
         self.settings = settings
         self.bones = [RestBone(self.settings)]
 
-    def from_blender(self, lookup: Lookup, armatures: List[bpy.types.Object]):
-        for armature in armatures:
-            for bone in armature.data.bones:
-                bone: bpy.types.Bone
+    def from_blender(self, lookup: Lookup, armature: bpy.types.Object):
+        for bone in armature.data.bones:
+            bone: bpy.types.Bone
 
-                rest_bone = RestBone(self.settings)
-                rest_bone.from_blender(lookup, armature, bone)
-                self.bones.append(rest_bone)
+            rest_bone = RestBone(self.settings)
+            rest_bone.from_blender(lookup, armature, bone)
+            self.bones.append(rest_bone)
 
     def to_string(self) -> str:
         time = f'time 0\n'
@@ -190,16 +187,15 @@ class PoseFrame:
         self.time = 0
         self.bones = [PoseBone(self.settings)]
 
-    def from_blender(self, lookup: Lookup, armatures: List[bpy.types.Object], time: int):
+    def from_blender(self, lookup: Lookup, armature: bpy.types.Object, time: int):
         self.time = time
 
-        for armature in armatures:
-            for bone in armature.pose.bones:
-                bone: bpy.types.PoseBone
+        for bone in armature.pose.bones:
+            bone: bpy.types.PoseBone
 
-                pose_bone = PoseBone(self.settings)
-                pose_bone.from_blender(lookup, armature, bone)
-                self.bones.append(pose_bone)
+            pose_bone = PoseBone(self.settings)
+            pose_bone.from_blender(lookup, armature, bone)
+            self.bones.append(pose_bone)
 
     def to_string(self) -> str:
         time = f'time {self.time}\n'
@@ -212,10 +208,10 @@ class Skeleton:
         self.settings = settings
         self.frames = []
 
-    def from_blender(self, lookup: Lookup, armatures: List[bpy.types.Object], type: str):
+    def from_blender(self, lookup: Lookup, armature: bpy.types.Object, type: str):
         if type == 'REFERENCE':
             frame = RestFrame(self.settings)
-            frame.from_blender(lookup, armatures)
+            frame.from_blender(lookup, armature)
             self.frames.append(frame)
 
         elif type == 'ANIMATION':
@@ -228,7 +224,7 @@ class Skeleton:
                 bpy.context.scene.frame_set(time)
 
                 frame = PoseFrame(self.settings)
-                frame.from_blender(lookup, armatures, time)
+                frame.from_blender(lookup, armature, time)
                 self.frames.append(frame)
 
             bpy.context.scene.frame_set(current)
@@ -393,15 +389,15 @@ class SMD:
         if scene_settings['mode'] != 'OBJECT':
             bpy.ops.object.mode_set(mode=scene_settings['mode'])
 
-    def from_blender(self, armatures: List[bpy.types.Object], objects: List[bpy.types.Object]):
-        all_objects = set(armatures + objects)
+    def from_blender(self, armature: bpy.types.Object, objects: List[bpy.types.Object]):
+        all_objects = list(set([armature] + objects))
         scene_settings = self.configure_scene(all_objects)
 
-        self.lookup.from_blender(armatures)
-        self.nodes.from_blender(self.lookup, armatures)
+        self.lookup.from_blender(armature)
+        self.nodes.from_blender(self.lookup, armature)
 
         type = 'REFERENCE' if objects else 'ANIMATION'
-        self.skeleton.from_blender(self.lookup, armatures, type)
+        self.skeleton.from_blender(self.lookup, armature, type)
 
         for object in objects:
             armature = object.find_armature()

@@ -43,6 +43,7 @@ class Model:
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
 
+        self.armature = model.armature
         self.reference = model.reference
         self.collision = model.collision
         self.bodygroups = model.bodygroups
@@ -65,42 +66,41 @@ class Model:
         self.scale = model.scale
 
     def export_meshes(self):
-        armatures = self.get_armatures()
         path = self.directory.joinpath(f'{self.stem}_anims.SMD')
-        self.export_smd(armatures, [], path)
+        self.export_smd(self.armature, [], path)
 
         if self.reference:
             objects = self.get_all_objects(self.reference)
             path = self.get_body_path(self.reference)
-            self.export_mesh(armatures, objects, path)
+            self.export_mesh(self.armature, objects, path)
 
         if self.collision:
             objects = self.get_all_objects(self.collision)
             path = self.get_body_path(self.collision)
-            self.export_mesh(armatures, objects, path)
+            self.export_mesh(self.armature, objects, path)
 
         if self.bodygroups:
             for bodygroup in self.bodygroups.children:
                 for collection in bodygroup.children:
                     objects = self.get_all_objects(collection)
                     path = self.get_body_path(collection)
-                    self.export_mesh(armatures, objects, path)
+                    self.export_mesh(self.armature, objects, path)
 
         if self.stacking:
             for collection in self.stacking.children:
                 objects = self.get_all_objects(collection)
                 path = self.get_body_path(collection)
-                self.export_mesh(armatures, objects, path)
+                self.export_mesh(self.armature, objects, path)
 
         return True
 
-    def export_mesh(self, armatures, objects, path):
+    def export_mesh(self, armature, objects, path):
         if self.mesh_type == 'SMD':
-            self.export_smd(armatures, objects, path)
+            self.export_smd(armature, objects, path)
         elif self.mesh_type == 'FBX':
-            self.export_fbx(armatures, objects, path)
+            self.export_fbx(armature, objects, path)
 
-    def export_smd(self, armatures, objects, path):
+    def export_smd(self, armature, objects, path):
         try:
             smd_file = path.open('w')
             print(f'Exporting: {path}')
@@ -111,27 +111,19 @@ class Model:
 
         else:
             smd = SMD(self.prepend_armature, self.ignore_transforms)
-            smd.from_blender(armatures, objects)
+            smd.from_blender(armature, objects)
 
             smd_file.write(smd.to_string())
             smd_file.close()
 
-    def export_fbx(self, armatures, objects, path):
+    def export_fbx(self, armature, objects, path):
         try:
             print(f'Exporting: {path}')
-            export_fbx(path, set(armatures) | set(objects), self.prepend_armature, self.ignore_transforms)
+            export_fbx(path, list(set([armature] + objects)), self.prepend_armature, self.ignore_transforms)
 
         except:
             print(f'Failed to export {path}')
             print_exc()
-
-    def get_armatures(self):
-        objects = self.get_all_objects(self.reference)
-        objects += self.get_all_objects(self.collision)
-        objects += self.get_all_objects(self.bodygroups)
-        objects += self.get_all_objects(self.stacking)
-        armatures = [obj.find_armature() for obj in objects]
-        return common.remove_duplicates(arm for arm in armatures if arm)
 
     def get_all_objects(self, collection):
         return common.remove_duplicates(collection.all_objects) if collection else []
@@ -253,30 +245,32 @@ class Model:
             qc.write('\n')
 
         for sequence in self.sequence_items:
-            qc.write('\n')
-            qc.write(f'$sequence "{sequence.name}"' + ' {\n')
-            qc.write(f'    "{path}"\n')
-            qc.write(f'    frames {sequence.start} {sequence.end}\n')
-            if sequence.override:
-                qc.write(f'    fps {sequence.framerate}\n')
-            else:
-                qc.write(f'    fps {bpy.context.scene.render.fps}\n')
-            if sequence.snap:
-                qc.write('    snap\n')
-            if sequence.loop:
-                qc.write('    loop\n')
-            qc.write(f'    activity "{sequence.activity}" {sequence.weight}\n')
-            for event in sequence.event_items:
-                qc.write('    { ' + f'event "{event.event}" {event.frame} "{event.value}"' + ' }\n')
-            qc.write('}')
-            qc.write('\n')
+            if self.armature and sequence.action:
+                qc.write('\n')
+                qc.write(f'$sequence "{sequence.name}"' + ' {\n')
+                qc.write(f'    "{path}"\n')
+                if sequence.use_framerate:
+                    qc.write(f'    fps {sequence.framerate}\n')
+                else:
+                    qc.write(f'    fps {bpy.context.scene.render.fps}\n')
+                if sequence.use_range:
+                    qc.write(f'    frames {sequence.start} {sequence.end}\n')
+                if sequence.snap:
+                    qc.write('    snap\n')
+                if sequence.loop:
+                    qc.write('    loop\n')
+                qc.write(f'    activity "{sequence.activity}" {sequence.weight}\n')
+                for event in sequence.event_items:
+                    qc.write('    { ' + f'event "{event.event}" {event.frame} "{event.value}"' + ' }\n')
+                qc.write('}')
+                qc.write('\n')
 
         for attachment in self.attachment_items:
-            if attachment.armature and attachment.bone:
+            if self.armature and attachment.bone:
                 qc.write('\n')
                 qc.write(f'$attachment "{attachment.name}"')
                 if self.prepend_armature:
-                    qc.write(f' "{attachment.armature}.{attachment.bone}"')
+                    qc.write(f' "{self.armature.name}.{attachment.bone}"')
                 else:
                     qc.write(f' "{attachment.bone}"')
                 qc.write(f' {attachment.offset[0]} {attachment.offset[1]} {attachment.offset[2]}')
