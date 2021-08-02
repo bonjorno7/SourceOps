@@ -26,15 +26,16 @@ class Lookup:
             return -1
 
     def from_blender(self, armature: bpy.types.Object):
-        for bone in armature.data.bones:
-            bone: bpy.types.Bone
+        if armature:
+            for bone in armature.data.bones:
+                bone: bpy.types.Bone
 
-            if self.settings.prepend_armature:
-                name = f'{armature.name}.{bone.name}'
-            else:
-                name = bone.name
+                if self.settings.prepend_armature:
+                    name = f'{armature.name}.{bone.name}'
+                else:
+                    name = bone.name
 
-            self.bones.append(name)
+                self.bones.append(name)
 
 
 class Node:
@@ -78,12 +79,13 @@ class Nodes:
         self.nodes = [Node(self.settings)]
 
     def from_blender(self, lookup: Lookup, armature: bpy.types.Object):
-        for bone in armature.data.bones:
-            bone: bpy.types.Bone
+        if armature:
+            for bone in armature.data.bones:
+                bone: bpy.types.Bone
 
-            node = Node(self.settings)
-            node.from_blender(lookup, armature, bone)
-            self.nodes.append(node)
+                node = Node(self.settings)
+                node.from_blender(lookup, armature, bone)
+                self.nodes.append(node)
 
     def to_string(self) -> str:
         header = f'nodes\n'
@@ -209,7 +211,11 @@ class Skeleton:
         self.frames = []
 
     def from_blender(self, lookup: Lookup, armature: bpy.types.Object, action: bpy.types.Action):
-        if not action:
+        if not armature:
+            frame = RestFrame(self.settings)
+            self.frames.append(frame)
+
+        elif not action:
             frame = RestFrame(self.settings)
             frame.from_blender(lookup, armature)
             self.frames.append(frame)
@@ -390,7 +396,12 @@ class SMD:
             bpy.ops.object.mode_set(mode=scene_settings['mode'])
 
     def from_blender(self, armature: bpy.types.Object, objects: List[bpy.types.Object], action: bpy.types.Action):
-        scene_settings = self.configure_scene(set([armature] + objects))
+        if armature:
+            all_objects = set([armature] + objects)
+        else:
+            all_objects = set(objects)
+
+        scene_settings = self.configure_scene(all_objects)
 
         self.lookup.from_blender(armature)
         self.nodes.from_blender(self.lookup, armature)
