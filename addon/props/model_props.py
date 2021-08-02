@@ -127,6 +127,6 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     scale: bpy.props.FloatProperty(
         name='Scale',
-        description='$scale to put at the top of your QC files, this does not affect $origin',
+        description='$scale to put at the top of your QC files, this does not affect $origin or attachments',
         default=1.0,
     )
