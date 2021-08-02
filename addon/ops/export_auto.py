@@ -7,7 +7,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_idname = 'sourceops.export_auto'
     bl_options = {'REGISTER'}
     bl_label = 'Export Auto'
-    bl_description = 'Generate QC, export meshes, compile QC, view model'
+    bl_description = 'Generate QC, export meshes, compile QC, view model.\nShift click to execute with last used settings'
 
     all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False)
     generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True)
@@ -44,7 +44,10 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             self.report({'ERROR'}, 'Game is invalid')
             return {'CANCELLED'}
 
-        return context.window_manager.invoke_props_dialog(self)
+        if event.shift:
+            return self.execute(context)
+        else:
+            return context.window_manager.invoke_props_dialog(self)
 
     def execute(self, context):
         prefs = utils.common.get_prefs(context)
