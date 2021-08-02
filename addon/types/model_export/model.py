@@ -28,7 +28,7 @@ class Model:
         self.name = Path(model.name).with_suffix('').as_posix()
         self.stem = common.clean_filename(Path(self.name).stem)
         if model.static and model.static_prop_combine:
-            directory = self.modelsrc.joinpath(Path(self.name).parent)
+            directory = self.modelsrc.joinpath(self.name).parent
         else:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
@@ -308,6 +308,7 @@ class Model:
         qc = self.directory.joinpath(f'{self.stem}.qc')
         if qc.is_file():
             print(f'Compiling: {qc}')
+            self.ensure_destination()
             self.remove_old()
 
             # Use wine to run StudioMDL on Linux.
@@ -386,6 +387,10 @@ class Model:
                 src.unlink()
             except:
                 print(f'Failed to move {src} to {dst}')
+
+    def ensure_destination(self):
+        destination = self.models.joinpath(self.name).parent
+        destination.mkdir(parents=True, exist_ok=True)
 
     def remove_old(self):
         model = self.models.joinpath(self.name)
