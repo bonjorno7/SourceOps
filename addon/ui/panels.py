@@ -155,13 +155,19 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if sequence:
                 col = common.split_column(box)
                 col.prop(sequence, 'name')
+                col.prop(sequence, 'action')
 
-                row = col.row()
-                row.prop(sequence, 'framerate')
-                row.prop(sequence, 'override', text='')
-                
-                col.prop(sequence, 'start')
-                col.prop(sequence, 'end')
+                col.prop(sequence, 'use_framerate')
+                sub = col.column()
+                sub.enabled = sequence.use_framerate
+                sub.prop(sequence, 'framerate')
+
+                col.prop(sequence, 'use_range')
+                sub = col.column()
+                sub.enabled = sequence.use_range
+                sub.prop(sequence, 'start')
+                sub.prop(sequence, 'end')
+
                 col.prop(sequence, 'activity')
                 col.prop(sequence, 'weight')
                 col.prop(sequence, 'snap')

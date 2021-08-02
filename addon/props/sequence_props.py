@@ -12,16 +12,28 @@ class SOURCEOPS_SequenceProps(bpy.types.PropertyGroup):
         default='idle',
     )
 
-    override: bpy.props.BoolProperty(
-        name='Override Framerate',
+    action: bpy.props.PointerProperty(
+        name='Action',
+        description='The action to use for this sequence',
+        type=bpy.types.Action,
+    )
+
+    use_framerate: bpy.props.BoolProperty(
+        name='Custom Framerate',
         description='Whether to use the custom framerate instead of the scene framerate',
         default=False,
     )
 
     framerate: bpy.props.IntProperty(
-        name='Custom Framerate',
+        name='Framerate',
         description='If override is enabled, use this framerate instead of the scene framerate',
         default=30,
+    )
+
+    use_range: bpy.props.BoolProperty(
+        name='Custom Range',
+        description='Whether to use custom start and end frames instead of the whole action',
+        default=False,
     )
 
     start: bpy.props.IntProperty(
