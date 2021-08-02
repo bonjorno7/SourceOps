@@ -18,28 +18,28 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
 
     bin: bpy.props.StringProperty(
         name='Bin',
-        description='Path to your bin folder, EXE files are here',
+        description='Path to your bin folder, StudioMDL and HLMV are here',
         subtype='DIR_PATH',
         update=utils.game.update_bin,
     )
 
     modelsrc: bpy.props.StringProperty(
         name='ModelSrc',
-        description='Path to your modelsrc folder, QC files go here',
+        description='Path to your modelsrc folder, exported QC/SMD/FBX files go here',
         subtype='DIR_PATH',
         update=utils.game.update_modelsrc,
     )
 
     models: bpy.props.StringProperty(
         name='Models',
-        description='Path to your models folder, MDL files go here',
+        description='Path to your models folder, compiled MDL files go here',
         subtype='DIR_PATH',
         update=utils.game.update_models,
     )
 
     mapsrc: bpy.props.StringProperty(
         name='Mapsrc',
-        description='Path to your mapsrc folder, VMF files go here',
+        description='Path to your mapsrc folder, exported VMF files go here',
         subtype='DIR_PATH',
         update=utils.game.update_mapsrc,
     )
