@@ -295,7 +295,7 @@ class Model:
 
             for skin in self.skin_items:
                 qc.write('\n')
-                qc.write(f'    {{ "{skin.name}" }}')
+                qc.write(f'    {{ {skin.name} }}')
 
             qc.write('\n')
             qc.write('}')

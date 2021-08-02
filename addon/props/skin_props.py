@@ -3,7 +3,7 @@ import bpy
 
 class SOURCEOPS_SkinProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
-        name='Name',
-        description='Name of this VMT in the texture group',
+        name='Materials',
+        description='Space separated list of VMT names, supports quotes',
         default='example',
     )
