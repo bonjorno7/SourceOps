@@ -5,7 +5,7 @@ from .. import utils
 class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
         name='Name',
-        description='The name this game has in the list',
+        description='The name this game has in the list, just for display',
         default='Example',
     )
 

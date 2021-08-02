@@ -4,7 +4,7 @@ import bpy
 class SOURCEOPS_EventProps(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
         name='Name',
-        description='The name this event has in the list',
+        description='The name this event has in the list, just for display',
         default='Example',
     )
 
