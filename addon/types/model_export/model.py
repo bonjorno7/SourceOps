@@ -201,11 +201,11 @@ class Model:
             origin_z = 0
             rotation = 0
 
-        if self.mesh_type == 'SMD':
-            rotation -= 90
-        elif self.mesh_type == 'FBX':
+        if self.static and self.mesh_type == 'FBX':
             origin_x, origin_y = -origin_y, origin_x
             rotation -= 180
+        else:
+            rotation -= 90
 
         qc.write('\n')
         qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
