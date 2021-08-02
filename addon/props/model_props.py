@@ -25,6 +25,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default='example/model',
     )
 
+    armature: bpy.props.PointerProperty(
+        name='Armature',
+        description='Armature that controls the object',
+        type=bpy.types.Object,
+    )
+
     reference: bpy.props.PointerProperty(
         name='Reference',
         description='Visible meshes combined into one body',

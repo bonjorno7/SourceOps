@@ -69,6 +69,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if model:
                 col = common.split_column(box)
                 col.prop(model, 'name')
+                col.prop(model, 'armature')
                 col.prop(model, 'reference')
                 col.prop(model, 'collision')
                 col.prop(model, 'bodygroups')
@@ -199,10 +200,9 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = common.split_column(box)
                 col.prop(attachment, 'name')
 
-                col.prop_search(attachment, 'armature', bpy.data, 'armatures')
-                armature = bpy.data.armatures.get(attachment.armature)
-                if armature:
-                    col.prop_search(attachment, 'bone', armature, 'bones')
+                armature = model.armature
+                if armature and armature.data:
+                    col.prop_search(attachment, 'bone', armature.data, 'bones')
 
                 col.prop(attachment, 'offset')
                 col.prop(attachment, 'rotation')
