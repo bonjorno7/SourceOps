@@ -208,26 +208,29 @@ class Skeleton:
         self.settings = settings
         self.frames = []
 
-    def from_blender(self, lookup: Lookup, armature: bpy.types.Object, type: str):
-        if type == 'REFERENCE':
+    def from_blender(self, lookup: Lookup, armature: bpy.types.Object, action: bpy.types.Action):
+        if not action:
             frame = RestFrame(self.settings)
             frame.from_blender(lookup, armature)
             self.frames.append(frame)
 
-        elif type == 'ANIMATION':
-            start = bpy.context.scene.frame_start
-            end = bpy.context.scene.frame_end + 1
+        else:
+            original_action = armature.animation_data.action
+            original_frame = bpy.context.scene.frame_current
 
-            current = bpy.context.scene.frame_current
+            armature.animation_data.action = action
+            start = int(action.frame_range[0])
+            end = int(action.frame_range[1])
 
-            for time in range(start, end):
+            for time in range(start, end + 1):
                 bpy.context.scene.frame_set(time)
 
                 frame = PoseFrame(self.settings)
                 frame.from_blender(lookup, armature, time)
                 self.frames.append(frame)
 
-            bpy.context.scene.frame_set(current)
+            bpy.context.scene.frame_set(original_frame)
+            armature.animation_data.action = original_action
 
     def to_string(self) -> str:
         header = f'skeleton\n'
@@ -367,43 +370,36 @@ class SMD:
         self.triangles = Triangles(self.settings)
 
     def configure_scene(self, objects: List[bpy.types.Object]) -> dict:
-        scene_settings = {}
+        scene_settings = {'mode': 'OBJECT', 'objects': {o: {} for o in objects}}
 
         if bpy.context.active_object:
             scene_settings['mode'] = bpy.context.active_object.mode
             bpy.ops.object.mode_set(mode='OBJECT')
-        else:
-            scene_settings['mode'] = 'OBJECT'
 
         for object in objects:
-            scene_settings[object] = {}
-            scene_settings[object]['hide_viewport'] = True if object.hide_viewport else False
+            scene_settings['objects'][object]['hide_viewport'] = True if object.hide_viewport else False
             object.hide_viewport = False
 
         return scene_settings
 
-    def restore_scene(self, objects: List[bpy.types.Object], scene_settings: dict):
-        for object in objects:
-            object.hide_viewport = scene_settings[object]['hide_viewport']
+    def restore_scene(self, scene_settings: dict):
+        for object in scene_settings['objects'].keys():
+            object.hide_viewport = scene_settings['objects'][object]['hide_viewport']
 
         if scene_settings['mode'] != 'OBJECT':
             bpy.ops.object.mode_set(mode=scene_settings['mode'])
 
-    def from_blender(self, armature: bpy.types.Object, objects: List[bpy.types.Object]):
-        all_objects = list(set([armature] + objects))
-        scene_settings = self.configure_scene(all_objects)
+    def from_blender(self, armature: bpy.types.Object, objects: List[bpy.types.Object], action: bpy.types.Action):
+        scene_settings = self.configure_scene(set([armature] + objects))
 
         self.lookup.from_blender(armature)
         self.nodes.from_blender(self.lookup, armature)
-
-        type = 'REFERENCE' if objects else 'ANIMATION'
-        self.skeleton.from_blender(self.lookup, armature, type)
+        self.skeleton.from_blender(self.lookup, armature, action)
 
         for object in objects:
-            armature = object.find_armature()
             self.triangles.from_blender(self.lookup, armature, object)
 
-        self.restore_scene(all_objects, scene_settings)
+        self.restore_scene(scene_settings)
 
     def to_string(self) -> str:
         version = f'version 1\n'
