@@ -66,8 +66,16 @@ class Model:
         self.scale = model.scale
 
     def export_meshes(self):
-        path = self.directory.joinpath(f'{self.stem}_anims.SMD')
-        self.export_smd(self.armature, [], path)
+        self.ensure_modelsrc_folder()
+        # self.remove_modelsrc_old()  # Commented out because it might be annoying.
+
+        if not self.sequence_items:
+            self.export_anim(self.armature, None, self.directory.joinpath('anims', 'idle.SMD'))
+
+        for sequence in self.sequence_items:
+            if sequence.action:
+                path = self.directory.joinpath('anims', f'{common.clean_filename(sequence.name)}.SMD')
+                self.export_anim(self.armature, sequence.action, path)
 
         if self.reference:
             objects = self.get_all_objects(self.reference)
@@ -94,13 +102,16 @@ class Model:
 
         return True
 
+    def export_anim(self, armature, action, path):
+        self.export_smd(armature, [], action, path)
+
     def export_mesh(self, armature, objects, path):
         if self.mesh_type == 'SMD':
-            self.export_smd(armature, objects, path)
+            self.export_smd(armature, objects, None, path)
         elif self.mesh_type == 'FBX':
             self.export_fbx(armature, objects, path)
 
-    def export_smd(self, armature, objects, path):
+    def export_smd(self, armature, objects, action, path):
         try:
             smd_file = path.open('w')
             print(f'Exporting: {path}')
@@ -111,7 +122,7 @@ class Model:
 
         else:
             smd = SMD(self.prepend_armature, self.ignore_transforms)
-            smd.from_blender(armature, objects)
+            smd.from_blender(armature, objects, action)
 
             smd_file.write(smd.to_string())
             smd_file.close()
@@ -237,18 +248,16 @@ class Model:
                 qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
-        path = f'{self.stem}_anims.SMD'
-
         if not self.sequence_items:
             qc.write('\n')
-            qc.write(f'$sequence "idle" "{path}"')
+            qc.write(f'$sequence "idle" "anims/idle.SMD"')
             qc.write('\n')
 
         for sequence in self.sequence_items:
             if self.armature and sequence.action:
                 qc.write('\n')
                 qc.write(f'$sequence "{sequence.name}"' + ' {\n')
-                qc.write(f'    "{path}"\n')
+                qc.write(f'    "anims/{common.clean_filename(sequence.name)}.SMD"\n')
                 if sequence.use_framerate:
                     qc.write(f'    fps {sequence.framerate}\n')
                 else:
@@ -302,8 +311,8 @@ class Model:
         qc = self.directory.joinpath(f'{self.stem}.qc')
         if qc.is_file():
             print(f'Compiling: {qc}')
-            self.ensure_destination()
-            self.remove_old()
+            self.ensure_models_folder()
+            self.remove_models_old()
 
             # Use wine to run StudioMDL on Linux.
             # Wine tends to complain about the paths we feed StudioMDL.
@@ -382,13 +391,21 @@ class Model:
             except:
                 print(f'Failed to move {src} to {dst}')
 
-    def ensure_destination(self):
+    def ensure_modelsrc_folder(self):
+        self.directory.mkdir(parents=True, exist_ok=True)
+        self.directory.joinpath('anims').mkdir(parents=True, exist_ok=True)
+
+    def remove_modelsrc_old(self):
+        for file in self.directory.rglob('*'):
+            if file.suffix in ('.SMD', '.FBX'):
+                file.unlink(missing_ok=True)
+
+    def ensure_models_folder(self):
         destination = self.models.joinpath(self.name).parent
         destination.mkdir(parents=True, exist_ok=True)
 
-    def remove_old(self):
+    def remove_models_old(self):
         model = self.models.joinpath(self.name)
         for suffix in ('.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy'):
             path = model.with_suffix(suffix)
-            if path.is_file():
-                path.unlink()
+            path.unlink(missing_ok=True)
