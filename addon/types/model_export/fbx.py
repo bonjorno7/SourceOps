@@ -1,5 +1,5 @@
 import bpy
-from bpy.types import Object, TriangulateModifier
+from bpy.types import Bone, Object, PoseBone, TriangulateModifier
 from mathutils import Matrix
 from pathlib import Path
 from typing import List
@@ -19,6 +19,17 @@ def export_fbx(path: Path, armature: Object, objects: List[Object], prepend_arma
 
     active_layer_collection = bpy.context.view_layer.active_layer_collection
     bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_collection.children[-1]
+
+    if armature and armature.animation_data and armature.animation_data.action:
+        action = armature.animation_data.action
+        armature.animation_data_clear()
+
+        for pose_bone in armature.pose.bones:
+            pose_bone: PoseBone
+            bone: Bone = pose_bone.bone
+            pose_bone.matrix = bone.matrix_local
+    else:
+        action = None
 
     obj_hide_viewport = {}
     obj_matrix_local = {}
@@ -84,6 +95,10 @@ def export_fbx(path: Path, armature: Object, objects: List[Object], prepend_arma
 
         for obj, hide_viewport in obj_hide_viewport.items():
             obj.hide_viewport = hide_viewport
+
+        if action:
+            armature.animation_data_create()
+            armature.animation_data.action = action
 
         bpy.context.view_layer.active_layer_collection = active_layer_collection
         bpy.data.collections.remove(collection)
