@@ -28,9 +28,10 @@ class SOURCEOPS_OT_GenerateQC(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
+        error = source_model.generate_qc()
 
-        if not source_model.generate_qc():
-            self.report({'ERROR'}, 'Failed to generate QC')
+        if error:
+            self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
         self.report({'INFO'}, 'Generated QC')

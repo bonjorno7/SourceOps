@@ -99,8 +99,6 @@ class Model:
                 path = self.get_body_path(collection)
                 self.export_mesh(self.armature, objects, path)
 
-        return True
-
     def export_anim(self, armature, action, path):
         self.export_smd(armature, [], action, path)
 
@@ -144,21 +142,19 @@ class Model:
 
     def generate_qc(self):
         if not self.reference and not self.stacking:
-            print('Models need visible meshes')
-            return False
+            return self.report(f'Unable to generate QC for: {self.name} (reference and stacking both not set)')
 
         if not self.armature and not self.static:
-            print('Non-static models need an armature')
-            return False
+            return self.report(f'Unable to generate QC for: {self.name} (armature not set and static not enabled)')
 
+        self.ensure_modelsrc_folder()
         path = self.directory.joinpath(f'{self.stem}.qc')
 
         try:
             qc = path.open('w')
             print(f'Generating: {path}')
         except:
-            print(f'Failed to generate: {path}')
-            return
+            return self.report(f'Failed to open: {path}')
 
         qc.write(f'$modelname "{self.name}"')
         qc.write('\n')
@@ -307,7 +303,6 @@ class Model:
             qc.write('\n')
 
         qc.close()
-        return True
 
     def compile_qc(self):
         qc = self.directory.joinpath(f'{self.stem}.qc')
@@ -339,15 +334,17 @@ class Model:
 
             if code == 0:
                 self.move_files()
-                return True
-
-        print(f'Failed to compile: {qc}')
-        return False
+            else:
+                return self.report(f'Failed to compile: {qc}')
+        else:
+            return self.report(f'Unable to find: {qc}')
 
     def open_folder(self):
-        bpy.ops.wm.path_open(filepath=str(self.directory))
-        print(f'Opening: {self.directory}')
-        return True
+        try:
+            print(f'Opening: {self.directory}')
+            bpy.ops.wm.path_open(filepath=str(self.directory))
+        except:
+            return self.report(f'Failed to open: {self.directory}')
 
     def view_model(self):
         model = self.models.joinpath(self.name)
@@ -368,10 +365,8 @@ class Model:
         if dx90.is_file():
             print(f'Viewing: {mdl}')
             subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-            return True
-
-        print(f'Failed to view: {mdl}')
-        return False
+        else:
+            return self.report(f'Failed to view: {mdl}')
 
     def move_files(self):
         path_src = self.game.joinpath('models', self.name)
@@ -411,3 +406,7 @@ class Model:
         for suffix in ('.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy'):
             path = model.with_suffix(suffix)
             path.unlink(missing_ok=True)
+
+    def report(self, error):
+        print(error)
+        return error

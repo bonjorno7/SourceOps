@@ -28,9 +28,10 @@ class SOURCEOPS_OT_OpenFolder(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
+        error = source_model.open_folder()
 
-        if not source_model.open_folder():
-            self.report({'ERROR'}, 'Failed to open folder')
+        if error:
+            self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
         self.report({'INFO'}, 'Opened folder')

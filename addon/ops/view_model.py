@@ -28,9 +28,10 @@ class SOURCEOPS_OT_ViewModel(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
+        error = source_model.view_model()
 
-        if not source_model.view_model():
-            self.report({'ERROR'}, 'Failed to open model in HLMV')
+        if error:
+            self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
         self.report({'INFO'}, 'Viewing model in HLMV')
