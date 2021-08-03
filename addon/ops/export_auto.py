@@ -9,11 +9,14 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_label = 'Export Auto'
     bl_description = 'Export meshes, generate QC, compile QC, view model.\nShift click to export all models.\nCtrl click to customize export steps'
 
-    all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False, options={'SKIP_SAVE'})
-    export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True, options={'SKIP_SAVE'})
-    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True, options={'SKIP_SAVE'})
-    compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True, options={'SKIP_SAVE'})
-    view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False, options={'SKIP_SAVE'})
+    ctrl: bpy.props.BoolProperty(name='Ctrl', description='Whether Ctrl was held during invoke', options={'HIDDEN', 'SKIP_SAVE'})
+    shift: bpy.props.BoolProperty(name='Shift', description='Whether Shift was held during invoke', options={'HIDDEN', 'SKIP_SAVE'})
+
+    all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False)
+    export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True)
+    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True)
+    compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True)
+    view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False)
 
     def draw(self, context):
         layout = self.layout
@@ -44,9 +47,10 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             self.report({'ERROR'}, 'Game is invalid')
             return {'CANCELLED'}
 
-        self.all_models = event.shift
+        self.ctrl = event.ctrl
+        self.shift = event.shift
 
-        if event.ctrl:
+        if self.ctrl:
             return context.window_manager.invoke_props_dialog(self)
         else:
             return self.execute(context)
@@ -56,7 +60,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         game = utils.common.get_game(prefs)
         sourceops = utils.common.get_globals(context)
 
-        if self.all_models:
+        if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
             for model in sourceops.model_items:
                 error = self.export(game, model)
 
@@ -81,18 +85,18 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     def export(self, game, model):
         source_model = Model(game, model)
 
-        if self.export_meshes:
+        if not self.ctrl or self.export_meshes:
             error = source_model.export_meshes()
             if error: return error
 
-        if self.generate_qc:
+        if not self.ctrl or self.generate_qc:
             error = source_model.generate_qc()
             if error: return error
 
-        if self.compile_qc:
+        if not self.ctrl or self.compile_qc:
             error = source_model.compile_qc()
             if error: return error
 
-        if (not self.all_models and self.view_model):
+        if self.ctrl and (not self.all_models and self.view_model):
             error = source_model.view_model()
             if error: return error
