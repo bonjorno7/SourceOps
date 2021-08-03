@@ -73,9 +73,8 @@ class Model:
             self.export_anim(self.armature, None, self.directory.joinpath('anims', 'idle.SMD'))
 
         for sequence in self.sequence_items:
-            if sequence.action:
-                path = self.directory.joinpath('anims', f'{common.clean_filename(sequence.name)}.SMD')
-                self.export_anim(self.armature, sequence.action, path)
+            path = self.directory.joinpath('anims', f'{common.clean_filename(sequence.name)}.SMD')
+            self.export_anim(self.armature, sequence.action, path)
 
         if self.reference:
             objects = self.get_all_objects(self.reference)
@@ -248,31 +247,30 @@ class Model:
                 qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
-        if not self.armature or not self.sequence_items:
+        if not self.sequence_items:
             qc.write('\n')
             qc.write(f'$sequence "idle" "anims/idle.SMD"')
             qc.write('\n')
 
         for sequence in self.sequence_items:
-            if self.armature and sequence.action:
-                qc.write('\n')
-                qc.write(f'$sequence "{sequence.name}"' + ' {\n')
-                qc.write(f'    "anims/{common.clean_filename(sequence.name)}.SMD"\n')
-                if sequence.use_framerate:
-                    qc.write(f'    fps {sequence.framerate}\n')
-                else:
-                    qc.write(f'    fps {bpy.context.scene.render.fps}\n')
-                if sequence.use_range:
-                    qc.write(f'    frames {sequence.start} {sequence.end}\n')
-                if sequence.snap:
-                    qc.write('    snap\n')
-                if sequence.loop:
-                    qc.write('    loop\n')
-                qc.write(f'    activity "{sequence.activity}" {sequence.weight}\n')
-                for event in sequence.event_items:
-                    qc.write('    { ' + f'event "{event.event}" {event.frame} "{event.value}"' + ' }\n')
-                qc.write('}')
-                qc.write('\n')
+            qc.write('\n')
+            qc.write(f'$sequence "{sequence.name}"' + ' {\n')
+            qc.write(f'    "anims/{common.clean_filename(sequence.name)}.SMD"\n')
+            if sequence.use_framerate:
+                qc.write(f'    fps {sequence.framerate}\n')
+            else:
+                qc.write(f'    fps {bpy.context.scene.render.fps}\n')
+            if sequence.use_range:
+                qc.write(f'    frames {sequence.start} {sequence.end}\n')
+            if sequence.snap:
+                qc.write('    snap\n')
+            if sequence.loop:
+                qc.write('    loop\n')
+            qc.write(f'    activity "{sequence.activity}" {sequence.weight}\n')
+            for event in sequence.event_items:
+                qc.write('    { ' + f'event "{event.event}" {event.frame} "{event.value}"' + ' }\n')
+            qc.write('}')
+            qc.write('\n')
 
         for attachment in self.attachment_items:
             if self.armature and attachment.bone:
