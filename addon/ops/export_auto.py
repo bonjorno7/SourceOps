@@ -7,11 +7,11 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_idname = 'sourceops.export_auto'
     bl_options = {'REGISTER'}
     bl_label = 'Export Auto'
-    bl_description = 'Generate QC, export meshes, compile QC, view model.\nShift click to export all models.\nCtrl click to customize export steps'
+    bl_description = 'Export meshes, generate QC, compile QC, view model.\nShift click to export all models.\nCtrl click to customize export steps'
 
     all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False, options={'SKIP_SAVE'})
-    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True, options={'SKIP_SAVE'})
     export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True, options={'SKIP_SAVE'})
+    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True, options={'SKIP_SAVE'})
     compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True, options={'SKIP_SAVE'})
     view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False, options={'SKIP_SAVE'})
 
@@ -20,8 +20,8 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         col = layout.column()
         col.prop(self, 'all_models')
 
-        col.prop(self, 'generate_qc')
         col.prop(self, 'export_meshes')
+        col.prop(self, 'generate_qc')
         col.prop(self, 'compile_qc')
 
         row = col.row()
@@ -58,7 +58,10 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
         if self.all_models:
             for model in sourceops.model_items:
-                if not self.export(game, model):
+                error = self.export(game, model)
+
+                if error:
+                    self.report({'ERROR'}, error)
                     return {'CANCELLED'}
 
             self.report({'INFO'}, 'Exported all models in the scene')
@@ -66,7 +69,10 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
         else:
             model = utils.common.get_model(sourceops)
-            if not self.export(game, model):
+            error = self.export(game, model)
+
+            if error:
+                self.report({'ERROR'}, error)
                 return {'CANCELLED'}
 
             self.report({'INFO'}, f'Exported {model.name}')
@@ -75,20 +81,18 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     def export(self, game, model):
         source_model = Model(game, model)
 
-        if self.generate_qc and not source_model.generate_qc():
-            self.report({'ERROR'}, f'Failed to generate QC for {model.name}')
-            return False
+        if self.export_meshes:
+            error = source_model.export_meshes()
+            if error: return error
 
-        if self.export_meshes and not source_model.export_meshes():
-            self.report({'ERROR'}, f'Failed to export meshes for {model.name}')
-            return False
+        if self.generate_qc:
+            error = source_model.generate_qc()
+            if error: return error
 
-        if self.compile_qc and not source_model.compile_qc():
-            self.report({'ERROR'}, f'Failed to compile QC for {model.name}')
-            return False
+        if self.compile_qc:
+            error = source_model.compile_qc()
+            if error: return error
 
-        if (not self.all_models and self.view_model) and not source_model.view_model():
-            self.report({'ERROR'}, f'Failed to open HLMV for {model.name}')
-            return False
-
-        return True
+        if (not self.all_models and self.view_model):
+            error = source_model.view_model()
+            if error: return error

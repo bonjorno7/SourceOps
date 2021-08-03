@@ -28,9 +28,10 @@ class SOURCEOPS_OT_ExportMeshes(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
+        error = source_model.export_meshes()
 
-        if not source_model.export_meshes():
-            self.report({'ERROR'}, 'Failed to export meshes')
+        if error:
+            self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
         self.report({'INFO'}, 'Exported meshes')

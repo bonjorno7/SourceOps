@@ -28,9 +28,10 @@ class SOURCEOPS_OT_CompileQC(bpy.types.Operator):
             return {'CANCELLED'}
 
         source_model = Model(game, model)
+        error = source_model.compile_qc()
 
-        if not source_model.compile_qc():
-            self.report({'ERROR'}, 'Failed to compile QC')
+        if error:
+            self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
         self.report({'INFO'}, 'Compiled QC')
