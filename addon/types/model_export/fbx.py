@@ -9,7 +9,7 @@ MESH_TYPES = {'CURVE', 'FONT', 'MESH', 'SURFACE'}
 OBJECT_TYPES = MESH_TYPES | {'ARMATURE'}
 
 
-def export_fbx(path: Path, objects: List[Object], prepend_armature: bool, ignore_transforms: bool):
+def export_fbx(path: Path, armature: Object, objects: List[Object], prepend_armature: bool, ignore_transforms: bool):
     '''Export objects to FBX with settings for Source.'''
     frame_current = bpy.context.scene.frame_current
     bpy.context.scene.frame_current = bpy.context.scene.frame_start
@@ -26,7 +26,10 @@ def export_fbx(path: Path, objects: List[Object], prepend_armature: bool, ignore
     bone_name = {}
     obj_triangulate_mod = {}
 
-    for obj in objects:
+    if armature:
+        objects.append(armature)
+
+    for obj in set(objects):
         if obj.type in OBJECT_TYPES:
             collection.objects.link(obj)
             obj_hide_viewport[obj] = obj.hide_viewport

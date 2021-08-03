@@ -130,7 +130,7 @@ class Model:
     def export_fbx(self, armature, objects, path):
         try:
             print(f'Exporting: {path}')
-            export_fbx(path, list(set([armature] + objects)), self.prepend_armature, self.ignore_transforms)
+            export_fbx(path, armature, objects, self.prepend_armature, self.ignore_transforms)
 
         except:
             print(f'Failed to export {path}')
