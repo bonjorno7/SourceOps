@@ -221,10 +221,23 @@ class Skeleton:
             self.frames.append(frame)
 
         else:
+            if not armature.animation_data:
+                new_animation_data = armature.animation_data_create()
+            else:
+                new_animation_data = None
+
             original_action = armature.animation_data.action
+            armature.animation_data.action = action
+
+            if not original_action:
+                pose_backup = {}
+
+                for pose_bone in armature.pose.bones:
+                    pose_bone: bpy.types.PoseBone
+                    pose_backup[pose_bone] = pose_bone.matrix.copy()
+
             original_frame = bpy.context.scene.frame_current
 
-            armature.animation_data.action = action
             start = int(action.frame_range[0])
             end = int(action.frame_range[1])
 
@@ -236,7 +249,15 @@ class Skeleton:
                 self.frames.append(frame)
 
             bpy.context.scene.frame_set(original_frame)
-            armature.animation_data.action = original_action
+
+            if not original_action:
+                for pose_bone, matrix in pose_backup.items():
+                    pose_bone.matrix = matrix
+
+            if new_animation_data:
+                armature.animation_data_clear()
+            else:
+                armature.animation_data.action = original_action
 
     def to_string(self) -> str:
         header = f'skeleton\n'
