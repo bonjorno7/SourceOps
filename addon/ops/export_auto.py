@@ -7,13 +7,13 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
     bl_idname = 'sourceops.export_auto'
     bl_options = {'REGISTER'}
     bl_label = 'Export Auto'
-    bl_description = 'Generate QC, export meshes, compile QC, view model.\nShift click to execute with last used settings'
+    bl_description = 'Generate QC, export meshes, compile QC, view model.\nShift click to export all models.\nCtrl click to customize export steps'
 
-    all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False)
-    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True)
-    export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True)
-    compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True)
-    view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False)
+    all_models: bpy.props.BoolProperty(name='All Models', description='Export all models in the scene', default=False, options={'SKIP_SAVE'})
+    generate_qc: bpy.props.BoolProperty(name='Generate QC', description='Generate the QC based on your settings', default=True, options={'SKIP_SAVE'})
+    export_meshes: bpy.props.BoolProperty(name='Export Meshes', description='Export the meshes and animations as SMD/FBX', default=True, options={'SKIP_SAVE'})
+    compile_qc: bpy.props.BoolProperty(name='Compile QC', description='Compile the QC to an MDL', default=True, options={'SKIP_SAVE'})
+    view_model: bpy.props.BoolProperty(name='View Model', description='Open the selected model in HLMV', default=False, options={'SKIP_SAVE'})
 
     def draw(self, context):
         layout = self.layout
@@ -44,10 +44,12 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             self.report({'ERROR'}, 'Game is invalid')
             return {'CANCELLED'}
 
-        if event.shift:
-            return self.execute(context)
-        else:
+        self.all_models = event.shift
+
+        if event.ctrl:
             return context.window_manager.invoke_props_dialog(self)
+        else:
+            return self.execute(context)
 
     def execute(self, context):
         prefs = utils.common.get_prefs(context)
