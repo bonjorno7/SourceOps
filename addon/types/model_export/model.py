@@ -147,6 +147,10 @@ class Model:
             print('Models need visible meshes')
             return False
 
+        if not self.armature and not self.static:
+            print('Non-static models need an armature')
+            return False
+
         path = self.directory.joinpath(f'{self.stem}.qc')
 
         try:
