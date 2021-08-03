@@ -68,6 +68,6 @@ class SOURCEOPS_SequenceProps(bpy.types.PropertyGroup):
 
     loop: bpy.props.BoolProperty(
         name='Loop',
-        description='Whether the sequence will be looped',
+        description='Whether the sequence will be looped.\nStart frame must be identical to end frame',
         default=False,
     )
