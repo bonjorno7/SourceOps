@@ -1,5 +1,4 @@
 import bpy
-import os
 from .. utils import common
 from .. import icons
 
@@ -281,6 +280,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col = box.column()
             col.operator('sourceops.weighted_normal')
             col.operator('sourceops.triangulate')
+            col.operator('sourceops.pose_bone_transforms', text='Copy Pose Bone Translation').type = 'TRANSLATION'
+            col.operator('sourceops.pose_bone_transforms', text='Copy Pose Bone Rotation').type = 'ROTATION'
 
     def draw_list_buttons(self, layout, item):
         op = layout.operator('sourceops.list_operator', text='', icon='ADD')
