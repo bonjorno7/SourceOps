@@ -50,5 +50,5 @@ def menu_func(self, context: bpy.types.Context):
     layout = self.layout
     layout.separator()
 
-    layout.operator('sourceops.pose_bone_transforms', text='Translation for Source').type = 'TRANSLATION'
-    layout.operator('sourceops.pose_bone_transforms', text='Rotation for Source').type = 'ROTATION'
+    layout.operator('sourceops.pose_bone_transforms', text='Copy Translation for Source').type = 'TRANSLATION'
+    layout.operator('sourceops.pose_bone_transforms', text='Copy Rotation for Source').type = 'ROTATION'
