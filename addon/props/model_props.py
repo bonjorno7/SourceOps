@@ -92,8 +92,8 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
-    transform_source: bpy.props.EnumProperty(
-        name='Transform Source',
+    origin_source: bpy.props.EnumProperty(
+        name='Origin Source',
         description='Method of specifying $origin.\nEither manually specified in this panel, or via an object',
         items=[
             ('MANUAL', 'Manual Input', 'Specify the transforms manually in this panel'),
@@ -101,8 +101,8 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         ],
     )
 
-    transform_object: bpy.props.PointerProperty(
-        name='Transform Object',
+    origin_object: bpy.props.PointerProperty(
+        name='Origin Object',
         description='The object to use the transforms of as the $origin',
         type=bpy.types.Object,
     )

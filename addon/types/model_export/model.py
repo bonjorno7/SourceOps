@@ -55,8 +55,8 @@ class Model:
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
 
-        self.transform_source = model.transform_source
-        self.transform_object = model.transform_object
+        self.origin_source = model.origin_source
+        self.origin_object = model.origin_object
 
         self.origin_x = model.origin_x
         self.origin_y = model.origin_y
@@ -182,13 +182,13 @@ class Model:
             qc.write('$mostlyopaque')
             qc.write('\n')
 
-        if self.transform_source == 'MANUAL':
+        if self.origin_source == 'MANUAL':
             origin_x = self.origin_x
             origin_y = self.origin_y
             origin_z = self.origin_z
             rotation = -self.rotation
-        elif self.transform_source == 'OBJECT' and self.transform_object:
-            loc, rot, _ = self.transform_object.matrix_world.decompose()
+        elif self.origin_source == 'OBJECT' and self.origin_object:
+            loc, rot, _ = self.origin_object.matrix_world.decompose()
             origin_x = loc.x
             origin_y = loc.y
             origin_z = loc.z
