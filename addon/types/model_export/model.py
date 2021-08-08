@@ -393,7 +393,8 @@ class Model:
     def remove_modelsrc_old(self):
         for file in self.directory.rglob('*'):
             if file.suffix in ('.SMD', '.FBX'):
-                file.unlink(missing_ok=True)
+                if file.is_file():
+                    file.unlink()
 
     def ensure_models_folder(self):
         destination = self.models.joinpath(self.name).parent
@@ -403,7 +404,8 @@ class Model:
         model = self.models.joinpath(self.name)
         for suffix in ('.dx90.vtx', '.dx80.vtx', '.sw.vtx', '.vvd', '.mdl', '.phy'):
             path = model.with_suffix(suffix)
-            path.unlink(missing_ok=True)
+            if path.is_file():
+                path.unlink()
 
     def report(self, error):
         print(error)
