@@ -1,5 +1,4 @@
 import bpy
-import shutil
 import subprocess
 import os
 from math import degrees
@@ -383,8 +382,7 @@ class Model:
             dst = path_dst.with_suffix(suffix)
 
             try:
-                shutil.copyfile(src, dst)
-                src.unlink()
+                src.rename(dst)
             except:
                 print(f'Failed to move {src} to {dst}')
 
