@@ -7,7 +7,15 @@ def update_game(self, context):
     game = Path(self.game)
 
     if game.joinpath('gameinfo.txt').is_file():
-        self['bin'] = str(game.parent.joinpath('bin'))
+        bin = game.parent.joinpath('bin')
+
+        if not bin.joinpath('studiomdl.exe').is_file():
+            for path in bin.iterdir():
+                if path.is_dir() and path.joinpath('studiomdl.exe').is_file():
+                    bin = path
+                    break
+
+        self['bin'] = str(bin)
         self['modelsrc'] = str(game.joinpath('modelsrc'))
         self['models'] = str(game.joinpath('models'))
         self['mapsrc'] = str(game.joinpath('mapsrc'))
