@@ -126,13 +126,13 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     )
 
     rotation: bpy.props.FloatProperty(
-        name='Rotation',
+        name='Origin Rotation',
         description='Rotation around the up axis for $origin in the QC file, this is applied after the location',
         default=0.0,
     )
 
     scale: bpy.props.FloatProperty(
-        name='Scale',
+        name='Model Scale',
         description='$scale to put at the top of your QC files, this does not affect $origin or attachments',
         default=1.0,
     )
