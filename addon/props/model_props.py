@@ -62,6 +62,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default='default',
     )
 
+    glass: bpy.props.BoolProperty(
+        name='Has Glass',
+        description='$mostlyopaque, use this if your model has something transparent like glass',
+        default=False,
+    )
+
     static: bpy.props.BoolProperty(
         name='Static Prop',
         description='$staticprop, removes animations, does some optimization. Warning: can cause issues such as blank for bodygroups not working',
@@ -71,12 +77,6 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     static_prop_combine: bpy.props.BoolProperty(
         name='Static Prop Combine',
         description='Whether to use the steamapps/content path instead of modelsrc, necessary for autocombine, a neat CS:GO feature',
-        default=False,
-    )
-
-    glass: bpy.props.BoolProperty(
-        name='Has Glass',
-        description='$mostlyopaque, use this if your model has something transparent like glass',
         default=False,
     )
 

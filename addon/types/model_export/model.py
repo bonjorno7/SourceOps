@@ -49,8 +49,8 @@ class Model:
         self.stacking = model.stacking
 
         self.surface = model.surface
-        self.static = model.static
         self.glass = model.glass
+        self.static = model.static
         self.joints = model.joints
 
         self.prepend_armature = model.prepend_armature
@@ -173,14 +173,14 @@ class Model:
         qc.write(f'$surfaceprop "{self.surface}"')
         qc.write('\n')
 
-        if self.static:
-            qc.write('\n')
-            qc.write('$staticprop')
-            qc.write('\n')
-
         if self.glass:
             qc.write('\n')
             qc.write('$mostlyopaque')
+            qc.write('\n')
+
+        if self.static:
+            qc.write('\n')
+            qc.write('$staticprop')
             qc.write('\n')
 
         if self.origin_source == 'MANUAL':

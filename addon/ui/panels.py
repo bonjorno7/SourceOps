@@ -82,11 +82,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             col = common.split_column(box)
             col.prop(model, 'surface')
+            col.prop(model, 'glass')
             col.prop(model, 'static')
             row = col.row()
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
-            col.prop(model, 'glass')
             col.prop(model, 'joints')
 
             box = layout.box()
