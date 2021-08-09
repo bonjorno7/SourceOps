@@ -70,7 +70,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     static: bpy.props.BoolProperty(
         name='Static Prop',
-        description='$staticprop, removes animations, does some optimization. Warning: can cause issues such as blank for bodygroups not working',
+        description='$staticprop, use this for models with no moving parts.\nRemoves animations and bones, does some optimization.\nWarning: can cause issues such as blank for bodygroups not working',
         default=False,
     )
 
