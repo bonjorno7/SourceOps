@@ -87,6 +87,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
             col.prop(model, 'glass')
+            col.prop(model, 'joints')
 
             box = layout.box()
             row = box.row()

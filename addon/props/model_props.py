@@ -80,6 +80,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+    joints: bpy.props.BoolProperty(
+        name='Collision Joints',
+        description='Use $collisionjoints instead of $collisionmodel, recommended for animated models and ragdolls',
+        default=False,
+    )
+
     prepend_armature: bpy.props.BoolProperty(
         name='Prepend Armature',
         description='Prepend the name of the armature to every bone name in your SMD files. Necessary for multi-armature models',

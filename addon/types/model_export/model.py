@@ -51,6 +51,7 @@ class Model:
         self.surface = model.surface
         self.static = model.static
         self.glass = model.glass
+        self.joints = model.joints
 
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
@@ -222,8 +223,10 @@ class Model:
         if self.collision:
             qc.write('\n')
             name = common.clean_filename(self.collision.name)
-            qc.write(f'$collisionmodel "{name}.{self.mesh_type}"' + ' {\n')
-            qc.write('    $concave\n')
+            command = 'collisionjoints' if self.joints else 'collisionmodel'
+            qc.write(f'${command} "{name}.{self.mesh_type}"' + ' {\n')
+            command = 'concaveperjoint' if self.joints else 'concave'
+            qc.write(f'    ${command}\n')
             qc.write('    $maxconvexpieces 10000\n')
             qc.write('}')
             qc.write('\n')
