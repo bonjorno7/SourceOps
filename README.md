@@ -49,6 +49,7 @@ SourceOps is a Blender addon for exporting models to Source 1. \
 - [Peak-CDE](https://github.com/Peak-CDE)
 - [REDxEYE](https://github.com/REDxEYE)
 - [SethTooQuick](https://github.com/SethTooQuick)
+- [VortexParadox](https://github.com/VortexParadox)
 - [xchellx](https://github.com/xchellx)
 
 ## Support Me
