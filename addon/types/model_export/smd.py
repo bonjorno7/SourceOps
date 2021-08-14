@@ -364,7 +364,7 @@ class Triangles:
         bpy.context.view_layer.update()
         depsgraph: bpy.types.Depsgraph = bpy.context.evaluated_depsgraph_get()
         evaluated: bpy.types.Object = object.evaluated_get(depsgraph)
-        mesh = evaluated.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
+        mesh = bpy.data.meshes.new_from_object(evaluated, preserve_all_data_layers=True, depsgraph=depsgraph)
 
         if not self.settings.ignore_transforms:
             mesh.transform(object.matrix_world)
@@ -376,7 +376,7 @@ class Triangles:
             self.triangles.append(triangle)
 
         mesh.free_normals_split()
-        evaluated.to_mesh_clear()
+        bpy.data.meshes.remove(mesh)
 
         bpy.data.objects.remove(object)
         bpy.data.collections.remove(collection)
