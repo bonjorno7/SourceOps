@@ -73,6 +73,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(model, 'collision')
                 col.prop(model, 'bodygroups')
                 col.prop(model, 'stacking')
+                col.prop(model, 'separatemodel')
 
         elif model and sourceops.panel == 'MODEL_OPTIONS':
             box = layout.box()

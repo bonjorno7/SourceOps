@@ -47,6 +47,7 @@ class Model:
         self.collision = model.collision
         self.bodygroups = model.bodygroups
         self.stacking = model.stacking
+        self.separatemodel = model.separatemodel
 
         self.surface = model.surface
         self.glass = model.glass
@@ -98,6 +99,14 @@ class Model:
                 objects = self.get_all_objects(collection)
                 path = self.get_body_path(collection)
                 self.export_mesh(self.armature, objects, path)
+
+        if self.separatemodel:
+            for separatemodel in self.separatemodel.children:
+                for collection in separatemodel.children:
+                    objects = self.get_all_objects(collection)
+                    path = self.get_body_path(collection)
+                    self.export_mesh(self.armature, objects, path)
+
 
     def export_anim(self, armature, action, path):
         self.export_smd(armature, [], action, path)
@@ -247,6 +256,15 @@ class Model:
                 qc.write('\n')
                 name = common.clean_filename(collection.name)
                 qc.write(f'$model "{name}" "{name}.{self.mesh_type}"')
+                qc.write('\n')
+        
+        if self.separatemodel:
+            for separatemodel in self.separatemodel.children:
+                qc.write('\n')
+                bodygroup_name = common.clean_filename(separatemodel.name)
+                for collection in separatemodel.children:
+                    name = common.clean_filename(collection.name)
+                    qc.write(f'$model "{bodygroup_name}" "{name}.{self.mesh_type}"')
                 qc.write('\n')
 
         if not self.sequence_items:

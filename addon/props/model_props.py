@@ -49,6 +49,12 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         type=bpy.types.Collection,
     )
 
+    separatemodel: bpy.props.PointerProperty(
+        name='$Models',
+        description='Visible meshes, each mesh becomes $model in the QC; for lightmapping',
+        type=bpy.types.Collection,
+    )
+
     stacking: bpy.props.PointerProperty(
         name='Stacking',
         description='Visible meshes drawn in the specified order',
