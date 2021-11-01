@@ -114,8 +114,7 @@ class Model:
             print(f'Exporting: {path}')
 
         except:
-            print(f'Failed to export: {path}')
-            print_exc()
+            self.report(f'Failed to export: {path}', exception=True)
 
         else:
             smd = SMD(self.prepend_armature, self.ignore_transforms)
@@ -130,8 +129,7 @@ class Model:
             export_fbx(path, armature, objects, self.prepend_armature, self.ignore_transforms)
 
         except:
-            print(f'Failed to export {path}')
-            print_exc()
+            self.report(f'Failed to export: {path}', exception=True)
 
     def get_all_objects(self, collection):
         return common.remove_duplicates(collection.all_objects) if collection else []
@@ -154,7 +152,7 @@ class Model:
             qc = path.open('w')
             print(f'Generating: {path}')
         except:
-            return self.report(f'Failed to open: {path}')
+            return self.report(f'Failed to open: {path}', exception=True)
 
         qc.write(f'$modelname "{self.name}"')
         qc.write('\n')
@@ -346,7 +344,7 @@ class Model:
             print(f'Opening: {self.directory}')
             bpy.ops.wm.path_open(filepath=str(self.directory))
         except:
-            return self.report(f'Failed to open: {self.directory}')
+            return self.report(f'Failed to open: {self.directory}', exception=True)
 
     def view_model(self):
         model = self.models.joinpath(self.name)
@@ -387,7 +385,7 @@ class Model:
             try:
                 src.rename(dst)
             except:
-                print(f'Failed to move {src} to {dst}')
+                self.report(f'Failed to move {src} to {dst}', exception=True)
 
     def ensure_modelsrc_folder(self):
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -410,6 +408,10 @@ class Model:
             if path.is_file():
                 path.unlink()
 
-    def report(self, error):
-        print(error)
-        return error
+    def report(self, message, exception=False):
+        print(message)
+
+        if exception:
+            print_exc()
+
+        return message

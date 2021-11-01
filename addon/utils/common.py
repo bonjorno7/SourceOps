@@ -3,6 +3,7 @@ import string
 import unicodedata
 import platform
 import pathlib
+import traceback
 
 
 def get_version():
@@ -105,6 +106,7 @@ def verify_folder(path):
             path.mkdir(parents=True, exist_ok=True)
         except:
             print(f'Failed to create directory: {path}')
+            traceback.print_exc()
     return path
 
 
