@@ -2,6 +2,7 @@ import bpy
 import subprocess
 import os
 from math import degrees
+from shutil import move
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
@@ -383,7 +384,7 @@ class Model:
             dst = path_dst.with_suffix(suffix)
 
             try:
-                src.rename(dst)
+                move(src, dst)
             except:
                 self.report(f'Failed to move {src} to {dst}', exception=True)
 
