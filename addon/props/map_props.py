@@ -31,7 +31,7 @@ class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
     texture_scale: bpy.props.FloatProperty(
         name='Texture Scale',
         description='Size of one texel in hammer units',
-        default=0.5,
+        default=1.0,
         min=0,
         max=64,
         step=1,
@@ -44,6 +44,12 @@ class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
         default=32,
         min=1,
         max=16384,
+    )
+
+    allow_skewed_textures: bpy.props.BoolProperty(
+        name='Allow Skewed Textures',
+        description='Allow non-perpendicular UV axes. Works in Hammer as long as faces are not skewed themselves',
+        default=False,
     )
 
     align_to_grid: bpy.props.BoolProperty(
