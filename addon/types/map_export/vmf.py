@@ -8,12 +8,17 @@ from . import displacement
 
 
 class Settings:
-    def __init__(self, brush_objects, disp_objects, geometry_scale, texture_scale, lightmap_scale, align_to_grid):
+    def __init__(
+            self, brush_objects, disp_objects,
+            geometry_scale, texture_scale, lightmap_scale,
+            allow_skewed_textures, align_to_grid
+    ):
         self.brush_objects = brush_objects
         self.disp_objects = disp_objects
         self.geometry_scale = geometry_scale
         self.texture_scale = texture_scale
         self.lightmap_scale = lightmap_scale
+        self.allow_skewed_textures = allow_skewed_textures
         self.align_to_grid = align_to_grid
 
 

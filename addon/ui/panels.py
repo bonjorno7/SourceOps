@@ -249,6 +249,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(map_props, 'geometry_scale')
                 col.prop(map_props, 'texture_scale')
                 col.prop(map_props, 'lightmap_scale')
+                col.prop(map_props, 'allow_skewed_textures')
                 col.prop(map_props, 'align_to_grid')
 
             box = layout.box()
