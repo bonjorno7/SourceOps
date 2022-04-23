@@ -82,7 +82,7 @@ def calc_uv_axes(settings: typing.Any, obj: bpy.types.Object, bm: bmesh.types.BM
     side_v = (p3 - p1) * uv_side_a.x - (p2 - p1) * uv_side_b.x
     determinant = uv_side_a.x * uv_side_b.y - uv_side_b.x * uv_side_a.y
 
-    epsilon = 0.0000001
+    epsilon = 0.0001
 
     if abs(determinant) > epsilon:
         tangent = tangent / determinant
