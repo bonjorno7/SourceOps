@@ -43,7 +43,8 @@ class Model:
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
 
-        self.armature = model.armature
+        
+        = model.armature
         self.reference = model.reference
         self.collision = model.collision
         self.bodygroups = model.bodygroups
@@ -143,8 +144,8 @@ class Model:
         if not self.reference and not self.stacking:
             return self.report(f'Unable to generate QC for: {self.name} (reference and stacking both not set)')
 
-        if not self.armature and not self.static:
-            return self.report(f'Unable to generate QC for: {self.name} (armature not set and static not enabled)')
+        # if not self.armature and not self.static:
+        #    return self.report(f'Unable to generate QC for: {self.name} (armature not set and static not enabled)')
 
         self.ensure_modelsrc_folder()
         path = self.directory.joinpath(f'{self.stem}.qc')
