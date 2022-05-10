@@ -56,9 +56,13 @@ class SOURCEOPS_OT_ExportVMF(bpy.types.Operator):
         align_to_grid = props.align_to_grid
 
         settings = Settings(
-            brush_objects, disp_objects,
-            geometry_scale, texture_scale, lightmap_scale,
-            allow_skewed_textures, align_to_grid
+            brush_objects,
+            disp_objects,
+            geometry_scale,
+            texture_scale,
+            lightmap_scale,
+            allow_skewed_textures,
+            align_to_grid,
         )
         vmf = VMF(settings)
         vmf.export(path)
