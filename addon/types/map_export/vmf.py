@@ -9,9 +9,14 @@ from . import displacement
 
 class Settings:
     def __init__(
-            self, brush_objects, disp_objects,
-            geometry_scale, texture_scale, lightmap_scale,
-            allow_skewed_textures, align_to_grid
+            self,
+            brush_objects,
+            disp_objects,
+            geometry_scale,
+            texture_scale,
+            lightmap_scale,
+            allow_skewed_textures,
+            align_to_grid,
     ):
         self.brush_objects = brush_objects
         self.disp_objects = disp_objects
