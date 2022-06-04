@@ -43,10 +43,12 @@ def sort_into_parts(bm: bmesh.types.BMesh):
 def get_texture_size(obj: bpy.types.Object, face: bmesh.types.BMFace):
     if face.material_index in range(len(obj.material_slots)):
         face_material = obj.material_slots[face.material_index].material
+
         if face_material and face_material.use_nodes:
             for mat_node in face_material.node_tree.nodes:
                 if mat_node.type == 'TEX_IMAGE':
                     return mat_node.image.size[0]
+
     return -1
 
 
