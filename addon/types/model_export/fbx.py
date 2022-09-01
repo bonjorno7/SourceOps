@@ -37,6 +37,15 @@ def export_fbx(path: Path, armature: Object, objects: List[Object], prepend_arma
     bone_name = {}
     obj_triangulate_mod = {}
 
+    bpy.ops.object.select_all(action='DESELECT')
+    for object in objects:
+        if object.type in MESH_TYPES:
+            object.select_set(True)
+    bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
+    bpy.ops.object.convert(keep_original=True)
+    bpy.ops.object.join()
+    objects = [bpy.context.selected_objects[0]]
+
     if armature:
         objects.append(armature)
 
@@ -79,6 +88,11 @@ def export_fbx(path: Path, armature: Object, objects: List[Object], prepend_arma
         raise
 
     finally:
+        object = objects[0]
+        mesh = object.data
+        bpy.data.objects.remove(object)
+        bpy.data.meshes.remove(mesh)
+
         for obj, triangulate_mod in obj_triangulate_mod.items():
             obj.modifiers.remove(triangulate_mod)
 
