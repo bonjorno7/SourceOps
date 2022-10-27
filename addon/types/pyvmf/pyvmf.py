@@ -486,9 +486,9 @@ class Vertex(Common):  # Vertex has to be above the Solid class (see: set_pos_ve
         """
         Turns x, y and z into integers
         """
-        self.x = int(self.x)
-        self.y = int(self.y)
-        self.z = int(self.z)
+        self.x = round(self.x)
+        self.y = round(self.y)
+        self.z = round(self.z)
 
     def export(self) -> Tuple[int, int, int]:
         return (self.x,
