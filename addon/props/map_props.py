@@ -54,6 +54,6 @@ class SOURCEOPS_MapProps(bpy.types.PropertyGroup):
 
     align_to_grid: bpy.props.BoolProperty(
         name='Align to Grid',
-        description='Round the scaled UVs to whole numbers so the brushes sit on the hammer grid',
+        description='Round brush coordinates to whole numbers. Does not affect displacements or their brushes',
         default=True,
     )

@@ -187,10 +187,6 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     obj_subd = obj.copy()
     setup_subd_mesh(obj_subd, matrix, space)
 
-    # Align subd mesh verts to grid
-    if settings.align_to_grid:
-        align_to_grid(obj_subd)
-
     # Setup new UV layer, face maps, and subsurf modifier
     uv_layer = setup_uv_layer(obj_subd)
     face_maps = setup_face_maps(obj_subd)
