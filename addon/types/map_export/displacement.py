@@ -70,11 +70,10 @@ def align_to_grid(obj: bpy.types.Object):
     bm.from_mesh(obj.data)
 
     # Align verts to grid
-    if align_to_grid:
-        for vert in bm.verts:
-            vert.co.x = round(vert.co.x)
-            vert.co.y = round(vert.co.y)
-            vert.co.z = round(vert.co.z)
+    for vert in bm.verts:
+        vert.co.x = round(vert.co.x)
+        vert.co.y = round(vert.co.y)
+        vert.co.z = round(vert.co.z)
 
     # Apply changes to mesh and free bmesh
     bm.to_mesh(obj.data)
