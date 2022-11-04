@@ -97,18 +97,21 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col = common.split_column(box)
             col.prop(model, 'prepend_armature')
             col.prop(model, 'ignore_transforms')
-            col.prop(model, 'origin_source')
+
+            sub = col.column()
+            sub.enabled = not (model.static and model.static_prop_combine)
+            sub.prop(model, 'origin_source')
 
             if model.origin_source == 'OBJECT':
-                col.prop(model, 'origin_object')
+                sub.prop(model, 'origin_object')
 
             else:
-                align = col.column(align=True)
+                align = sub.column(align=True)
                 align.prop(model, 'origin_x', text='Origin X')
                 align.prop(model, 'origin_y', text='Y')
                 align.prop(model, 'origin_z', text='Z')
 
-                col.prop(model, 'rotation')
+                sub.prop(model, 'rotation')
 
             col.prop(model, 'scale')
 
