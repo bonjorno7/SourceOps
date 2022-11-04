@@ -52,6 +52,7 @@ class Model:
         self.surface = model.surface
         self.glass = model.glass
         self.static = model.static
+        self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
 
         self.prepend_armature = model.prepend_armature
@@ -205,9 +206,11 @@ class Model:
         else:
             rotation -= 90
 
-        qc.write('\n')
-        qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
-        qc.write('\n')
+        # The origin command does not work with static prop combine.
+        if not (self.static and self.static_prop_combine):
+            qc.write('\n')
+            qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
+            qc.write('\n')
 
         qc.write('\n')
         qc.write(f'$scale {self.scale:.6f}')
