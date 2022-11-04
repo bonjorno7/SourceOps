@@ -76,7 +76,7 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
 
     static_prop_combine: bpy.props.BoolProperty(
         name='Static Prop Combine',
-        description='Whether to use the steamapps/content path instead of modelsrc, necessary for autocombine, a neat CS:GO feature',
+        description='Whether to use the steamapps/content path instead of modelsrc, necessary for autocombine, a neat CS:GO feature.\nWarning: does not work with $origin',
         default=False,
     )
 
