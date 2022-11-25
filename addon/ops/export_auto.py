@@ -1,4 +1,5 @@
 import bpy
+from threading import Lock, Thread
 from .. import utils
 from .. types . model_export . model import Model
 
@@ -61,19 +62,40 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         sourceops = utils.common.get_globals(context)
 
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
-            for model in sourceops.model_items:
-                error = self.export(game, model)
+            source_models = [Model(game, model) for model in sourceops.model_items]
+
+            for source_model in source_models:
+                error = self.export(source_model)
 
                 if error:
                     self.report({'ERROR'}, error)
                     return {'CANCELLED'}
+
+            threads = [Thread(target=self.compile, args=[m], daemon=True) for m in source_models] 
+            self._lock = Lock()
+            self._results = []
+
+            for thread in threads:
+                thread.start()
+
+            for thread in threads:
+                thread.join()
+
+            for error in self._results:
+                self.report({'ERROR'}, error)
+                
+            if self._results:
+                return {'CANCELLED'}
 
             self.report({'INFO'}, 'Exported all models in the scene')
             return {'FINISHED'}
 
         else:
             model = utils.common.get_model(sourceops)
-            error = self.export(game, model)
+
+            source_model = Model(game, model)
+            error = self.export(source_model)
+            error = self.compile(source_model)
 
             if error:
                 self.report({'ERROR'}, error)
@@ -82,21 +104,28 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             self.report({'INFO'}, f'Exported {model.name}')
             return {'FINISHED'}
 
-    def export(self, game, model):
-        source_model = Model(game, model)
-
+    def export(self, source_model: Model):
         if not self.ctrl or self.export_meshes:
             error = source_model.export_meshes()
-            if error: return error
-
+            if error:
+                return error
+        
         if not self.ctrl or self.generate_qc:
             error = source_model.generate_qc()
-            if error: return error
+            if error:
+                return error
 
+    def compile(self, source_model: Model):
         if not self.ctrl or self.compile_qc:
             error = source_model.compile_qc()
-            if error: return error
+            if error:
+                with self._lock:
+                    self._results.append(error)
+                return
 
         if self.ctrl and (not self.all_models and self.view_model):
             error = source_model.view_model()
-            if error: return error
+            if error:
+                with self._lock:
+                    self._results.append(error)
+                return
