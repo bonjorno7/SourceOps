@@ -69,13 +69,11 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
             for source_model in source_models:
                 error = self.export(source_model)
-                print(f'Exported files in {round(time.time() - start, 1)} seconds')
-
                 if error:
                     self.report({'ERROR'}, error)
                     return {'CANCELLED'}
 
-            threads = [Thread(target=self.compile, args=[m], daemon=True) for m in source_models] 
+            threads = [Thread(target=self.compile, args=[m], daemon=True) for m in source_models]
             self._lock = Lock()
             self._results = []
 
@@ -87,7 +85,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
             for error in self._results:
                 self.report({'ERROR'}, error)
-                
+
             if self._results:
                 return {'CANCELLED'}
 
@@ -103,8 +101,6 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                 self.report({'ERROR'}, error)
                 return {'CANCELLED'}
 
-            print(f'Exported files in {round(time.time() - start, 1)} seconds')
-
             error = self.compile(source_model)
             if error:
                 self.report({'ERROR'}, error)
@@ -118,7 +114,7 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             error = source_model.export_meshes()
             if error:
                 return error
-        
+
         if not self.ctrl or self.generate_qc:
             error = source_model.generate_qc()
             if error:

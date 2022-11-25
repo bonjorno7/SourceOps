@@ -1,4 +1,5 @@
 import bpy
+import time
 import subprocess
 import os
 from math import degrees
@@ -113,25 +114,28 @@ class Model:
     def export_smd(self, armature, objects, action, path):
         try:
             smd_file = path.open('w')
-            print(f'Exporting: {path}')
-
         except:
             self.report(f'Failed to export: {path}', exception=True)
-
         else:
+            start = time.time()
+
             smd = SMD(self.prepend_armature, self.ignore_transforms)
             smd.from_blender(armature, objects, action)
 
             smd_file.write(smd.to_string())
             smd_file.close()
 
-    def export_fbx(self, armature, objects, path):
-        try:
-            print(f'Exporting: {path}')
-            export_fbx(path, armature, objects, self.prepend_armature, self.ignore_transforms)
+            print(f'Exported: {path} in {round(time.time() - start, 1)} seconds')
 
+    def export_fbx(self, armature, objects, path):
+        start = time.time()
+
+        try:
+            export_fbx(path, armature, objects, self.prepend_armature, self.ignore_transforms)
         except:
             self.report(f'Failed to export: {path}', exception=True)
+        else:
+            print(f'Exported: {path} in {round(time.time() - start, 1)} seconds')
 
     def get_all_objects(self, collection):
         return common.remove_duplicates(collection.all_objects) if collection else []
