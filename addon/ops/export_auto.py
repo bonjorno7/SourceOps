@@ -1,4 +1,5 @@
 import bpy
+import time
 from threading import Lock, Thread
 from .. import utils
 from .. types . model_export . model import Model
@@ -61,11 +62,14 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
         game = utils.common.get_game(prefs)
         sourceops = utils.common.get_globals(context)
 
+        start = time.time()
+
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
             source_models = [Model(game, model) for model in sourceops.model_items]
 
             for source_model in source_models:
                 error = self.export(source_model)
+                print(f'Exported files in {round(time.time() - start, 1)} seconds')
 
                 if error:
                     self.report({'ERROR'}, error)
@@ -87,21 +91,26 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
             if self._results:
                 return {'CANCELLED'}
 
-            self.report({'INFO'}, 'Exported all models in the scene')
+            self.report({'INFO'}, f'Exported all models in the scene in {round(time.time() - start, 1)} seconds')
             return {'FINISHED'}
 
         else:
             model = utils.common.get_model(sourceops)
-
             source_model = Model(game, model)
-            error = self.export(source_model)
-            error = self.compile(source_model)
 
+            error = self.export(source_model)
             if error:
                 self.report({'ERROR'}, error)
                 return {'CANCELLED'}
 
-            self.report({'INFO'}, f'Exported {model.name}')
+            print(f'Exported files in {round(time.time() - start, 1)} seconds')
+
+            error = self.compile(source_model)
+            if error:
+                self.report({'ERROR'}, error)
+                return {'CANCELLED'}
+
+            self.report({'INFO'}, f'Exported {model.name} in {round(time.time() - start, 1)} seconds')
             return {'FINISHED'}
 
     def export(self, source_model: Model):
