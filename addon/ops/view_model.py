@@ -34,5 +34,6 @@ class SOURCEOPS_OT_ViewModel(bpy.types.Operator):
             self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
-        self.report({'INFO'}, 'Viewing model in HLMV')
+        plusplus = '++' if source_model.hlmv.stem.endswith('plusplus') else ''
+        self.report({'INFO'}, f'Viewing model in HLMV{plusplus}')
         return {'FINISHED'}

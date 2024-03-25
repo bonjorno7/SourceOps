@@ -37,7 +37,10 @@ class Model:
         studiomdl = self.bin.joinpath('studiomdl.exe')
         quickmdl = self.bin.joinpath('quickmdl.exe')
         self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
-        self.hlmv = self.bin.joinpath('hlmv.exe')
+
+        hlvm = self.bin.joinpath('hlmv.exe')
+        hlvmplusplus = self.bin.joinpath('hlmvplusplus.exe')
+        self.hlmv = hlvmplusplus if hlvmplusplus.is_file() else hlvm
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
