@@ -35,28 +35,44 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         poll=poll_armature,
     )
 
+    def poll_reference(self, object):
+        return object not in (self.collision, self.bodygroups, self.stacking)
+
     reference: bpy.props.PointerProperty(
         name='Reference',
         description='Visible meshes combined into one body',
         type=bpy.types.Collection,
+        poll=poll_reference,
     )
+
+    def poll_collision(self, object):
+        return object not in (self.reference, self.bodygroups, self.stacking)
 
     collision: bpy.props.PointerProperty(
         name='Collision',
         description='Tangible meshes combined into one body',
         type=bpy.types.Collection,
+        poll=poll_collision,
     )
+
+    def poll_bodygroups(self, object):
+        return object not in (self.reference, self.collision, self.stacking)
 
     bodygroups: bpy.props.PointerProperty(
         name='Bodygroups',
         description='Groups of visible meshes, the game can choose one body per group',
         type=bpy.types.Collection,
+        poll=poll_bodygroups,
     )
+
+    def poll_stacking(self, object):
+        return object not in (self.reference, self.collision, self.bodygroups)
 
     stacking: bpy.props.PointerProperty(
         name='Stacking',
         description='Visible meshes drawn in the specified order',
         type=bpy.types.Collection,
+        poll=poll_stacking,
     )
 
     surface: bpy.props.EnumProperty(
