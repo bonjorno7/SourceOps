@@ -34,5 +34,8 @@ class SOURCEOPS_OT_GenerateQC(bpy.types.Operator):
             self.report({'ERROR'}, error)
             return {'CANCELLED'}
 
-        self.report({'INFO'}, 'Generated QC')
+        forced_static = not model.armature and not model.static
+        static_message = ' (forced static due to lack of armature)' if forced_static else ''
+
+        self.report({'INFO'}, f'Generated QC for {model.name}{static_message}')
         return {'FINISHED'}

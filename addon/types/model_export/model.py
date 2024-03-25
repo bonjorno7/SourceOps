@@ -152,7 +152,8 @@ class Model:
             return self.report(f'Unable to generate QC for: {self.name} (reference and stacking both not set)')
 
         if not self.armature and not self.static:
-            return self.report(f'Unable to generate QC for: {self.name} (armature not set and static not enabled)')
+            self.static = True
+            print(f'Armature not set for {self.name}, using static')
 
         self.ensure_modelsrc_folder()
         path = self.directory.joinpath(f'{self.stem}.qc')

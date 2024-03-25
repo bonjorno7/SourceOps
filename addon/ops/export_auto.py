@@ -106,7 +106,10 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                 self.report({'ERROR'}, error)
                 return {'CANCELLED'}
 
-            self.report({'INFO'}, f'Exported {model.name} in {round(time.time() - start, 1)} seconds')
+            forced_static = not model.armature and not model.static
+            static_message = ' (forced static due to lack of armature)' if forced_static else ''
+
+            self.report({'INFO'}, f'Exported {model.name} in {round(time.time() - start, 1)} seconds{static_message}')
             return {'FINISHED'}
 
     def export(self, source_model: Model):
