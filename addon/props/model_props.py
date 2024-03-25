@@ -25,10 +25,14 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default='example/model',
     )
 
+    def poll_armature(self, object):
+        return object.type == 'ARMATURE'
+
     armature: bpy.props.PointerProperty(
         name='Armature',
         description='Armature that controls the object',
         type=bpy.types.Object,
+        poll=poll_armature,
     )
 
     reference: bpy.props.PointerProperty(
