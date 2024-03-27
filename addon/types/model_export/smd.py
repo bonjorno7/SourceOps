@@ -368,16 +368,19 @@ class Triangles:
 
         if not self.settings.ignore_transforms:
             mesh.transform(object.matrix_world)
-        mesh.calc_normals_split()
+
+        if hasattr(mesh, 'calc_normals_split'):
+            mesh.calc_normals_split()
 
         for poly in mesh.polygons:
             triangle = Triangle(self.settings)
             triangle.from_blender(lookup, armature, object, mesh, poly)
             self.triangles.append(triangle)
 
-        mesh.free_normals_split()
-        bpy.data.meshes.remove(mesh)
+        if hasattr(mesh, 'free_normals_split'):
+            mesh.free_normals_split()
 
+        bpy.data.meshes.remove(mesh)
         bpy.data.objects.remove(object)
         bpy.data.collections.remove(collection)
 
