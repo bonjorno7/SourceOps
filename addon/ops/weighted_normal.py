@@ -55,7 +55,8 @@ class SOURCEOPS_OT_weighted_normal(bpy.types.Operator):
 
         for obj in context.selected_objects:
             if obj.type == 'MESH':
-                obj.data.use_auto_smooth = True
+                if hasattr(obj.data, 'use_auto_smooth'):
+                    obj.data.use_auto_smooth = True
 
                 for mod in obj.modifiers[:]:
                     if mod.type == 'WEIGHTED_NORMAL':
