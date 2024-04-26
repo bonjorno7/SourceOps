@@ -22,6 +22,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         sequence = common.get_sequence(model)
         event = common.get_event(sequence)
         attachment = common.get_attachment(model)
+        particle = common.get_particle(model)
         map_props = common.get_map(sourceops)
 
         if sourceops:
@@ -84,6 +85,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col.prop(model, 'surface')
             col.prop(model, 'glass')
             col.prop(model, 'static')
+            col.prop(model, 'rename_material')
             row = col.row()
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
@@ -194,6 +196,23 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(event, 'frame')
                 col.prop(event, 'value')
 
+        elif model and sourceops.panel == 'PARTICLES':
+            box = layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Particles')
+            
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_ParticleList', '', model, 'particle_items', model, 'particle_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'PARTICLES')
+
+            if particle:
+                col = common.split_column(box)
+                col.prop(particle, 'name')
+                col.prop(particle, 'attachment_type')
+                col.prop(particle, 'attachment_point')
+
         elif model and sourceops.panel == 'ATTACHMENTS':
             box = layout.box()
             row = box.row()
@@ -218,7 +237,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(attachment, 'absolute')
                 col.prop(attachment, 'rigid')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS'}:
+        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS', 'PARTICLES'}:
             box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5

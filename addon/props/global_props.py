@@ -33,8 +33,9 @@ class SOURCEOPS_GlobalProps(bpy.types.PropertyGroup):
             ('SEQUENCES', 'Sequences', 'Display the sequences panel', 'SEQUENCE', 5),
             ('EVENTS', 'Events', 'Display the events panel', 'ACTION', 6),
             ('ATTACHMENTS', 'Attachments', 'Display the attachments panel', 'BONE_DATA', 7),
-            ('MAPS', 'Maps', 'Display the maps panel', 'MOD_BUILD', 8),
-            ('SIMULATION', 'Simulation', 'Display the simulation panel', 'PHYSICS', 9),
-            ('MISC', 'Misc', 'Display the misc panel', 'MONKEY', 10),
+            ('PARTICLES', 'Particles', 'Display the particles panel', 'PARTICLES', 8),
+            ('MAPS', 'Maps', 'Display the maps panel', 'MOD_BUILD', 9),
+            ('SIMULATION', 'Simulation', 'Display the simulation panel', 'PHYSICS', 10),
+            ('MISC', 'Misc', 'Display the misc panel', 'MONKEY', 11),
         ],
     )

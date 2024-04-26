@@ -46,6 +46,7 @@ class Model:
         self.skin_items = model.skin_items
         self.sequence_items = model.sequence_items
         self.attachment_items = model.attachment_items
+        self.particle_items = model.particle_items
 
         self.armature = model.armature
         self.reference = model.reference
@@ -53,6 +54,7 @@ class Model:
         self.bodygroups = model.bodygroups
         self.stacking = model.stacking
 
+        self.rename_material = model.rename_material
         self.surface = model.surface
         self.glass = model.glass
         self.static = model.static
@@ -230,6 +232,11 @@ class Model:
             qc.write(f'$body "{name}" "{name}.{self.mesh_type}"')
             qc.write('\n')
 
+        if not self.rename_material == '':
+            qc.write('\n')
+            qc.write(f'$renamematerial {self.rename_material}')
+            qc.write('\n')
+
         if self.collision:
             qc.write('\n')
             name = common.clean_filename(self.collision.name)
@@ -313,7 +320,34 @@ class Model:
             qc.write('\n')
             qc.write('}')
             qc.write('\n')
-
+        
+        if(len(self.particle_items) > 0):
+            qc.write('\n')      
+            qc.write('$keyvalues')
+            qc.write('\n')
+            qc.write('{')
+            qc.write('\n')
+            qc.write('    particles')
+            qc.write('\n')
+            qc.write('    {')
+            
+            for index, particle in enumerate(self.particle_items):
+                qc.write('\n')
+                qc.write(f'        "effect{index}"')
+                qc.write('\n        {\n')
+                qc.write(f'            "name" "{particle.name}"')
+                qc.write('\n')
+                qc.write(f'            "attachment_type" "{particle.attachment_type}"')
+                qc.write('\n')
+                if(particle.attachment_point):
+                    qc.write(f'            "attachment_point" "{particle.attachment_point}"')
+                    qc.write('\n')
+                qc.write('        }\n')
+            
+            qc.write('    }')
+            qc.write('\n')
+            qc.write('}')
+        
         qc.close()
 
     def compile_qc(self):
