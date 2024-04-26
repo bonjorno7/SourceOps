@@ -3,6 +3,7 @@ from . material_folder_props import SOURCEOPS_MaterialFolderProps
 from . skin_props import SOURCEOPS_SkinProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . attachment_props import SOURCEOPS_AttachmentProps
+from . particle_props import SOURCEOPS_ParticleProps
 from . surface_props import SOURCEOPS_SurfaceProps
 
 
@@ -19,10 +20,19 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
     attachment_items: bpy.props.CollectionProperty(type=SOURCEOPS_AttachmentProps)
     attachment_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
 
+    particle_items: bpy.props.CollectionProperty(type=SOURCEOPS_ParticleProps)
+    particle_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
+
     name: bpy.props.StringProperty(
         name='Name',
         description='Your model\'s path, eg example/model',
         default='example/model',
+    )
+
+    rename_material: bpy.props.StringProperty(
+        name='Rename Material',
+        description='Rename the first material currently on your model when exporting',
+        default='',
     )
 
     def poll_armature(self, object):

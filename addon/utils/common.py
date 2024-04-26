@@ -72,6 +72,11 @@ def get_attachment(model):
     except:
         return None
 
+def get_particle(model):
+    try:
+        return model.particle_items[model.particle_index]
+    except:
+        return None
 
 def get_map(sourceops):
     try:
