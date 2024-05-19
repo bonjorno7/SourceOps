@@ -51,6 +51,7 @@ SourceOps is a Blender addon for exporting models to Source 1. \
 - [SethTooQuick](https://github.com/SethTooQuick)
 - [VortexParadox](https://github.com/VortexParadox)
 - [xchellx](https://github.com/xchellx)
+- [Horiuchi](https://github.com/horiuchii)
 
 ## Support Me
 - Buy my other addons on [Gumroad](https://bonjorno7.gumroad.com) or [Blender Market](https://blendermarket.com/creators/bonjorno7).
