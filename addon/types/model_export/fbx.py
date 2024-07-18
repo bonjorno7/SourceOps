@@ -64,7 +64,8 @@ def export_fbx(path: Path, armature: Object, objects: List[Object], prepend_arma
             mod.min_vertices = 4
             mod.quad_method = 'FIXED'
             mod.ngon_method = 'CLIP'
-            mod.keep_custom_normals = True
+            if hasattr(mod, 'keep_custom_normals'):
+                mod.keep_custom_normals = True
 
     try:
         bpy.ops.export_scene.fbx(

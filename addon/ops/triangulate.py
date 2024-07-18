@@ -38,7 +38,7 @@ class SOURCEOPS_OT_triangulate(bpy.types.Operator):
 
     keep_custom_normals: bpy.props.BoolProperty(
         name='Keep Normals',
-        description='Try to preserve custom normals.\nWarning: Depending on chosen triangulation method, shading may not be fully preserved, "Fixed" method usually gives the best result here',
+        description='Try to preserve custom normals.\nWarning: Depending on chosen triangulation method, shading may not be fully preserved, "Fixed" method usually gives the best result here.\nDoes nothing in Blender 4.2 or newer',
         default=True,
     )
 
@@ -57,6 +57,7 @@ class SOURCEOPS_OT_triangulate(bpy.types.Operator):
                 mod.quad_method = self.quad_method
                 mod.ngon_method = self.ngon_method
                 mod.min_vertices = self.min_vertices
-                mod.keep_custom_normals = self.keep_custom_normals
+                if hasattr(mod, 'keep_custom_normals'):
+                    mod.keep_custom_normals = self.keep_custom_normals
 
         return {'FINISHED'}

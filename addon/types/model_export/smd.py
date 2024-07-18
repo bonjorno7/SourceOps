@@ -355,7 +355,8 @@ class Triangles:
         mod.min_vertices = 4
         mod.quad_method = 'FIXED'
         mod.ngon_method = 'CLIP'
-        mod.keep_custom_normals = True
+        if hasattr(mod, 'keep_custom_normals'):
+            mod.keep_custom_normals = True
 
         for mod in getattr(object, 'modifiers', []):
             if mod.type == 'ARMATURE':
