@@ -64,6 +64,9 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
 
         start = time.time()
 
+        self._lock = Lock()
+        self._results = []
+
         if (not self.ctrl and self.shift) or (self.ctrl and self.all_models):
             source_models = [Model(game, model) for model in sourceops.model_items]
 
@@ -74,8 +77,6 @@ class SOURCEOPS_OT_ExportAuto(bpy.types.Operator):
                     return {'CANCELLED'}
 
             threads = [Thread(target=self.compile, args=[m], daemon=True) for m in source_models]
-            self._lock = Lock()
-            self._results = []
 
             for thread in threads:
                 thread.start()
