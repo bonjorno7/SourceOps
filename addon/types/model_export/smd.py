@@ -238,8 +238,8 @@ class Skeleton:
 
             original_frame = bpy.context.scene.frame_current
 
-            start = int(action.frame_range[0])
-            end = int(action.frame_range[1])
+            start = max(0, int(action.frame_range[0]))
+            end = max(0, int(action.frame_range[1]))
 
             for time in range(start, end + 1):
                 bpy.context.scene.frame_set(time)
