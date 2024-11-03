@@ -401,10 +401,14 @@ class SMD:
         self.triangles = Triangles(self.settings)
 
     def configure_scene(self, objects: List[bpy.types.Object]) -> dict:
-        scene_settings = {'mode': 'OBJECT', 'objects': {o: {} for o in objects}}
+        scene_settings = {'objects': {o: {} for o in objects}}
 
         if bpy.context.active_object:
             scene_settings['mode'] = bpy.context.active_object.mode
+        else:
+            scene_settings['mode'] = 'OBJECT'
+
+        if scene_settings['mode'] != 'OBJECT':
             bpy.ops.object.mode_set(mode='OBJECT')
 
         for object in objects:

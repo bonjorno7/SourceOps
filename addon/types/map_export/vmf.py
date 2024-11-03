@@ -54,9 +54,11 @@ class VMF:
 
         if bpy.context.active_object:
             scene_settings['mode'] = bpy.context.active_object.mode
-            bpy.ops.object.mode_set(mode='OBJECT')
         else:
             scene_settings['mode'] = 'OBJECT'
+
+        if scene_settings['mode'] != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         for object in objects:
             scene_settings[object]['in_scene'] = bpy.context.scene.collection in object.users_collection
