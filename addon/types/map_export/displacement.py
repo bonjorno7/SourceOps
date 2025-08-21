@@ -99,6 +99,15 @@ def setup_face_maps(obj: bpy.types.Object):
     return face_maps
 
 
+def setup_face_attribute(obj: bpy.types.Object):
+    '''Add a face attribute and store the index of every face of an object.'''
+
+    indices = [i for i in range(len(obj.data.polygons))]
+    attribute = obj.data.attributes.new('original_face_index', 'INT', 'FACE')
+    attribute.data.foreach_set("value", indices)
+    return attribute
+
+
 def setup_subd_mod(obj: bpy.types.Object, levels: int):
     '''Add a subdivision surface modifier to an object.'''
 
@@ -189,10 +198,11 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
 
     # Setup new UV layer, face maps, and subsurf modifier
     uv_layer = setup_uv_layer(obj_subd)
-    face_maps = setup_face_maps(obj_subd)
+    face_maps = setup_face_maps(obj_subd) if bpy.app.version[0] < 4 else setup_face_attribute(obj_subd)
     mod_subd = setup_subd_mod(obj_subd, levels)
 
     # Get evaluated dependency graph
+    bpy.context.collection.objects.link(obj_subd)
     depsgraph = bpy.context.evaluated_depsgraph_get()
 
     # Create bmesh from subdivided object
@@ -201,7 +211,7 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
 
     # Get uv layer and face map layer from subd bmesh
     uv_subd = bm_subd.loops.layers.uv.verify()
-    fm_subd = bm_subd.faces.layers.face_map.verify()
+    fm_subd = bm_subd.faces.layers.face_map.verify() if bpy.app.version[0] < 4 else bm_subd.faces.layers.int[face_maps.name]
 
     # Create bmesh from sculpted object and transform it
     bm_mres = bmesh.new()
@@ -219,7 +229,7 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         'normals': [[None for x in range(width + 1)] for y in range(width + 1)],
         'lengths': [[None for x in range(width + 1)] for y in range(width + 1)],
         'material': 'dev/dev_blendmeasure'.upper(),
-    } for face_map in face_maps]
+    } for polygon in obj_subd.data.polygons]
 
     # Populate displacements with data from subd and mres faces
     for face_subd, face_mres in zip(bm_subd.faces, bm_mres.faces):
@@ -325,6 +335,7 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
 
     # Remove temporary object and mesh, in that order
     mesh_subd = obj_subd.data
+    bpy.context.collection.objects.unlink(obj_subd)
     bpy.data.objects.remove(obj_subd)
     bpy.data.meshes.remove(mesh_subd)
 
