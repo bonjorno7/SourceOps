@@ -335,7 +335,6 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
 
     # Remove temporary object and mesh, in that order
     mesh_subd = obj_subd.data
-    bpy.context.collection.objects.unlink(obj_subd)
     bpy.data.objects.remove(obj_subd)
     bpy.data.meshes.remove(mesh_subd)
 
