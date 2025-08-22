@@ -104,7 +104,7 @@ def setup_face_attribute(obj: bpy.types.Object):
 
     indices = [i for i in range(len(obj.data.polygons))]
     attribute = obj.data.attributes.new('original_face_index', 'INT', 'FACE')
-    attribute.data.foreach_set("value", indices)
+    attribute.data.foreach_set('value', indices)
     return attribute
 
 
