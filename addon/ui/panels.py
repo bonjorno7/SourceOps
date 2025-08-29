@@ -116,6 +116,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 sub.prop(model, 'rotation')
 
             col.prop(model, 'scale')
+            col.prop(model, 'mass')
 
         elif model and sourceops.panel == 'TEXTURES':
             box = layout.box()

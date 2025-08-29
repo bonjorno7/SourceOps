@@ -172,3 +172,10 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         description='$scale to put at the top of your QC files, this does not affect $origin or attachments',
         default=1.0,
     )
+
+    mass: bpy.props.IntProperty(
+        name='Model Mass',
+        description='$mass of the model, use 0 for $automass',
+        default=0,
+        min=0
+    )
