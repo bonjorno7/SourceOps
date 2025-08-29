@@ -90,6 +90,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
             col.prop(model, 'joints')
+            col.prop(model, 'mass')
 
             box = layout.box()
             row = box.row()
@@ -116,7 +117,6 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 sub.prop(model, 'rotation')
 
             col.prop(model, 'scale')
-            col.prop(model, 'mass')
 
         elif model and sourceops.panel == 'TEXTURES':
             box = layout.box()
