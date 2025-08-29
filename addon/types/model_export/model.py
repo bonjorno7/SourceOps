@@ -72,6 +72,7 @@ class Model:
         self.origin_z = model.origin_z
         self.rotation = model.rotation
         self.scale = model.scale
+        self.mass = model.mass
 
     def export_meshes(self):
         self.ensure_modelsrc_folder()
@@ -243,6 +244,8 @@ class Model:
             command = 'collisionjoints' if self.joints else 'collisionmodel'
             qc.write(f'${command} "{name}.{self.mesh_type}"' + ' {\n')
             command = 'concaveperjoint' if self.joints else 'concave'
+            qc.write(f'    ${command}\n')
+            command = f'mass {self.mass}' if self.mass > 0 else 'automass'
             qc.write(f'    ${command}\n')
             qc.write('    $maxconvexpieces 10000\n')
             qc.write('}')
