@@ -60,6 +60,7 @@ class Model:
         self.static = model.static
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
+        self.mass = model.mass
 
         self.prepend_armature = model.prepend_armature
         self.ignore_transforms = model.ignore_transforms
@@ -72,7 +73,6 @@ class Model:
         self.origin_z = model.origin_z
         self.rotation = model.rotation
         self.scale = model.scale
-        self.mass = model.mass
 
     def export_meshes(self):
         self.ensure_modelsrc_folder()
