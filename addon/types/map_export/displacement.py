@@ -4,6 +4,7 @@ import mathutils
 import math
 import typing
 from .. pyvmf import pyvmf
+from ... utils import map_export
 
 
 def get_levels_and_width(obj: bpy.types.Object):
@@ -125,21 +126,34 @@ def setup_subd_mod(obj: bpy.types.Object, levels: int):
     return mod
 
 
-def setup_uv_layer(obj: bpy.types.Object):
+def setup_uv_layers(obj: bpy.types.Object):
     '''Add a reset UV layer to an object.'''
 
-    # Remove existing UV layers
+    original_uvs = []
+
+    # Copy UV coordinates and remove existing UV layers
     for uv_layer in obj.data.uv_layers[:]:
+        if not original_uvs and uv_layer.active_render:
+            original_uvs = [0.0] * 2 * len(uv_layer.uv)
+            uv_layer.uv.foreach_get('vector', original_uvs)
+
         obj.data.uv_layers.remove(uv_layer)
 
-    # Create new UV layer
-    uv_layer = obj.data.uv_layers.new()
+    # Create new UV layer where each quad fills the entire 0-1 space
+    row_and_column_uv_layer = obj.data.uv_layers.new()
 
-    # Return UV layer
-    return uv_layer
+    # Recreate existing UV layer if necessary
+    if original_uvs:
+        texture_uv_layer = obj.data.uv_layers.new()
+        texture_uv_layer.uv.foreach_set('vector', original_uvs)
+    else:
+        texture_uv_layer = None
+
+    # Return UV layers
+    return row_and_column_uv_layer, texture_uv_layer
 
 
-def calc_uv_axes(a: mathutils.Vector, b: mathutils.Vector, c: mathutils.Vector, texture_scale: float):
+def calc_auto_uv_axes(a: mathutils.Vector, b: mathutils.Vector, c: mathutils.Vector, texture_scale: float):
     '''Calculate U and V axes for brush plane'''
 
     # Subtract points to calculate edge vectors
@@ -196,8 +210,8 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     obj_subd = obj.copy()
     setup_subd_mesh(obj_subd, matrix, space)
 
-    # Setup new UV layer, face maps, and subsurf modifier
-    uv_layer = setup_uv_layer(obj_subd)
+    # Setup UV layers, face maps, and subsurf modifier
+    row_and_column_uv_layer, texture_uv_layer = setup_uv_layers(obj_subd)
     face_maps = setup_face_maps(obj_subd) if bpy.app.version[0] < 4 else setup_face_attribute(obj_subd)
     mod_subd = setup_subd_mod(obj_subd, levels)
 
@@ -209,8 +223,9 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
     bm_subd = bmesh.new()
     bm_subd.from_object(obj_subd, depsgraph)
 
-    # Get uv layer and face map layer from subd bmesh
-    uv_subd = bm_subd.loops.layers.uv.verify()
+    # Get uv layers and face map layer from subd bmesh
+    row_and_column_uv_subd = bm_subd.loops.layers.uv[row_and_column_uv_layer.name]
+    texture_uv_subd = bm_subd.loops.layers.uv[texture_uv_layer.name] if texture_uv_layer else None
     fm_subd = bm_subd.faces.layers.face_map.verify() if bpy.app.version[0] < 4 else bm_subd.faces.layers.int[face_maps.name]
 
     # Create bmesh from sculpted object and transform it
@@ -229,6 +244,8 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         'normals': [[None for x in range(width + 1)] for y in range(width + 1)],
         'lengths': [[None for x in range(width + 1)] for y in range(width + 1)],
         'material': 'dev/dev_blendmeasure'.upper(),
+        'texture_uvs': [None for i in range(3)],
+        'texture_size': -1,
     } for polygon in obj_subd.data.polygons]
 
     # Populate displacements with data from subd and mres faces
@@ -241,9 +258,9 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         for loop_subd, loop_mres in zip(face_subd.loops, face_mres.loops):
 
             # Get row and column for this point
-            uv = loop_subd[uv_subd].uv
-            y = round(uv[1] * width)
-            x = round(uv[0] * width)
+            row_and_column_uv = loop_subd[row_and_column_uv_subd].uv
+            y = round(row_and_column_uv[1] * width)
+            x = round(row_and_column_uv[0] * width)
 
             # Get verts for these loops
             vert_subd = loop_subd.vert
@@ -258,12 +275,15 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
             if x == 0 and y == 0:
                 displacements[z]['corners'][0] = vert_subd.co.copy()
                 displacements[z]['corners'][4] = vert_subd.co - face_subd.normal * 8
+                displacements[z]['texture_uvs'][0] = loop_subd[texture_uv_subd].uv if texture_uv_subd else None
             elif x == width and y == 0:
                 displacements[z]['corners'][1] = vert_subd.co.copy()
                 displacements[z]['corners'][5] = vert_subd.co - face_subd.normal * 8
+                displacements[z]['texture_uvs'][1] = loop_subd[texture_uv_subd].uv if texture_uv_subd else None
             elif x == width and y == width:
                 displacements[z]['corners'][2] = vert_subd.co.copy()
                 displacements[z]['corners'][6] = vert_subd.co - face_subd.normal * 8
+                displacements[z]['texture_uvs'][2] = loop_subd[texture_uv_subd].uv if texture_uv_subd else None
             elif x == 0 and y == width:
                 displacements[z]['corners'][3] = vert_subd.co.copy()
                 displacements[z]['corners'][7] = vert_subd.co - face_subd.normal * 8
@@ -278,6 +298,7 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
             # Use material if it exists
             if material:
                 displacement['material'] = material.name.upper()
+                displacement['texture_size'] = map_export.get_texture_size(obj, face)
 
     # Setup solids list
     solids = []
@@ -297,7 +318,15 @@ def convert_object(settings: typing.Any, obj: bpy.types.Object):
         f6 = pyvmf.Side(dic={'plane': f'({v1.x} {v1.y} {v1.z}) ({v8.x} {v8.y} {v8.z}) ({v4.x} {v4.y} {v4.z})'}) # Left
 
         # Set U axis, V axis, lightmap scale, and material for top face
-        f1.uaxis, f1.vaxis = calc_uv_axes(v1, v3, v2, settings.texture_scale)
+        if None in displacement['texture_uvs']:
+            f1.uaxis, f1.vaxis = calc_auto_uv_axes(v1, v3, v2, settings.texture_scale)
+        else:
+            uv1, uv2, uv3 = displacement['texture_uvs']
+            texture_size = displacement['texture_size']
+            texture_scale = settings.texture_scale
+            allow_skewed_textures = settings.allow_skewed_textures
+            f1.uaxis, f1.vaxis = map_export.calc_uv_axes(v1, v3, v2, uv1, uv3, uv2, allow_skewed_textures, texture_size, texture_scale)
+
         f1.lightmapscale = settings.lightmap_scale
         f1.material = displacement['material']
 
