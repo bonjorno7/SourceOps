@@ -146,12 +146,15 @@ def resolve(path):
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
 
+
 def get_wine(self):
-    if self.wine and pathlib.Path(self.wine).is_file():
-        wine_path = self.wine
-    elif shutil.which('wine').is_file():
-        wine_path = shutil.which('wine')
+    wine = pathlib.Path(self.wine)
+    which = pathlib.Path(shutil.which('wine'))
+
+    if wine.is_file():
+        return wine
+    elif which.is_file():
+        return which
     else:
         raise Exception('Wine executable not found. make sure Wine is installed and accesible by Blender')
-
-    return wine_path
+    

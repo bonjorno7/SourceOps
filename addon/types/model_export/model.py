@@ -364,15 +364,18 @@ class Model:
             # Use wine to run StudioMDL on Linux.
             # Wine tends to complain about the paths we feed StudioMDL.
             # So we use relatve paths working from the base directory of the game.
+
+            env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
                 cwd = self.game.parent
                 args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
                         '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+                env['WINEDEBUG'] = '-all'
             else:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
 
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
 
             while True:
                 code = pipe.returncode
@@ -404,17 +407,21 @@ class Model:
         # Use wine to run HLMV on Linux.
         # Wine tends to complain about the paths we feed HLMV.
         # So we use relatve paths working from the base directory of the game.
+
+        env = os.environ.copy()
+
         if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
             cwd = self.game.parent
             args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
                     str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+            env['WINEDEBUG'] = '-all'
         else:
             cwd = None
             args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
         if dx90.is_file():
             print(f'Viewing: {mdl}')
-            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
         else:
             return self.report(f'Failed to view: {mdl}')
 
