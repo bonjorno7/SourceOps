@@ -4,7 +4,7 @@ import unicodedata
 import platform
 import pathlib
 import traceback
-
+import shutil 
 
 def get_version():
     from ... import bl_info
@@ -145,3 +145,13 @@ def resolve(path):
 
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
+
+def get_wine(self):
+    if self.wine and pathlib.Path(self.wine).is_file():
+        wine_path = self.wine
+    elif shutil.which('wine').is_file():
+        wine_path = shutil.which('wine')
+    else:
+        raise Exception('Wine executable not found. make sure Wine is installed and accesible by Blender')
+
+    return wine_path
