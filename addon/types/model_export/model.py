@@ -7,24 +7,25 @@ from shutil import move
 from pathlib import Path
 from traceback import print_exc
 from ... utils import common
+from ... utils import game
 from . smd import SMD
 from . fbx import export_fbx
 
 
 class Model:
-    def __init__(self, game, model):
+    def __init__(self, gamedef, model):
         self.prefs = common.get_prefs(bpy.context)
         self.wine = Path(self.prefs.wine)
 
-        self.game = Path(game.game)
-        self.bin = Path(game.bin)
+        self.game = Path(gamedef.game)
+        self.bin = Path(gamedef.bin)
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
-            self.modelsrc = Path(game.modelsrc)
-        self.models = Path(game.models)
-        self.mapsrc = Path(game.mapsrc)
-        self.mesh_type = game.mesh_type
+            self.modelsrc = Path(gamedef.modelsrc)
+        self.models = Path(gamedef.models)
+        self.mapsrc = Path(gamedef.mapsrc)
+        self.mesh_type = gamedef.mesh_type
 
         self.name = Path(model.name).with_suffix('').as_posix()
         self.stem = common.clean_filename(Path(self.name).stem)
@@ -34,7 +35,7 @@ class Model:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
-        studiomdl = self.bin.joinpath('studiomdl.exe')
+        studiomdl = game.get_studiomdl_path(gamedef)
         quickmdl = self.bin.joinpath('quickmdl.exe')
         self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
 
@@ -403,7 +404,7 @@ class Model:
         # Use wine to run HLMV on Linux.
         # Wine tends to complain about the paths we feed HLMV.
         # So we use relatve paths working from the base directory of the game.
-        if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
+        if (os.name == 'posix') and (self.hlmv.suffix == '.exe'):
             cwd = self.game.parent
             args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
                     str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
