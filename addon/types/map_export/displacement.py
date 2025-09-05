@@ -134,8 +134,13 @@ def setup_uv_layers(obj: bpy.types.Object):
     # Copy UV coordinates and remove existing UV layers
     for uv_layer in obj.data.uv_layers[:]:
         if not original_uvs and uv_layer.active_render:
-            original_uvs = [0.0] * 2 * len(uv_layer.uv)
-            uv_layer.uv.foreach_get('vector', original_uvs)
+            if bpy.app.version[0] < 4:
+                original_uvs = [0.0] * 2 * len(uv_layer.data)
+                uv_layer.data.foreach_get('uv', original_uvs)
+
+            else:
+                original_uvs = [0.0] * 2 * len(uv_layer.uv)
+                uv_layer.uv.foreach_get('vector', original_uvs)
 
         obj.data.uv_layers.remove(uv_layer)
 
@@ -145,7 +150,11 @@ def setup_uv_layers(obj: bpy.types.Object):
     # Recreate existing UV layer if necessary
     if original_uvs:
         texture_uv_layer = obj.data.uv_layers.new()
-        texture_uv_layer.uv.foreach_set('vector', original_uvs)
+
+        if bpy.app.version[0] < 4:
+            texture_uv_layer.data.foreach_set('uv', original_uvs)
+        else:
+            texture_uv_layer.uv.foreach_set('vector', original_uvs)
     else:
         texture_uv_layer = None
 
