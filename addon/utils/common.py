@@ -149,11 +149,12 @@ def update_wine(self, context):
 
 def get_wine(self):
     wine = pathlib.Path(self.wine)
-    which = pathlib.Path(shutil.which('wine'))
+    which_path = shutil.which('wine')
+    which = pathlib.Path(which_path) if which_path is not None else None
 
     if wine.is_file():
         return wine
-    elif which.is_file():
+    elif which is not None and which.is_file():
         return which
     else:
         raise Exception('Wine executable not found. make sure Wine is installed and accesible by Blender')
