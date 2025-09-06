@@ -30,15 +30,14 @@ classes = (
     backup.SOURCEOPS_OT_RestorePreferences,
 )
 
+class_register, class_unregister = bpy.utils.register_classes_factory(classes)
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+    class_register()
 
     bpy.types.VIEW3D_MT_pose_context_menu.append(pose_bone_transforms.menu_func)
 
 def unregister():
     bpy.types.VIEW3D_MT_pose_context_menu.remove(pose_bone_transforms.menu_func)
 
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+    class_unregister()
