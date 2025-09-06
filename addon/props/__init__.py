@@ -6,6 +6,7 @@ from . event_props import SOURCEOPS_EventProps
 from . sequence_props import SOURCEOPS_SequenceProps
 from . skin_props import SOURCEOPS_SkinProps
 from . material_folder_props import SOURCEOPS_MaterialFolderProps
+from . lods_props import SOURCEOPS_LodItemProps, SOURCEOPS_ModelLodProps 
 from . model_props import SOURCEOPS_ModelProps
 from . game_props import SOURCEOPS_GameProps
 from . global_props import SOURCEOPS_GlobalProps
@@ -19,10 +20,12 @@ classes = (
     SOURCEOPS_SequenceProps,
     SOURCEOPS_SkinProps,
     SOURCEOPS_MaterialFolderProps,
+    SOURCEOPS_LodItemProps,
+    SOURCEOPS_ModelLodProps,
     SOURCEOPS_ModelProps,
     SOURCEOPS_GameProps,
     SOURCEOPS_GlobalProps,
-    SOURCEOPS_AddonPrefs,
+    SOURCEOPS_AddonPrefs
 )
 
 class_register, class_unregister = bpy.utils.register_classes_factory(classes)
