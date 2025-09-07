@@ -84,5 +84,5 @@ class SOURCEOPS_UL_LodsReplaceList(bpy.types.UIList):
         row = layout.row()
 
 
-        row.prop(item, 'source', text='Replace', emboss=True, translate=False)
-        row.prop(item, 'target', text='With', emboss=True, translate=False)
+        row.prop(item, 'source', text='Replace', emboss=False, translate=False)
+        row.prop(item, 'target', text='With', emboss=False, translate=False)

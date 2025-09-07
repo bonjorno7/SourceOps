@@ -99,6 +99,13 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col = row.column(align=True)
                 self.draw_list_buttons(col, 'LODS_REPLACE')
 
+                replacemodel = lods.replacemodel_items[lods.replacemodel_index] if lods.replacemodel_items else None
+
+                if replacemodel:
+                    col = common.split_column(box)
+                    col.prop(replacemodel, 'source')
+                    col.prop(replacemodel, 'target')
+
 
         elif model and sourceops.panel == 'MODEL_OPTIONS':
             box = layout.box()

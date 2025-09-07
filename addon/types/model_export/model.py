@@ -110,13 +110,18 @@ class Model:
             for lod in self.lods_items:
                 if lod.replacemodel_items:
                     for replace in lod.replacemodel_items:
+                        if replace.target is None:
+                            #We need a blank
+                            self.export_anim(self.armature, None, self.directory.joinpath('blank.SMD'))
+                            break
+
+            for lod in self.lods_items:
+                if lod.replacemodel_items:
+                    for replace in lod.replacemodel_items:
                         if replace.source and replace.target:
                             objects = self.get_all_objects(replace.target)
                             path = self.get_body_path(replace.target)
                             self.export_mesh(self.armature, objects, path)
-
-
-
 
         if self.stacking:
             for collection in self.stacking.children:
@@ -250,7 +255,6 @@ class Model:
             qc.write('\n')
 
 
-
         if self.lods_items:
             for lod in self.lods_items:
                 if lod.replacemodel_items:
@@ -268,13 +272,9 @@ class Model:
                                 target_name = common.clean_filename(replace.target.name)
                                 qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "{target_name}.{self.mesh_type}"\n')
                             else:
-                                qc.write(f'    replacemodel "{source_name}" blank\n')
+                                qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "blank.SMD"\n')
 
                     qc.write('}\n')
-
-
-                
-
 
 
         if not self.rename_material == '':

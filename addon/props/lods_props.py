@@ -2,6 +2,9 @@ import bpy
 
 class SOURCEOPS_LodItemProps(bpy.types.PropertyGroup):
 
+    def poll_source(self, object):
+        return object not in (self.target)
+
     source: bpy.props.PointerProperty(
         name='Source',
         description='Replace source',
