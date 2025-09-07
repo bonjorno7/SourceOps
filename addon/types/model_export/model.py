@@ -111,7 +111,7 @@ class Model:
                 if lod.replacemodel_items:
                     for replace in lod.replacemodel_items:
                         if replace.target is None:
-                            #We need a blank
+                            # We need a blank
                             self.export_anim(self.armature, None, self.directory.joinpath('blank.SMD'))
                             break
 

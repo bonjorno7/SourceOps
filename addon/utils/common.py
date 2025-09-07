@@ -164,5 +164,5 @@ def get_wine(self):
     elif which is not None and which.is_file():
         return which
     else:
-        raise Exception('Wine executable not found. make sure Wine is installed and accessible by Blender')
+        raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
     
