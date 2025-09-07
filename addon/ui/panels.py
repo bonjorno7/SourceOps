@@ -17,6 +17,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
         game = common.get_game(prefs)
         sourceops = common.get_globals(context)
         model = common.get_model(sourceops)
+        lods = common.get_lods(model)
         material_folder = common.get_material_folder(model)
         skin = common.get_skin(model)
         sequence = common.get_sequence(model)
@@ -55,6 +56,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'mapsrc')
                 col.prop(game, 'mesh_type')
 
+
         elif sourceops and sourceops.panel == 'MODELS':
             box = layout.box()
             row = box.row()
@@ -74,6 +76,29 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(model, 'collision')
                 col.prop(model, 'bodygroups')
                 col.prop(model, 'stacking')
+
+
+        elif model and sourceops.panel == 'MODEL_LODS':
+            box = layout.box()
+            row = box.row()
+            row.alignment = 'CENTER'
+            row.label(text='Level of Details (LODs)')
+
+            row = box.row()
+            row.template_list('SOURCEOPS_UL_ModelLodsList', '', model, 'lods_items', model, 'lods_index', rows=5)
+            col = row.column(align=True)
+            self.draw_list_buttons(col, 'MODEL_LODS')
+            
+            col = common.split_column(box)
+            col.prop(lods, 'distance')
+
+            if lods:
+                box = layout.box()
+                row = box.row()
+                row.template_list('SOURCEOPS_UL_LodsReplaceList', '', lods, 'replacemodel_items', lods, 'replacemodel_index', rows=5)
+                col = row.column(align=True)
+                self.draw_list_buttons(col, 'LODS_REPLACE')
+
 
         elif model and sourceops.panel == 'MODEL_OPTIONS':
             box = layout.box()
@@ -118,6 +143,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             col.prop(model, 'scale')
 
+
         elif model and sourceops.panel == 'TEXTURES':
             box = layout.box()
             row = box.row()
@@ -146,6 +172,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             if skin:
                 col = common.split_column(box)
                 col.prop(skin, 'name')
+
 
         elif model and sourceops.panel == 'SEQUENCES':
             box = layout.box()
@@ -179,6 +206,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(sequence, 'snap')
                 col.prop(sequence, 'loop')
 
+
         elif sequence and sourceops.panel == 'EVENTS':
             box = layout.box()
             row = box.row()
@@ -197,6 +225,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(event, 'frame')
                 col.prop(event, 'value')
 
+
         elif model and sourceops.panel == 'PARTICLES':
             box = layout.box()
             row = box.row()
@@ -213,6 +242,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(particle, 'name')
                 col.prop(particle, 'attachment_type')
                 col.prop(particle, 'attachment_point')
+
 
         elif model and sourceops.panel == 'ATTACHMENTS':
             box = layout.box()
@@ -238,7 +268,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(attachment, 'absolute')
                 col.prop(attachment, 'rigid')
 
-        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS', 'PARTICLES'}:
+        if sourceops.panel in {'GAMES', 'MODELS', 'MODEL_LODS', 'MODEL_OPTIONS', 'TEXTURES', 'SEQUENCES', 'EVENTS', 'ATTACHMENTS', 'PARTICLES'}:
             box = layout.box()
             row = box.row()
             row.scale_x = row.scale_y = 1.5

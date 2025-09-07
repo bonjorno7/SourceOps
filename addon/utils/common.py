@@ -38,6 +38,13 @@ def get_model(sourceops):
         return None
 
 
+def get_lods(model):
+    try:
+        return model.lods_items[model.lods_index]
+    except:
+        return None
+
+
 def get_material_folder(model):
     try:
         return model.material_folder_items[model.material_folder_index]

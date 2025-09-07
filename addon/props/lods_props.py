@@ -8,6 +8,9 @@ class SOURCEOPS_LodItemProps(bpy.types.PropertyGroup):
         type=bpy.types.Collection,
     )
 
+    def poll_target(self, object):
+        return object not in (self.source)
+
     target: bpy.props.PointerProperty(
         name='Replace target',
         description='Replacment for',
@@ -22,6 +25,6 @@ class SOURCEOPS_ModelLodProps(bpy.types.PropertyGroup):
         description='Distance to switch to this LOD',
         min=0,
     )
-
+ 
     replacemodel_items: bpy.props.CollectionProperty(type=SOURCEOPS_LodItemProps)
     replacemodel_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')
