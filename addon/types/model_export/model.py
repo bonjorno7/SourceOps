@@ -55,6 +55,9 @@ class Model:
         self.bodygroups = model.bodygroups
         self.stacking = model.stacking
 
+        self.lods_items = model.lods_items
+        
+
         self.rename_material = model.rename_material
         self.surface = model.surface
         self.glass = model.glass
@@ -102,6 +105,18 @@ class Model:
                     objects = self.get_all_objects(collection)
                     path = self.get_body_path(collection)
                     self.export_mesh(self.armature, objects, path)
+        
+        if self.lods_items:
+            for lod in self.lods_items:
+                if lod.replacemodel_items:
+                    for replace in lod.replacemodel_items:
+                        if replace.source and replace.target:
+                            objects = self.get_all_objects(replace.target)
+                            path = self.get_body_path(replace.target)
+                            self.export_mesh(self.armature, objects, path)
+
+
+
 
         if self.stacking:
             for collection in self.stacking.children:
@@ -233,6 +248,34 @@ class Model:
             name = common.clean_filename(self.reference.name)
             qc.write(f'$body "{name}" "{name}.{self.mesh_type}"')
             qc.write('\n')
+
+
+
+        if self.lods_items:
+            for lod in self.lods_items:
+                if lod.replacemodel_items:
+
+                    qc.write('\n')
+                    qc.write(f'$lod {lod.distance}\n')
+                    qc.write('{\n')
+
+                    for replace in lod.replacemodel_items:
+                        if replace.source:
+
+                            source_name = common.clean_filename(replace.source.name)
+
+                            if replace.target:
+                                target_name = common.clean_filename(replace.target.name)
+                                qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "{target_name}.{self.mesh_type}"\n')
+                            else:
+                                qc.write(f'    replacemodel "{source_name}" blank\n')
+
+                    qc.write('}\n')
+
+
+                
+
+
 
         if not self.rename_material == '':
             qc.write('\n')
