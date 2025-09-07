@@ -6,7 +6,7 @@ class SOURCEOPS_LodItemProps(bpy.types.PropertyGroup):
         return object not in (self.target)
 
     source: bpy.props.PointerProperty(
-        name='Source',
+        name='Replacemodel',
         description='Replace source',
         type=bpy.types.Collection,
     )
@@ -15,8 +15,8 @@ class SOURCEOPS_LodItemProps(bpy.types.PropertyGroup):
         return object not in (self.source)
 
     target: bpy.props.PointerProperty(
-        name='Replace target',
-        description='Replacment for',
+        name='Replacemodel Target',
+        description='Replace target, keep empty to use blank model (hides the mesh)',
         type=bpy.types.Collection,
     )
 
