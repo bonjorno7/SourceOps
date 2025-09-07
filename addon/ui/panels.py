@@ -94,6 +94,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             if lods:
                 box = layout.box()
+
+                row = box.row()
+                row.alignment = 'CENTER'
+                row.label(text='Replacemodels')
+
                 row = box.row()
                 row.template_list('SOURCEOPS_UL_LodsReplaceList', '', lods, 'replacemodel_items', lods, 'replacemodel_index', rows=5)
                 col = row.column(align=True)

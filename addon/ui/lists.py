@@ -79,4 +79,4 @@ class SOURCEOPS_UL_LodsReplaceList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         row = layout.row()
         row.prop(item, 'source', text='Replace', emboss=False, translate=False)
-        row.prop(item, 'target', text='With', emboss=False, translate=False)
+        row.prop(item, 'target', text='------>', emboss=False, translate=False)
