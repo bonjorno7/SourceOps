@@ -19,6 +19,8 @@ class Model:
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
+        self.studiomdl = Path(game.studiomdl)
+        self.hlmv = Path(game.hlmv)
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
@@ -35,13 +37,6 @@ class Model:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
-        studiomdl = self.bin.joinpath('studiomdl.exe')
-        quickmdl = self.bin.joinpath('quickmdl.exe')
-        self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
-
-        hlvm = self.bin.joinpath('hlmv.exe')
-        hlvmplusplus = self.bin.joinpath('hlmvplusplus.exe')
-        self.hlmv = hlvmplusplus if hlvmplusplus.is_file() else hlvm
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items

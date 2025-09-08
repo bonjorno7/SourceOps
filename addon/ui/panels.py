@@ -50,6 +50,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
                 col.prop(game, 'name')
                 col.prop(game, 'game')
                 col.prop(game, 'bin')
+                col.prop(game, 'studiomdl')
+                col.prop(game, 'hlmv')
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
