@@ -1,6 +1,5 @@
 import bpy
 
-
 class SOURCEOPS_UL_GameList(bpy.types.UIList):
     bl_idname = 'SOURCEOPS_UL_GameList'
 
@@ -62,3 +61,22 @@ class SOURCEOPS_UL_MapList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
         layout.prop(item, 'name', text='', emboss=False, translate=False)
+
+
+class SOURCEOPS_UL_ModelLodsList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_ModelLodsList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        row = layout.row(align=True)
+        row.alignment = 'CENTER'
+        row.label(text=f'Distance')
+        row.prop(item, 'distance', text='', emboss=False, translate=False)
+
+
+class SOURCEOPS_UL_LodsReplaceList(bpy.types.UIList):
+    bl_idname = 'SOURCEOPS_UL_LodsReplaceList'
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+        row = layout.row()
+        row.prop(item, 'source', text='Replace', emboss=False, translate=False)
+        row.prop(item, 'target', text='------>', emboss=False, translate=False)

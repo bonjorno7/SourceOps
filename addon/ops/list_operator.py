@@ -36,6 +36,8 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         items=[
             ('GAMES', 'Games', 'Operate on games'),
             ('MODELS', 'Models', 'Operate on models'),
+            ('MODEL_LODS', 'Model LODs', 'Operate on model LODs'),
+            ("LODS_REPLACE", "LOD Replace", "Operate on LOD replace items"),
             ('MATERIAL_FOLDERS', 'Material Folders', 'Operate on material folders'),
             ('SKINS', 'Skins', 'Operate on skins'),
             ('SEQUENCES', 'Sequences', 'Operate on sequences'),
@@ -85,6 +87,7 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         game = common.get_game(prefs)
         sourceops = common.get_globals(context)
         model = common.get_model(sourceops)
+        lods = common.get_lods(model)
         sequence = common.get_sequence(model)
 
         mode_dict = {
@@ -98,6 +101,8 @@ class SOURCEOPS_OT_ListOperator(bpy.types.Operator):
         item_dict = {
             'GAMES': (prefs, 'game_items', 'game_index'),
             'MODELS': (sourceops, 'model_items', 'model_index'),
+            "MODEL_LODS": (model, 'lods_items', 'lods_index'),
+            "LODS_REPLACE": (lods, 'replacemodel_items', 'replacemodel_index'),
             'MATERIAL_FOLDERS': (model, 'material_folder_items', 'material_folder_index'),
             'SKINS': (model, 'skin_items', 'skin_index'),
             'SEQUENCES': (model, 'sequence_items', 'sequence_index'),

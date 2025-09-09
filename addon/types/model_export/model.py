@@ -14,7 +14,8 @@ from . fbx import export_fbx
 class Model:
     def __init__(self, game, model):
         self.prefs = common.get_prefs(bpy.context)
-        self.wine = Path(self.prefs.wine)
+        self.wine = Path(common.get_wine(self.prefs))
+        print(f'Using wine: {self.wine}')
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
@@ -53,6 +54,9 @@ class Model:
         self.collision = model.collision
         self.bodygroups = model.bodygroups
         self.stacking = model.stacking
+
+        self.lods_items = model.lods_items
+        
 
         self.rename_material = model.rename_material
         self.surface = model.surface
@@ -101,6 +105,23 @@ class Model:
                     objects = self.get_all_objects(collection)
                     path = self.get_body_path(collection)
                     self.export_mesh(self.armature, objects, path)
+        
+        if self.lods_items:
+            for lod in self.lods_items:
+                if lod.replacemodel_items:
+                    for replace in lod.replacemodel_items:
+                        if replace.target is None:
+                            # We need a blank
+                            self.export_anim(self.armature, None, self.directory.joinpath('blank.SMD'))
+                            break
+
+            for lod in self.lods_items:
+                if lod.replacemodel_items:
+                    for replace in lod.replacemodel_items:
+                        if replace.source and replace.target:
+                            objects = self.get_all_objects(replace.target)
+                            path = self.get_body_path(replace.target)
+                            self.export_mesh(self.armature, objects, path)
 
         if self.stacking:
             for collection in self.stacking.children:
@@ -233,6 +254,29 @@ class Model:
             qc.write(f'$body "{name}" "{name}.{self.mesh_type}"')
             qc.write('\n')
 
+
+        if self.lods_items:
+            for lod in self.lods_items:
+                if lod.replacemodel_items:
+
+                    qc.write('\n')
+                    qc.write(f'$lod {lod.distance}\n')
+                    qc.write('{\n')
+
+                    for replace in lod.replacemodel_items:
+                        if replace.source:
+
+                            source_name = common.clean_filename(replace.source.name)
+
+                            if replace.target:
+                                target_name = common.clean_filename(replace.target.name)
+                                qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "{target_name}.{self.mesh_type}"\n')
+                            else:
+                                qc.write(f'    replacemodel "{source_name}.{self.mesh_type}" "blank.SMD"\n')
+
+                    qc.write('}\n')
+
+
         if not self.rename_material == '':
             qc.write('\n')
             qc.write(f'$renamematerial {self.rename_material}')
@@ -363,15 +407,18 @@ class Model:
             # Use wine to run StudioMDL on Linux.
             # Wine tends to complain about the paths we feed StudioMDL.
             # So we use relatve paths working from the base directory of the game.
+
+            env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
                 cwd = self.game.parent
                 args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
                         '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+                env['WINEDEBUG'] = '-all'
             else:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
 
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
 
             while True:
                 code = pipe.returncode
@@ -403,17 +450,21 @@ class Model:
         # Use wine to run HLMV on Linux.
         # Wine tends to complain about the paths we feed HLMV.
         # So we use relatve paths working from the base directory of the game.
+
+        env = os.environ.copy()
+
         if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
             cwd = self.game.parent
             args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
                     str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+            env['WINEDEBUG'] = '-all'
         else:
             cwd = None
             args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
         if dx90.is_file():
             print(f'Viewing: {mdl}')
-            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
         else:
             return self.report(f'Failed to view: {mdl}')
 

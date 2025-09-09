@@ -1,0 +1,33 @@
+import bpy
+
+class SOURCEOPS_LodItemProps(bpy.types.PropertyGroup):
+
+    def poll_source(self, object):
+        return object not in (self.target)
+
+    source: bpy.props.PointerProperty(
+        name='Reference',
+        description='Replace source',
+        type=bpy.types.Collection,
+    )
+
+    def poll_target(self, object):
+        return object not in (self.source)
+
+    target: bpy.props.PointerProperty(
+        name='Target',
+        description='Replace target, keep empty to use blank model (hides the mesh)',
+        type=bpy.types.Collection,
+    )
+
+
+class SOURCEOPS_ModelLodProps(bpy.types.PropertyGroup):
+
+    distance: bpy.props.IntProperty(
+        name='Distance',
+        description='Distance to switch to this LOD',
+        min=0,
+    )
+ 
+    replacemodel_items: bpy.props.CollectionProperty(type=SOURCEOPS_LodItemProps)
+    replacemodel_index: bpy.props.IntProperty(default=0, name='Ctrl click to rename')

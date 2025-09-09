@@ -4,7 +4,7 @@ import unicodedata
 import platform
 import pathlib
 import traceback
-
+import shutil 
 
 def get_version():
     from ... import bl_info
@@ -34,6 +34,13 @@ def get_globals(context):
 def get_model(sourceops):
     try:
         return sourceops.model_items[sourceops.model_index]
+    except:
+        return None
+
+
+def get_lods(model):
+    try:
+        return model.lods_items[model.lods_index]
     except:
         return None
 
@@ -145,3 +152,17 @@ def resolve(path):
 
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
+
+
+def get_wine(self):
+    wine = pathlib.Path(self.wine)
+    which_path = shutil.which('wine')
+    which = pathlib.Path(which_path) if which_path is not None else None
+
+    if wine.is_file():
+        return wine
+    elif which is not None and which.is_file():
+        return which
+    else:
+        raise Exception('Wine executable not found. Make sure Wine is installed and accessible by Blender')
+    

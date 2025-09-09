@@ -8,30 +8,31 @@ from . lists import SOURCEOPS_UL_EventList
 from . lists import SOURCEOPS_UL_AttachmentList
 from . lists import SOURCEOPS_UL_ParticleList
 from . lists import SOURCEOPS_UL_MapList
+from . lists import SOURCEOPS_UL_ModelLodsList
+from . lists import SOURCEOPS_UL_LodsReplaceList
 from . panels import SOURCEOPS_PT_MainPanel
+
+classes = (
+    SOURCEOPS_UL_GameList,
+    SOURCEOPS_UL_ModelList,
+    SOURCEOPS_UL_MaterialFolderList,
+    SOURCEOPS_UL_SkinList,
+    SOURCEOPS_UL_SequenceList,
+    SOURCEOPS_UL_EventList,
+    SOURCEOPS_UL_AttachmentList,
+    SOURCEOPS_UL_ParticleList,
+    SOURCEOPS_UL_MapList,
+    SOURCEOPS_PT_MainPanel,
+    SOURCEOPS_UL_ModelLodsList,
+    SOURCEOPS_UL_LodsReplaceList,
+)
+
+class_register, class_unregister = bpy.utils.register_classes_factory(classes)
 
 
 def register():
-    bpy.utils.register_class(SOURCEOPS_UL_GameList)
-    bpy.utils.register_class(SOURCEOPS_UL_ModelList)
-    bpy.utils.register_class(SOURCEOPS_UL_MaterialFolderList)
-    bpy.utils.register_class(SOURCEOPS_UL_SkinList)
-    bpy.utils.register_class(SOURCEOPS_UL_SequenceList)
-    bpy.utils.register_class(SOURCEOPS_UL_EventList)
-    bpy.utils.register_class(SOURCEOPS_UL_AttachmentList)
-    bpy.utils.register_class(SOURCEOPS_UL_ParticleList)
-    bpy.utils.register_class(SOURCEOPS_UL_MapList)
-    bpy.utils.register_class(SOURCEOPS_PT_MainPanel)
+    class_register()
 
 
 def unregister():
-    bpy.utils.unregister_class(SOURCEOPS_PT_MainPanel)
-    bpy.utils.unregister_class(SOURCEOPS_UL_MapList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_AttachmentList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_ParticleList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_EventList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_SequenceList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_SkinList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_MaterialFolderList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_ModelList)
-    bpy.utils.unregister_class(SOURCEOPS_UL_GameList)
+    class_unregister()
