@@ -89,12 +89,11 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             col = row.column(align=True)
             self.draw_list_buttons(col, 'MODEL_LODS')
             
-            col = common.split_column(box)
-            col.prop(lods, 'distance')
-
             if lods:
-                box = layout.box()
+                col = common.split_column(box)
+                col.prop(lods, 'distance')
 
+                box = layout.box()
                 row = box.row()
                 row.alignment = 'CENTER'
                 row.label(text='Replacemodels')
