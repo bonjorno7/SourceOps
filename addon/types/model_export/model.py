@@ -56,6 +56,7 @@ class Model:
         self.static = model.static
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
+        self.illumposition = common.get_illumposition(model)
         self.mass = model.mass
 
         self.prepend_armature = model.prepend_armature
@@ -220,7 +221,7 @@ class Model:
             qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {self.scale:.6f}')
+        qc.write(f'$scale {self.scale:.4f}')
         qc.write('\n')
 
         if self.reference:
@@ -232,6 +233,12 @@ class Model:
         if not self.rename_material == '':
             qc.write('\n')
             qc.write(f'$renamematerial {self.rename_material}')
+            qc.write('\n')
+
+        if self.illumposition:
+            print("Illumposition: ", self.illumposition)
+            qc.write('\n')
+            qc.write(f'$illumposition {self.illumposition[0]:.6f} {self.illumposition.y:.6f} {self.illumposition.z:.6f}')
             qc.write('\n')
 
         if self.collision:
