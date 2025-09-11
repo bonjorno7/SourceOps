@@ -46,13 +46,18 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             self.draw_list_buttons(col, 'GAMES')
 
             if game:
-                col = common.split_column(box)
+                col = common.align_column(box)
                 col.prop(game, 'name')
                 col.prop(game, 'game')
+                col = common.align_column(box)
                 col.prop(game, 'bin')
+                col.prop(game, 'studiomdl')
+                col.prop(game, 'hlmv')
+                col = common.align_column(box)
                 col.prop(game, 'modelsrc')
                 col.prop(game, 'models')
                 col.prop(game, 'mapsrc')
+                col = common.split_column(box)
                 col.prop(game, 'mesh_type')
 
         elif sourceops and sourceops.panel == 'MODELS':
@@ -90,6 +95,8 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
             row.enabled = model.static
             row.prop(model, 'static_prop_combine')
             col.prop(model, 'joints')
+            col.prop(model, 'illumposition_source')
+            col.prop(model, 'illumposition_vector') if model.illumposition_source == 'MANUAL' else None
             col.prop(model, 'mass')
 
             box = layout.box()
@@ -110,9 +117,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             else:
                 align = sub.column(align=True)
-                align.prop(model, 'origin_x', text='Origin X')
-                align.prop(model, 'origin_y', text='Y')
-                align.prop(model, 'origin_z', text='Z')
+                align.prop(model, 'origin', text='Origin')
 
                 sub.prop(model, 'rotation')
 

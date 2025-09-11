@@ -4,7 +4,10 @@ import unicodedata
 import platform
 import pathlib
 import traceback
+import shutil
+import bmesh
 
+from mathutils import Vector
 
 def get_version():
     from ... import bl_info
@@ -91,6 +94,11 @@ def split_column(layout):
     col.use_property_decorate = False
     return col
 
+def align_column(layout):
+    col = layout.column(align=True)
+    col.use_property_split = True
+    col.use_property_decorate = False
+    return col
 
 filename_chars_valid = '-_.() %s%s' % (string.ascii_letters, string.digits)
 filename_chars_replace = ' '
@@ -143,5 +151,67 @@ def resolve(path):
         return ''
 
 
+def get_illumposition(model):
+
+    def illumpos_from_obj(obj):
+        if obj.type != 'MESH':
+            return None
+    
+        scene = bpy.context.scene
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        current_frame = scene.frame_current
+        scene.frame_set(0)
+        eval_obj = obj.evaluated_get(depsgraph)
+        mesh = eval_obj.to_mesh()
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+    
+        illum_center = None
+        if bm.verts:
+            local_center = sum((v.co for v in bm.verts), Vector()) / len(bm.verts)
+            illum_center = eval_obj.matrix_world @ local_center
+    
+        bm.free()
+        eval_obj.to_mesh_clear()
+        scene.frame_set(current_frame)
+    
+        return illum_center
+    
+    def get_collection_illumpos(collection):
+        centers = []
+    
+        for obj in collection.all_objects:
+            illum = illumpos_from_obj(obj)
+            if illum is not None:
+                centers.append(illum)
+    
+        if centers:
+            return sum(centers, Vector()) / len(centers)
+        return None
+
+
+    if model.illumposition_source == 'MANUAL':
+        return Vector(model.illumposition_vector)
+    elif model.illumposition_source == 'REFERENCE':
+        return Vector(get_collection_illumpos(model.reference)) if model.reference else None
+    elif model.illumposition_source == 'COLLISION':
+        return Vector(get_collection_illumpos(model.collision)) if model.collision else None
+    else:
+        return None
+
+
 def update_wine(self, context):
     self['wine'] = resolve(self.wine)
+
+def get_wine(self):
+    wine = pathlib.Path(self.wine)
+    which_path = shutil.which('wine')
+    which = pathlib.Path(which_path) if which_path is not None else None
+
+    if wine.is_file():
+        return wine
+    elif which is not None and which.is_file():
+        return which
+    else:
+        raise Exception('Wine executable not found. make sure Wine is installed and accessible by Blender')
+    

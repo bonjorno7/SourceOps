@@ -23,6 +23,20 @@ class SOURCEOPS_GameProps(bpy.types.PropertyGroup):
         update=utils.game.update_bin,
     )
 
+    studiomdl: bpy.props.StringProperty(
+        name='StudioMDL',
+        description='Path to your StudioMDL executable, used for compiling models',
+        subtype='FILE_PATH',
+        update=utils.game.update_studiomdl,
+    )
+
+    hlmv: bpy.props.StringProperty(
+        name='HLMV',
+        description='Path to your HLMV executable, used for previewing models',
+        subtype='FILE_PATH',
+        update=utils.game.update_hlmv,
+    )
+
     modelsrc: bpy.props.StringProperty(
         name='ModelSrc',
         description='Path to your modelsrc folder, exported QC/SMD/FBX files go here',

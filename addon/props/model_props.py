@@ -116,6 +116,27 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         default=False,
     )
 
+
+    illumposition_source: bpy.props.EnumProperty(
+        name='IllumPosition Source',
+        description='Method of specifying $illumposition.\nEither manually specified in this panel, or via an object',
+        items=[
+            ('MANUAL', 'Manual Input', 'Specify the position manually in this panel'),
+            ('REFERENCE', 'Reference Object', 'Use the reference object\'s location'),
+            ('COLLISION', 'Collision Object', 'Use the collision object\'s location'),
+            ('NONE', 'None', 'Do not use $illumposition'),
+        ],
+        default='REFERENCE',
+    )
+
+    illumposition_vector: bpy.props.FloatVectorProperty(
+        name='IllumPosition',
+        description='$illumposition, used for lighting the model in game, leave at 0,0,0 for default',
+        default=(0.0, 0.0, 0.0),
+        size=3,
+    )
+
+
     mass: bpy.props.IntProperty(
         name='Model Mass',
         description='$mass of the model, use 0 for $automass',
@@ -150,22 +171,11 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         type=bpy.types.Object,
     )
 
-    origin_x: bpy.props.FloatProperty(
-        name='Origin +X',
-        description='Translation on the X axis for $origin in the QC file',
-        default=0.0,
-    )
-
-    origin_y: bpy.props.FloatProperty(
-        name='Origin +Y',
-        description='Translation on the Y axis for $origin in the QC file',
-        default=0.0,
-    )
-
-    origin_z: bpy.props.FloatProperty(
-        name='Origin Z',
-        description='Translation on the Z axis for $origin in the QC file',
-        default=0.0,
+    origin: bpy.props.FloatVectorProperty(
+        name='Origin',
+        description='The location of the $origin in the QC file, this is applied before rotation',
+        default=(0.0, 0.0, 0.0),
+        size=3,
     )
 
     rotation: bpy.props.FloatProperty(

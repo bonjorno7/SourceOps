@@ -2,6 +2,7 @@ import bpy
 import time
 import subprocess
 import os
+from mathutils import Vector
 from math import degrees
 from shutil import move
 from pathlib import Path
@@ -11,13 +12,17 @@ from . smd import SMD
 from . fbx import export_fbx
 
 
+
 class Model:
     def __init__(self, game, model):
         self.prefs = common.get_prefs(bpy.context)
-        self.wine = Path(self.prefs.wine)
+        self.wine = Path(common.get_wine(self.prefs))
+        print(f'Using wine: {self.wine}')
 
         self.game = Path(game.game)
         self.bin = Path(game.bin)
+        self.studiomdl = Path(game.studiomdl)
+        self.hlmv = Path(game.hlmv)
         if model.static and model.static_prop_combine:
             self.modelsrc = self.game.parent.parent.joinpath('content', self.game.name, 'models')
         else:
@@ -34,13 +39,6 @@ class Model:
             directory = self.modelsrc.joinpath(self.name)
         self.directory = common.verify_folder(directory)
 
-        studiomdl = self.bin.joinpath('studiomdl.exe')
-        quickmdl = self.bin.joinpath('quickmdl.exe')
-        self.studiomdl = quickmdl if quickmdl.is_file() else studiomdl
-
-        hlvm = self.bin.joinpath('hlmv.exe')
-        hlvmplusplus = self.bin.joinpath('hlmvplusplus.exe')
-        self.hlmv = hlvmplusplus if hlvmplusplus.is_file() else hlvm
 
         self.material_folder_items = model.material_folder_items
         self.skin_items = model.skin_items
@@ -60,6 +58,7 @@ class Model:
         self.static = model.static
         self.static_prop_combine = model.static_prop_combine
         self.joints = model.joints
+        self.illumposition = common.get_illumposition(model)
         self.mass = model.mass
 
         self.prepend_armature = model.prepend_armature
@@ -68,9 +67,7 @@ class Model:
         self.origin_source = model.origin_source
         self.origin_object = model.origin_object
 
-        self.origin_x = model.origin_x
-        self.origin_y = model.origin_y
-        self.origin_z = model.origin_z
+        self.origin = model.origin
         self.rotation = model.rotation
         self.scale = model.scale
 
@@ -194,37 +191,35 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
-        if self.origin_source == 'MANUAL':
-            origin_x = self.origin_x
-            origin_y = self.origin_y
-            origin_z = self.origin_z
-            rotation = -self.rotation
-        elif self.origin_source == 'OBJECT' and self.origin_object:
-            loc, rot, _ = self.origin_object.matrix_world.decompose()
-            origin_x = loc.x
-            origin_y = loc.y
-            origin_z = loc.z
-            rotation = -degrees(rot.to_euler().z)
-        else:
-            origin_x = 0
-            origin_y = 0
-            origin_z = 0
-            rotation = 0
-
-        if self.static and self.mesh_type == 'FBX':
-            origin_x, origin_y = -origin_y, origin_x
-            rotation -= 180
-        else:
-            rotation -= 90
-
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
+
+            if self.origin_source == 'MANUAL':
+                origin = Vector(self.origin)
+                rotation = -self.rotation
+            elif self.origin_source == 'OBJECT' and self.origin_object:
+                loc, rot, _ = self.origin_object.matrix_world.decompose()
+                origin = Vector(-loc)
+                rotation = -degrees(rot.to_euler().z)
+            else:
+                origin = Vector((0,0,0))
+                rotation = 0
+
+            if self.static and self.mesh_type == 'FBX':
+                #origin_x, origin_y = -origin_y, origin_x
+                origin = Vector((-origin.y, origin.x, origin.z))
+                rotation -= 180
+            else:
+                rotation -= 90
+
+            origin = Vector(origin) * self.scale
+
             qc.write('\n')
-            qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
+            qc.write(f'$origin {origin.x} {origin.y} {origin.z} {rotation}')
             qc.write('\n')
 
         qc.write('\n')
-        qc.write(f'$scale {self.scale:.6f}')
+        qc.write(f'$scale {self.scale:.4f}')
         qc.write('\n')
 
         if self.reference:
@@ -236,6 +231,12 @@ class Model:
         if not self.rename_material == '':
             qc.write('\n')
             qc.write(f'$renamematerial {self.rename_material}')
+            qc.write('\n')
+
+        if self.illumposition:
+            print("Illumposition: ", self.illumposition)
+            qc.write('\n')
+            qc.write(f'$illumposition {self.illumposition[0]:.6f} {self.illumposition.y:.6f} {self.illumposition.z:.6f}')
             qc.write('\n')
 
         if self.collision:
@@ -363,15 +364,18 @@ class Model:
             # Use wine to run StudioMDL on Linux.
             # Wine tends to complain about the paths we feed StudioMDL.
             # So we use relatve paths working from the base directory of the game.
+
+            env = os.environ.copy()
             if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
                 cwd = self.game.parent
                 args = [str(self.wine), str(self.studiomdl.relative_to(cwd)), '-nop4', '-fullcollide',
                         '-game', str(self.game.relative_to(cwd)), str(qc.relative_to(cwd))]
+                env['WINEDEBUG'] = '-all'
             else:
                 cwd = None
                 args = [str(self.studiomdl), '-nop4', '-fullcollide', '-game', str(self.game), str(qc)]
 
-            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            pipe = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
 
             while True:
                 code = pipe.returncode
@@ -403,17 +407,21 @@ class Model:
         # Use wine to run HLMV on Linux.
         # Wine tends to complain about the paths we feed HLMV.
         # So we use relatve paths working from the base directory of the game.
+
+        env = os.environ.copy()
+
         if (os.name == 'posix') and (self.studiomdl.suffix == '.exe'):
             cwd = self.game.parent
             args = [str(self.wine), str(self.hlmv.relative_to(cwd)), '-game',
                     str(self.game.relative_to(cwd)), str(mdl.relative_to(cwd))]
+            env['WINEDEBUG'] = '-all'
         else:
             cwd = None
             args = [str(self.hlmv), '-game', str(self.game), str(mdl)]
 
         if dx90.is_file():
             print(f'Viewing: {mdl}')
-            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+            subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
         else:
             return self.report(f'Failed to view: {mdl}')
 
