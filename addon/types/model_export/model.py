@@ -67,7 +67,7 @@ class Model:
         self.origin_source = model.origin_source
         self.origin_object = model.origin_object
 
-        self.origin = Vector(model.origin)
+        self.origin = model.origin
         self.rotation = model.rotation
         self.scale = model.scale
 
@@ -195,19 +195,19 @@ class Model:
         if not (self.static and self.static_prop_combine):
 
             if self.origin_source == 'MANUAL':
-                origin = self.origin
+                origin = Vector(self.origin)
                 rotation = -self.rotation
             elif self.origin_source == 'OBJECT' and self.origin_object:
                 loc, rot, _ = self.origin_object.matrix_world.decompose()
-                origin = (loc.x, loc.y, -loc.z)
+                origin = Vector(-loc)
                 rotation = -degrees(rot.to_euler().z)
             else:
-                origin = (0,0,0)
+                origin = Vector((0,0,0))
                 rotation = 0
 
             if self.static and self.mesh_type == 'FBX':
                 #origin_x, origin_y = -origin_y, origin_x
-                origin = (-origin.y, origin.x, origin.z)
+                origin = Vector((-origin.y, origin.x, origin.z))
                 rotation -= 180
             else:
                 rotation -= 90
