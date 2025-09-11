@@ -171,22 +171,11 @@ class SOURCEOPS_ModelProps(bpy.types.PropertyGroup):
         type=bpy.types.Object,
     )
 
-    origin_x: bpy.props.FloatProperty(
-        name='Origin +X',
-        description='Translation on the X axis for $origin in the QC file',
-        default=0.0,
-    )
-
-    origin_y: bpy.props.FloatProperty(
-        name='Origin +Y',
-        description='Translation on the Y axis for $origin in the QC file',
-        default=0.0,
-    )
-
-    origin_z: bpy.props.FloatProperty(
-        name='Origin Z',
-        description='Translation on the Z axis for $origin in the QC file',
-        default=0.0,
+    origin: bpy.props.FloatVectorProperty(
+        name='Origin',
+        description='The location of the $origin in the QC file, this is applied before rotation',
+        default=(0.0, 0.0, 0.0),
+        size=3,
     )
 
     rotation: bpy.props.FloatProperty(

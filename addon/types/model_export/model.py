@@ -2,6 +2,7 @@ import bpy
 import time
 import subprocess
 import os
+from mathutils import Vector
 from math import degrees
 from shutil import move
 from pathlib import Path
@@ -9,6 +10,7 @@ from traceback import print_exc
 from ... utils import common
 from . smd import SMD
 from . fbx import export_fbx
+
 
 
 class Model:
@@ -65,9 +67,7 @@ class Model:
         self.origin_source = model.origin_source
         self.origin_object = model.origin_object
 
-        self.origin_x = model.origin_x
-        self.origin_y = model.origin_y
-        self.origin_z = model.origin_z
+        self.origin = Vector(model.origin)
         self.rotation = model.rotation
         self.scale = model.scale
 
@@ -191,33 +191,31 @@ class Model:
             qc.write('$staticprop')
             qc.write('\n')
 
-        if self.origin_source == 'MANUAL':
-            origin_x = self.origin_x
-            origin_y = self.origin_y
-            origin_z = self.origin_z
-            rotation = -self.rotation
-        elif self.origin_source == 'OBJECT' and self.origin_object:
-            loc, rot, _ = self.origin_object.matrix_world.decompose()
-            origin_x = loc.x
-            origin_y = loc.y
-            origin_z = loc.z
-            rotation = -degrees(rot.to_euler().z)
-        else:
-            origin_x = 0
-            origin_y = 0
-            origin_z = 0
-            rotation = 0
-
-        if self.static and self.mesh_type == 'FBX':
-            origin_x, origin_y = -origin_y, origin_x
-            rotation -= 180
-        else:
-            rotation -= 90
-
         # The origin command does not work with static prop combine.
         if not (self.static and self.static_prop_combine):
+
+            if self.origin_source == 'MANUAL':
+                origin = self.origin
+                rotation = -self.rotation
+            elif self.origin_source == 'OBJECT' and self.origin_object:
+                loc, rot, _ = self.origin_object.matrix_world.decompose()
+                origin = (loc.x, loc.y, -loc.z)
+                rotation = -degrees(rot.to_euler().z)
+            else:
+                origin = (0,0,0)
+                rotation = 0
+
+            if self.static and self.mesh_type == 'FBX':
+                #origin_x, origin_y = -origin_y, origin_x
+                origin = (-origin.y, origin.x, origin.z)
+                rotation -= 180
+            else:
+                rotation -= 90
+
+            origin = Vector(origin) * self.scale
+
             qc.write('\n')
-            qc.write(f'$origin {origin_x:.6f} {origin_y:.6f} {origin_z:.6f} {rotation:.6f}')
+            qc.write(f'$origin {origin.x} {origin.y} {origin.z} {rotation}')
             qc.write('\n')
 
         qc.write('\n')

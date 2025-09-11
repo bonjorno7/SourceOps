@@ -117,9 +117,7 @@ class SOURCEOPS_PT_MainPanel(bpy.types.Panel):
 
             else:
                 align = sub.column(align=True)
-                align.prop(model, 'origin_x', text='Origin X')
-                align.prop(model, 'origin_y', text='Y')
-                align.prop(model, 'origin_z', text='Z')
+                align.prop(model, 'origin', text='Origin')
 
                 sub.prop(model, 'rotation')
 
